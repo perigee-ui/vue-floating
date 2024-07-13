@@ -1,0 +1,43 @@
+{
+  "name": "@perigee-ui/floating-vue",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "run-p type-check \"build-only {@}\" --",
+    "preview": "vite preview",
+    "test:unit": "vitest",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --build --force",
+    "eslint": "eslint .",
+    "eslint:fix": "eslint . --fix"
+  },
+  "peerDependencies": {
+    "@vue/shared": "^3.4.31"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^20.14.10",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "@vitejs/plugin-vue-jsx": "^4.0.0",
+    "@vue/test-utils": "^2.4.6",
+    "@vueuse/core": "^10.11.0",
+    "jsdom": "^24.1.0",
+    "npm-run-all2": "^6.2.2",
+    "vite": "^5.3.3",
+    "vite-plugin-dts": "^3.9.1",
+    "vite-plugin-externalize-deps": "^0.8.0",
+    "vitest": "^2.0.2",
+    "vue": "^3.4.31",
+    "vue-tsc": "^2.0.26"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "extends": "@teleskop150750/typescript-config/tsconfig.base.json",
+  "references": [
+    {
+      "path": "./packages/floating-vue"
+    }
+  ],
+  "files": []
+}
