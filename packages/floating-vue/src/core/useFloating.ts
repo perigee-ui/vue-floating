@@ -4,13 +4,15 @@ import {
   type MaybeRefOrGetter,
   type Ref,
   computed,
+  isReactive,
+  isRef,
   shallowRef,
   toValue,
   watch,
-  watchEffect,
   watchSyncEffect,
 } from 'vue'
 
+import { isFunction } from '@vue/shared'
 import type {
   ComputePositionConfig,
   FloatingElement,
@@ -27,23 +29,24 @@ import { getDPR } from './utils/getDPR.ts'
  * Computes the `x` and `y` coordinates that will place the floating element next to a reference element when it is given a certain CSS positioning strategy.
  * @param $reference The reference template ref.
  * @param $floating The floating template ref.
- * @param open The open state of the floating element.
  * @param config The floating configuration.
  * @param options The floating options.
  * @see https://floating-ui.com/docs/vue
  */
 export function useFloating<RT extends ReferenceType = ReferenceType>(
-  $reference: Ref<RT>,
-  $floating: Ref<FloatingElement>,
-  open?: MaybeRefOrGetter<boolean>,
+  $reference: Ref<RT | undefined>,
+  $floating: Ref<FloatingElement | undefined>,
   config: MaybeRefOrGetter<UseFloatingCofnig> = {},
-  options: MaybeRefOrGetter<UseFloatingOptions> = {},
+  options: UseFloatingOptions = {},
 ): UseFloatingReturn {
+  const isConfigReactive = isRef(config) || isReactive(config) || isFunction(config) || false
   const configValue = toValue(config)
-  let optionsValue = toValue(options)
 
-  const transform = shallowRef(optionsValue.transform ?? true)
-  let whileElementsMounted = optionsValue.whileElementsMounted
+  const {
+    transform = true,
+    whileElementsMounted,
+    open,
+  } = options
 
   const x = shallowRef(0)
   const y = shallowRef(0)
@@ -66,7 +69,7 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     const xVal = roundByDPR(floatingEl, x.value)
     const yVal = roundByDPR(floatingEl, y.value)
 
-    if (transform.value ?? true) {
+    if (transform) {
       return {
         ...initialStyles,
         transform: `translate(${xVal}px, ${yVal}px)`,
@@ -81,15 +84,11 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     }
   })
 
-  watchEffect(() => {
-    optionsValue = toValue(options)
-    transform.value = optionsValue.transform ?? true
-    whileElementsMounted = optionsValue.whileElementsMounted
-  })
-
-  watch(config, () => {
-    update()
-  })
+  if (isConfigReactive) {
+    watch(config, () => {
+      update()
+    })
+  }
 
   function update() {
     const referenceEl = $reference.value
@@ -119,7 +118,7 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
   }
 
   watchSyncEffect(() => {
-    if (!toValue(open))
+    if (toValue(open) === false && isPositioned.value)
       isPositioned.value = false
   })
 

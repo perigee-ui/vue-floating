@@ -4,16 +4,14 @@ import {
   arrow as arrowCore,
 } from '@floating-ui/dom'
 
-import { toValue } from 'vue'
-import { unwrapElement } from './utils/unwrapElement.ts'
-import type { MaybeElement, MaybeReadonlyRefOrGetter } from './types.ts'
+import { type MaybeRefOrGetter, toValue } from 'vue'
 
 export interface ArrowOptions {
   /**
    * The arrow element or template ref to be positioned.
    * @required
    */
-  element: MaybeReadonlyRefOrGetter<MaybeElement<Element>>
+  element: MaybeRefOrGetter<Element | undefined>
   /**
    * The padding between the arrow element and the floating element edges. Useful when the floating element has rounded corners.
    * @default 0
@@ -31,7 +29,7 @@ export function arrow(options: ArrowOptions): Middleware {
     name: 'arrow',
     options,
     fn(state) {
-      const element = unwrapElement(toValue(options.element))
+      const element = toValue(options.element)
 
       if (element == null) {
         return {}

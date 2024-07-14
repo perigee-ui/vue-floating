@@ -4,7 +4,7 @@ import type {
   VirtualElement,
 } from '@floating-ui/dom'
 
-import type { CSSProperties, Ref } from 'vue'
+import type { CSSProperties, MaybeRefOrGetter, Ref } from 'vue'
 
 export type {
   AlignedPlacement,
@@ -76,6 +76,12 @@ export type UseFloatingReturn = Prettify<ToRef<UseFloatingData> & {
 export type UseFloatingCofnig = ComputePositionConfig
 
 export type UseFloatingOptions<RT extends ReferenceType = ReferenceType> = Prettify<{
+  /**
+   * The `open` state of the floating element to synchronize with the
+   * `isPositioned` value.
+   * @default false
+   */
+  open?: MaybeRefOrGetter<boolean>
   /**
    * A callback invoked when both the reference and floating elements are
    * mounted, and cleaned up when either is unmounted. This is useful for
