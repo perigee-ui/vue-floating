@@ -2,8 +2,8 @@
 import {
   arrow,
   autoUpdate,
-  useFloating,
 } from '@perigee-ui/floating-vue/core'
+import { useFloating, useHover, useInteractions } from '@perigee-ui/floating-vue'
 import { computed, shallowRef } from 'vue'
 
 const OPPOSITE_SIDE_BY_SIDE = {
@@ -17,7 +17,9 @@ const targetRef = shallowRef<HTMLElement>()
 const floatingRef = shallowRef<HTMLElement>()
 const floatingArrowRef = shallowRef<HTMLElement>()
 
-const { placement, middlewareData, floatingStyles } = useFloating(
+const isOpen = shallowRef(false)
+
+const { context, placement, middlewareData, floatingStyles, refs } = useFloating(
   targetRef,
   floatingRef,
   {
@@ -26,9 +28,18 @@ const { placement, middlewareData, floatingStyles } = useFloating(
     middleware: [arrow({ element: floatingArrowRef })],
   },
   {
+    open: isOpen,
+    onOpenChange: (value) => {
+      isOpen.value = value
+    },
     whileElementsMounted: autoUpdate,
   },
 )
+
+const attrs = useHover(context, {
+  enabled: true,
+  delay: 1000,
+})()
 
 const side = computed(() => placement.value.split('-')[0])
 </script>
@@ -36,12 +47,14 @@ const side = computed(() => placement.value.split('-')[0])
 <template>
   <div>
     <!-- target can be slot -->
-    <div ref="targetRef" class="target" />
+    <div :ref="(el: any) => refs.setReference(el)" class="target" v-bind="attrs?.reference" />
 
     <div
+      v-if="isOpen"
       ref="floatingRef"
       class="floating"
       :style="floatingStyles"
+      v-bind="attrs?.floating"
     >
       <div
         ref="floatingArrowRef"

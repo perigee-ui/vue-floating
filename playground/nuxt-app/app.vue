@@ -12,14 +12,12 @@ const useIdFunction = () => useId()
       <div class="links-list">
         <div class="links-group">
           <span class="links-group__title">Utils</span>
-          <div class="links-group__list">
-          </div>
+          <div class="links-group__list" />
         </div>
 
         <div class="links-group">
           <span class="links-group__title">Coponents</span>
-          <div class="links-group__list">
-          </div>
+          <div class="links-group__list" />
         </div>
       </div>
     </aside>

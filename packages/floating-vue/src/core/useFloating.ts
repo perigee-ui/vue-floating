@@ -2,7 +2,6 @@ import { computePosition } from '@floating-ui/dom'
 import {
   type CSSProperties,
   type MaybeRefOrGetter,
-  type Ref,
   computed,
   isReactive,
   isRef,
@@ -34,8 +33,8 @@ import { getDPR } from './utils/getDPR.ts'
  * @see https://floating-ui.com/docs/vue
  */
 export function useFloating<RT extends ReferenceType = ReferenceType>(
-  $reference: Ref<RT | undefined>,
-  $floating: Ref<FloatingElement | undefined>,
+  $reference: MaybeRefOrGetter<RT | undefined>,
+  $floating: MaybeRefOrGetter<FloatingElement | undefined>,
   config: MaybeRefOrGetter<UseFloatingCofnig> = {},
   options: UseFloatingOptions = {},
 ): UseFloatingReturn {
@@ -62,7 +61,7 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
       top: 0,
     }
 
-    const floatingEl = $floating.value
+    const floatingEl = toValue($floating)
     if (!floatingEl)
       return initialStyles
 
@@ -89,8 +88,8 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
   }
 
   function update() {
-    const referenceEl = $reference.value
-    const floatingEl = $floating.value
+    const referenceEl = toValue($reference)
+    const floatingEl = toValue($floating)
     if (!referenceEl || !floatingEl)
       return
 
@@ -121,8 +120,8 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
   })
 
   watchSyncEffect((onCleanup) => {
-    const referenceEl = $reference.value
-    const floatingEl = $floating.value
+    const referenceEl = toValue($reference)
+    const floatingEl = toValue($floating)
 
     if (!referenceEl || !floatingEl)
       return

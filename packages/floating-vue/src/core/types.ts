@@ -4,8 +4,9 @@ import type {
   VirtualElement,
 } from '@floating-ui/dom'
 
-import type { CSSProperties, MaybeRefOrGetter, Ref } from 'vue'
+import type { CSSProperties, Ref } from 'vue'
 
+export type { ArrowOptions } from './arrow'
 export type {
   AlignedPlacement,
   Alignment,
@@ -81,7 +82,7 @@ export type UseFloatingOptions<RT extends ReferenceType = ReferenceType> = Prett
    * `isPositioned` value.
    * @default false
    */
-  open?: MaybeRefOrGetter<boolean>
+  open?: Ref<boolean>
   /**
    * A callback invoked when both the reference and floating elements are
    * mounted, and cleaned up when either is unmounted. This is useful for

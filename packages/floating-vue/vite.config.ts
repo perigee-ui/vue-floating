@@ -56,7 +56,10 @@ export default defineConfig({
     lib: {
       name: 'radix',
       formats: ['es'],
-      entry: input,
+      entry: {
+        ...input,
+        index: path.resolve(componentsDir, 'index.ts'),
+      },
     },
     rollupOptions: {
       external: ['vue', '@vue/shared'],
