@@ -39,7 +39,7 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
   config: MaybeRefOrGetter<UseFloatingCofnig> = {},
   options: UseFloatingOptions = {},
 ): UseFloatingReturn {
-  const isConfigReactive = isRef(config) || isReactive(config) || isFunction(config) || false
+  const isReactiveConfig = isRef(config) || isReactive(config) || isFunction(config) || false
   const configValue = toValue(config)
 
   const {
@@ -84,10 +84,8 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     }
   })
 
-  if (isConfigReactive) {
-    watch(config, () => {
-      update()
-    })
+  if (isReactiveConfig) {
+    watch(config, update)
   }
 
   function update() {
