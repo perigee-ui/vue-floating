@@ -86,7 +86,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
   let restTimeoutRef = -1
   let blockMouseMoveRef = true
   let performedPointerEventsMutationRef = false
-  let unbindMouseMoveRef = () => { }
+  let unbindMousemoveRef = () => { }
 
   function isHoverOpen() {
     const type = data.openEvent?.type
@@ -95,7 +95,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
 
   // When closing before opening, clear the delay timeouts to cancel it
   // from showing.
-  watchEffect(() => {
+  watchEffect((onCleanup) => {
     if (!unref(open))
       return
 
@@ -108,9 +108,10 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     }
 
     events.on('openchange', onOpenChange)
-    return () => {
+
+    onCleanup(() => {
       events.off('openchange', onOpenChange)
-    }
+    })
   })
 
   watchEffect((onCleanup) => {
@@ -150,8 +151,8 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     }
   }
 
-  function cleanupMouseMoveDocHandler() {
-    unbindMouseMoveRef()
+  function cleanupMousemoveHandler() {
+    unbindMousemoveRef()
     handlerRef = undefined
   }
 
@@ -183,8 +184,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
         : false
     }
 
-    function onMouseEnter(event: MouseEvent) {
-      console.error('onMouseEnter')
+    function onMouseenter(event: MouseEvent) {
       clearTimeout(timeoutRef)
       blockMouseMoveRef = false
 
@@ -205,11 +205,11 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
       }
     }
 
-    function onMouseLeave(event: MouseEvent) {
+    function onMouseleave(event: MouseEvent) {
       if (isClickLikeOpenEvent())
         return
 
-      unbindMouseMoveRef()
+      unbindMousemoveRef()
 
       const doc = getDocument(elements.$floating.value)
       clearTimeout(restTimeoutRef)
@@ -227,7 +227,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
           y: shallowRef(event.clientY),
           onClose() {
             clearPointerEvents()
-            // cleanupMouseMoveHandler()
+            cleanupMousemoveHandler()
             closeWithDelay(event, true, 'safe-polygon')
           },
         })
@@ -235,7 +235,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
         const handler = handlerRef
 
         doc.addEventListener('mousemove', handler)
-        unbindMouseMoveRef = () => {
+        unbindMousemoveRef = () => {
           doc.removeEventListener('mousemove', handler)
         }
 
@@ -245,10 +245,9 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
       // Allow interactivity without `safePolygon` on touch devices. With a
       // pointer, a short close delay is an alternative, so it should work
       // consistently.
-      const shouldClose
-        = pointerTypeRef === 'touch'
-          ? !contains(elements.$floating.value, event.relatedTarget as Element | null)
-          : true
+      const shouldClose = pointerTypeRef === 'touch'
+        ? !contains(elements.$floating.value, event.relatedTarget as Element | null)
+        : true
       if (shouldClose) {
         closeWithDelay(event)
       }
@@ -257,7 +256,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     // Ensure the floating element closes after scrolling even if the pointer
     // did not move.
     // https://github.com/floating-ui/floating-ui/discussions/1692
-    function onScrollMouseLeave(event: MouseEvent) {
+    function onScrollMouseleave(event: MouseEvent) {
       if (isClickLikeOpenEvent())
         return
 
@@ -271,7 +270,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
         y: shallowRef(event.clientY),
         onClose() {
           clearPointerEvents()
-          // cleanupMouseMoveHandler()
+          cleanupMousemoveHandler()
           closeWithDelay(event)
         },
       })(event)
@@ -279,21 +278,21 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
 
     const ref = elements.$domReference.value as unknown as HTMLElement
     if (openVal)
-      ref.addEventListener('mouseleave', onScrollMouseLeave)
-    elements.$floating.value?.addEventListener('mouseleave', onScrollMouseLeave)
+      ref.addEventListener('mouseleave', onScrollMouseleave)
+    elements.$floating.value?.addEventListener('mouseleave', onScrollMouseleave)
     if (move)
-      ref.addEventListener('mousemove', onMouseEnter, { once: true })
-    ref.addEventListener('mouseenter', onMouseEnter)
-    ref.addEventListener('mouseleave', onMouseLeave)
+      ref.addEventListener('mousemove', onMouseenter, { once: true })
+    ref.addEventListener('mouseenter', onMouseenter)
+    ref.addEventListener('mouseleave', onMouseleave)
 
     onCleanup(() => {
       if (openVal)
-        ref.removeEventListener('mouseleave', onScrollMouseLeave)
-      elements.$floating.value?.removeEventListener('mouseleave', onScrollMouseLeave)
+        ref.removeEventListener('mouseleave', onScrollMouseleave)
+      elements.$floating.value?.removeEventListener('mouseleave', onScrollMouseleave)
       if (move)
-        ref.removeEventListener('mousemove', onMouseEnter)
-      ref.removeEventListener('mouseenter', onMouseEnter)
-      ref.removeEventListener('mouseleave', onMouseLeave)
+        ref.removeEventListener('mousemove', onMouseenter)
+      ref.removeEventListener('mouseenter', onMouseenter)
+      ref.removeEventListener('mouseleave', onMouseleave)
     })
   })
 
@@ -339,7 +338,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
   watchEffect(() => {
     if (!unref(open)) {
       pointerTypeRef = undefined
-      cleanupMouseMoveDocHandler()
+      cleanupMousemoveHandler()
       clearPointerEvents()
     }
   })
@@ -348,7 +347,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     [() => toValue(enabled), () => elements.$domReference.value],
     (_val, _valOld, onCleanup) => {
       onCleanup(() => {
-        cleanupMouseMoveDocHandler()
+        cleanupMousemoveHandler()
         clearTimeout(timeoutRef)
         clearTimeout(restTimeoutRef)
         clearPointerEvents()
