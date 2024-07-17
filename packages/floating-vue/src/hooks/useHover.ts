@@ -1,4 +1,4 @@
-import { type MaybeRefOrGetter, shallowRef, toValue, unref, watch, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, type UnwrapRef, toValue, unref, watch, watchEffect } from 'vue'
 import { isElement } from '@floating-ui/utils/dom'
 import { contains, getDocument, isMouseLikePointerType } from '../utils.ts'
 import type { FloatingContext, OpenChangeReason } from '../types'
@@ -6,9 +6,14 @@ import { createAttribute } from '../utils/createAttribute.ts'
 
 export interface HandleCloseFn {
   (
-    context: FloatingContext & {
-      // x: UnwrapRef<FloatingContext['x']>
-      // y: UnwrapRef<FloatingContext['y']>
+    context: {
+      x: UnwrapRef<FloatingContext['x']>
+      y: UnwrapRef<FloatingContext['y']>
+      placement: UnwrapRef<FloatingContext['placement']>
+      elements: {
+        $domReference: UnwrapRef<FloatingContext['elements']['$domReference']>
+        $floating: UnwrapRef<FloatingContext['elements']['$floating']>
+      }
       onClose: () => void
       // tree?: FloatsingTreeType | null
       leave?: boolean
@@ -221,10 +226,14 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
         }
 
         handlerRef = handleClose({
-          ...data.floatingContext,
           // tree,
-          x: shallowRef(event.clientX),
-          y: shallowRef(event.clientY),
+          x: event.clientX,
+          y: event.clientY,
+          placement: data.floatingContext.placement.value,
+          elements: {
+            $domReference: elements.$domReference.value,
+            $floating: elements.$floating.value,
+          },
           onClose() {
             clearPointerEvents()
             cleanupMousemoveHandler()
@@ -264,10 +273,14 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
         return
 
       handleClose?.({
-        ...data.floatingContext,
         // tree,
-        x: shallowRef(event.clientX),
-        y: shallowRef(event.clientY),
+        x: event.clientX,
+        y: event.clientY,
+        placement: data.floatingContext.placement.value,
+        elements: {
+          $domReference: elements.$domReference.value,
+          $floating: elements.$floating.value,
+        },
         onClose() {
           clearPointerEvents()
           cleanupMousemoveHandler()

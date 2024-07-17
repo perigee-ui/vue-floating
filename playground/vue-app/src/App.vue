@@ -38,7 +38,6 @@ const { context, placement, middlewareData, floatingStyles, refs } = useFloating
 
 const attrs = useHover(context, {
   enabled: true,
-  delay: 1000,
 })()
 
 const side = computed(() => placement.value.split('-')[0])
