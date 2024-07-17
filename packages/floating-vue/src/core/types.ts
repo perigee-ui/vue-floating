@@ -94,6 +94,13 @@ export type UseFloatingOptions<RT extends ReferenceType = ReferenceType> = Prett
     update: () => void,
   ) => () => void
   /**
+   * Object containing the reference and floating elements.
+   */
+  elements: {
+    reference: Ref<RT | undefined>
+    floating: Ref<HTMLElement | undefined>
+  }
+  /**
    * Whether to use `transform` for positioning instead of `top` and `left`
    * (layout) in the `floatingStyles` object.
    * @default false

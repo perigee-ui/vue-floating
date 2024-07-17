@@ -1,10 +1,9 @@
-import { type Ref, shallowRef } from 'vue'
+import { shallowRef } from 'vue'
 import { isElement } from '@floating-ui/utils/dom'
 import { useFloating as usePosition } from '../core/index.ts'
 import type {
   ContextData,
   FloatingContext,
-  FloatingElement,
   NarrowedElement,
   OpenChangeReason,
   ReferenceType,
@@ -16,18 +15,19 @@ import { createPubSub } from '../utils/createPubSub.ts'
 
 /**
  * Computes the `x` and `y` coordinates that will place the floating element next to a reference element when it is given a certain CSS positioning strategy.
- * @param $reference The reference template ref.
- * @param $floating The floating template ref.
- * @param config The floating configuration.
  * @param options The floating options.
+ * @param config The floating configuration.
  */
 export function useFloating<RT extends ReferenceType = ReferenceType>(
-  $reference: Ref<RT | undefined>,
-  $floating: Ref<FloatingElement | undefined>,
+  options: UseFloatingOptions,
   config: UseFloatingCofnig = {},
-  options: UseFloatingOptions = {},
 ): UseFloatingReturn<RT> {
-//   const { nodeId } = options
+  const {
+    elements: {
+      floating,
+    },
+    // nodeId,
+  } = options
 
   //   const internalRootContext = useFloatingRootContext({
   //     ...options,
@@ -39,14 +39,19 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
   //   });
 
   // TODO: Add
-  const $domReference = shallowRef<NarrowedElement<RT>>()
-  const $positionReference = shallowRef<ReferenceType>()
+  const domReference = shallowRef<NarrowedElement<RT>>()
+  const positionReference = shallowRef<ReferenceType>()
 
+  // () => positionReference.value ? positionReference.value : reference.value,
   const position = usePosition(
-    () => $positionReference.value ? $positionReference.value : $reference.value,
-    $floating,
+    {
+      ...options,
+      elements: {
+        reference: positionReference,
+        floating,
+      },
+    },
     config,
-    options,
   )
 
   function setPositionReference(node: ReferenceType | undefined) {
@@ -59,26 +64,24 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     // TODO:
     // Store the positionReference in state if the DOM reference is specified externally via the
     // `elements.reference` option. This ensures that it won't be overridden on future renders.
-    $positionReference.value = computedPositionReference
+    positionReference.value = computedPositionReference
   }
 
   function setReference(node: RT | undefined) {
     if (isElement(node) || !node)
-      $domReference.value = (node || undefined) as NarrowedElement<RT> | undefined
-
-    const referenceEl = $reference.value
+      domReference.value = (node || undefined) as NarrowedElement<RT> | undefined
 
     // Backwards-compatibility for passing a virtual element to `reference`
     // after it has set the DOM reference.
     if (
-      isElement(referenceEl)
-      || !referenceEl
+      isElement(positionReference.value)
+      || !positionReference.value
       // Don't allow setting virtual elements using the old technique back to
       // `null` to support `positionReference` + an unstable `reference`
       // callback ref.
       || (node != null && !isElement(node))
     ) {
-      $reference.value = node
+      positionReference.value = node
     }
   }
 
@@ -102,9 +105,9 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     onOpenChange,
     events,
     elements: {
-      $reference,
-      $floating,
-      $domReference,
+      reference: positionReference,
+      floating,
+      domReference,
     },
     data,
   }

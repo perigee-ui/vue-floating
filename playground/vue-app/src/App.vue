@@ -13,26 +13,26 @@ const OPPOSITE_SIDE_BY_SIDE = {
   left: 'right',
 } as { [key: string]: string }
 
-const targetRef = shallowRef<HTMLElement>()
 const floatingRef = shallowRef<HTMLElement>()
 const floatingArrowRef = shallowRef<HTMLElement>()
 
 const isOpen = shallowRef(false)
 
 const { context, placement, middlewareData, floatingStyles, refs } = useFloating(
-  targetRef,
-  floatingRef,
   {
-    strategy: 'fixed',
-    placement: 'top',
-    middleware: [arrow({ element: floatingArrowRef })],
-  },
-  {
+    elements: {
+      floating: floatingRef,
+    },
     open: isOpen,
     onOpenChange: (value) => {
       isOpen.value = value
     },
     whileElementsMounted: autoUpdate,
+  },
+  {
+    strategy: 'fixed',
+    placement: 'top',
+    middleware: [arrow({ element: floatingArrowRef })],
   },
 )
 

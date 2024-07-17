@@ -125,9 +125,9 @@ export interface ExtendedRefs<RT> {
 }
 
 export interface ExtendedElements<RT> {
-  $reference: Ref<ReferenceType | undefined>
-  $floating: Ref<HTMLElement | undefined>
-  $domReference: Ref<NarrowedElement<RT> | undefined>
+  reference: Ref<ReferenceType | undefined>
+  floating: Ref<HTMLElement | undefined>
+  domReference: Ref<NarrowedElement<RT> | undefined>
 }
 
 export interface FloatingEvents {
@@ -218,19 +218,20 @@ export type UseFloatingCofnig = Prettify<UsePositionCofnig>
 
 export interface UseFloatingOptions<RT extends ReferenceType = ReferenceType> extends Omit<UsePositionOptions<RT>, 'elements'> {
   //   rootContext?: FloatingRootContext<RT>
-  // /**
-  //  * Object of external elements as an alternative to the `refs` object setters.
-  //  */
-  // elements?: {
-  //   /**
-  //    * Externally passed reference element. Store in state.
-  //    */
-  //   reference?: Element | null
-  //   /**
-  //    * Externally passed floating element. Store in state.
-  //    */
-  //   floating?: HTMLElement | null
-  // }
+  /**
+   * Object of external elements as an alternative to the `refs` object setters.
+   */
+  elements: {
+    // TODO: add
+    // /**
+    //  * Externally passed reference element. Store in state.
+    //  */
+    // reference: Ref<RT | undefined>
+    /**
+     * Externally passed floating element. Store in state.
+     */
+    floating: Ref<HTMLElement | undefined>
+  }
   /**
    * An event callback that is invoked when the floating element is opened or
    * closed.

@@ -14,7 +14,6 @@ import {
 import { isFunction } from '@vue/shared'
 import type {
   ComputePositionConfig,
-  FloatingElement,
   MiddlewareData,
   ReferenceType,
   UseFloatingCofnig,
@@ -26,17 +25,13 @@ import { getDPR } from './utils/getDPR.ts'
 
 /**
  * Computes the `x` and `y` coordinates that will place the floating element next to a reference element when it is given a certain CSS positioning strategy.
- * @param $reference The reference template ref.
- * @param $floating The floating template ref.
- * @param config The floating configuration.
  * @param options The floating options.
+ * @param config The floating configuration.
  * @see https://floating-ui.com/docs/vue
  */
 export function useFloating<RT extends ReferenceType = ReferenceType>(
-  $reference: MaybeRefOrGetter<RT | undefined>,
-  $floating: MaybeRefOrGetter<FloatingElement | undefined>,
+  options: UseFloatingOptions<RT>,
   config: MaybeRefOrGetter<UseFloatingCofnig> = {},
-  options: UseFloatingOptions = {},
 ): UseFloatingReturn {
   const isReactiveConfig = isRef(config) || isReactive(config) || isFunction(config) || false
   const configValue = toValue(config)
@@ -45,6 +40,10 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     transform = true,
     whileElementsMounted,
     open,
+    elements: {
+      reference,
+      floating,
+    },
   } = options
 
   const x = shallowRef(0)
@@ -61,7 +60,7 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
       top: 0,
     }
 
-    const floatingEl = toValue($floating)
+    const floatingEl = toValue(floating)
     if (!floatingEl)
       return initialStyles
 
@@ -88,8 +87,8 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
   }
 
   function update() {
-    const referenceEl = toValue($reference)
-    const floatingEl = toValue($floating)
+    const referenceEl = reference.value
+    const floatingEl = floating.value
     if (!referenceEl || !floatingEl)
       return
 
@@ -120,8 +119,8 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
   })
 
   watchSyncEffect((onCleanup) => {
-    const referenceEl = toValue($reference)
-    const floatingEl = toValue($floating)
+    const referenceEl = toValue(reference)
+    const floatingEl = toValue(floating)
 
     if (!referenceEl || !floatingEl)
       return

@@ -98,8 +98,8 @@ export function safePolygon(options: SafePolygonOptions = {}) {
       clearTimeout(timeoutId)
 
       if (
-        !elements.$domReference
-        || !elements.$floating
+        !elements.domReference
+        || !elements.floating
         || placement == null
         || x == null
         || y == null
@@ -111,10 +111,10 @@ export function safePolygon(options: SafePolygonOptions = {}) {
       const clientPoint: Point = [clientX, clientY]
       const target = getTarget(event) as Element | null
       const isLeave = event.type === 'mouseleave'
-      const isOverFloatingEl = contains(elements.$floating, target)
-      const isOverReferenceEl = contains(elements.$domReference, target)
-      const refRect = elements.$domReference.getBoundingClientRect()
-      const rect = elements.$floating.getBoundingClientRect()
+      const isOverFloatingEl = contains(elements.floating, target)
+      const isOverReferenceEl = contains(elements.domReference, target)
+      const refRect = elements.domReference.getBoundingClientRect()
+      const rect = elements.floating.getBoundingClientRect()
       const side = placement.split('-')[0] as Side
       const cursorLeaveFromRight = x > rect.right - rect.width / 2
       const cursorLeaveFromBottom = y > rect.bottom - rect.height / 2
@@ -147,7 +147,7 @@ export function safePolygon(options: SafePolygonOptions = {}) {
       if (
         isLeave
         && isElement(event.relatedTarget)
-        && contains(elements.$floating, event.relatedTarget)
+        && contains(elements.floating, event.relatedTarget)
       ) {
         return
       }

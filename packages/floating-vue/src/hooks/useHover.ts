@@ -11,8 +11,8 @@ export interface HandleCloseFn {
       y: UnwrapRef<FloatingContext['y']>
       placement: UnwrapRef<FloatingContext['placement']>
       elements: {
-        $domReference: UnwrapRef<FloatingContext['elements']['$domReference']>
-        $floating: UnwrapRef<FloatingContext['elements']['$floating']>
+        domReference: UnwrapRef<FloatingContext['elements']['domReference']>
+        floating: UnwrapRef<FloatingContext['elements']['floating']>
       }
       onClose: () => void
       // tree?: FloatsingTreeType | null
@@ -133,7 +133,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
       }
     }
 
-    const html = getDocument(elements.$floating.value).documentElement
+    const html = getDocument(elements.floating.value).documentElement
     html.addEventListener('mouseleave', onLeave)
 
     onCleanup(() => {
@@ -165,7 +165,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     if (!performedPointerEventsMutationRef)
       return
 
-    const body = getDocument(elements.$floating.value).body
+    const body = getDocument(elements.floating.value).body
     body.style.pointerEvents = ''
     body.removeAttribute(safePolygonIdentifier)
     performedPointerEventsMutationRef = false
@@ -180,7 +180,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
 
     const openVal = unref(open)
 
-    if (!isElement(elements.$domReference.value))
+    if (!isElement(elements.domReference.value))
       return
 
     function isClickLikeOpenEvent() {
@@ -216,7 +216,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
 
       unbindMousemoveRef()
 
-      const doc = getDocument(elements.$floating.value)
+      const doc = getDocument(elements.floating.value)
       clearTimeout(restTimeoutRef)
 
       if (handleClose && data.floatingContext) {
@@ -231,8 +231,8 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
           y: event.clientY,
           placement: data.floatingContext.placement.value,
           elements: {
-            $domReference: elements.$domReference.value,
-            $floating: elements.$floating.value,
+            domReference: elements.domReference.value,
+            floating: elements.floating.value,
           },
           onClose() {
             clearPointerEvents()
@@ -255,7 +255,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
       // pointer, a short close delay is an alternative, so it should work
       // consistently.
       const shouldClose = pointerTypeRef === 'touch'
-        ? !contains(elements.$floating.value, event.relatedTarget as Element | null)
+        ? !contains(elements.floating.value, event.relatedTarget as Element | null)
         : true
       if (shouldClose) {
         closeWithDelay(event)
@@ -278,8 +278,8 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
         y: event.clientY,
         placement: data.floatingContext.placement.value,
         elements: {
-          $domReference: elements.$domReference.value,
-          $floating: elements.$floating.value,
+          domReference: elements.domReference.value,
+          floating: elements.floating.value,
         },
         onClose() {
           clearPointerEvents()
@@ -289,10 +289,10 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
       })(event)
     }
 
-    const ref = elements.$domReference.value as unknown as HTMLElement
+    const ref = elements.domReference.value as unknown as HTMLElement
     if (openVal)
       ref.addEventListener('mouseleave', onScrollMouseleave)
-    elements.$floating.value?.addEventListener('mouseleave', onScrollMouseleave)
+    elements.floating.value?.addEventListener('mouseleave', onScrollMouseleave)
     if (move)
       ref.addEventListener('mousemove', onMouseenter, { once: true })
     ref.addEventListener('mouseenter', onMouseenter)
@@ -301,7 +301,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     onCleanup(() => {
       if (openVal)
         ref.removeEventListener('mouseleave', onScrollMouseleave)
-      elements.$floating.value?.removeEventListener('mouseleave', onScrollMouseleave)
+      elements.floating.value?.removeEventListener('mouseleave', onScrollMouseleave)
       if (move)
         ref.removeEventListener('mousemove', onMouseenter)
       ref.removeEventListener('mouseenter', onMouseenter)
@@ -319,16 +319,16 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
 
     if (!unref(open) || !handleClose?.__options.blockPointerEvents || !isHoverOpen())
       return
-    const floatingEl = elements.$floating.value
+    const floatingEl = elements.floating.value
     const body = getDocument(floatingEl).body
     body.setAttribute(safePolygonIdentifier, '')
     body.style.pointerEvents = 'none'
     performedPointerEventsMutationRef = true
 
-    if (!isElement(elements.$domReference.value) || !floatingEl)
+    if (!isElement(elements.domReference.value) || !floatingEl)
       return
 
-    const ref = elements.$domReference.value as unknown as HTMLElement | SVGSVGElement
+    const ref = elements.domReference.value as unknown as HTMLElement | SVGSVGElement
 
     // const parentFloating = tree?.nodesRef.current.find(
     //   (node) => node.id === parentId,
@@ -357,7 +357,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
   })
 
   watch(
-    [() => toValue(enabled), () => elements.$domReference.value],
+    [() => toValue(enabled), () => elements.domReference.value],
     (_val, _valOld, onCleanup) => {
       onCleanup(() => {
         cleanupMousemoveHandler()
