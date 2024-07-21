@@ -69,7 +69,7 @@ const safePolygonIdentifier = createAttribute('safe-polygon')
 export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
   const {
     open,
-    data,
+    dataRef,
     onOpenChange,
     events,
     elements,
@@ -94,7 +94,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
   let unbindMousemoveRef = () => { }
 
   function isHoverOpen() {
-    const type = data.openEvent?.type
+    const type = dataRef.openEvent?.type
     return type?.includes('mouse') && type !== 'mousedown'
   }
 
@@ -184,8 +184,8 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
       return
 
     function isClickLikeOpenEvent() {
-      return data.openEvent
-        ? ['click', 'mousedown'].includes(data.openEvent.type)
+      return dataRef.openEvent
+        ? ['click', 'mousedown'].includes(dataRef.openEvent.type)
         : false
     }
 
@@ -219,7 +219,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
       const doc = getDocument(elements.floating.value)
       clearTimeout(restTimeoutRef)
 
-      if (handleClose && data.floatingContext) {
+      if (handleClose && dataRef.floatingContext) {
         // Prevent clearing `onScrollMouseLeave` timeout.
         if (!open) {
           clearTimeout(timeoutRef)
@@ -229,7 +229,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
           // tree,
           x: event.clientX,
           y: event.clientY,
-          placement: data.floatingContext.placement.value,
+          placement: dataRef.floatingContext.placement.value,
           elements: {
             domReference: elements.domReference.value,
             floating: elements.floating.value,
@@ -269,14 +269,14 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
       if (isClickLikeOpenEvent())
         return
 
-      if (!data.floatingContext)
+      if (!dataRef.floatingContext)
         return
 
       handleClose?.({
         // tree,
         x: event.clientX,
         y: event.clientY,
-        placement: data.floatingContext.placement.value,
+        placement: dataRef.floatingContext.placement.value,
         elements: {
           domReference: elements.domReference.value,
           floating: elements.floating.value,

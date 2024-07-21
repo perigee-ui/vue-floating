@@ -5,6 +5,7 @@ import type {
 } from '@floating-ui/dom'
 
 import type { CSSProperties, Ref } from 'vue'
+import type { MutableRefObject } from '../vue/index.ts'
 
 export type { ArrowOptions } from './arrow'
 export type {
@@ -62,7 +63,7 @@ export type UseFloatingData = Prettify<ComputePositionReturn & { isPositioned: b
 
 export type ReferenceType = Element | VirtualElement
 
-export type UseFloatingReturn = Prettify<ToRef<UseFloatingData> & {
+export type UseFloatingReturn<RT extends ReferenceType> = Prettify<ToRef<UseFloatingData> & {
   /**
    * Update the position of the floating element, re-rendering the component
    * if required.
@@ -72,6 +73,34 @@ export type UseFloatingReturn = Prettify<ToRef<UseFloatingData> & {
    * Pre-configured positioning styles to apply to the floating element.
    */
   floatingStyles: Ref<CSSProperties>
+  /**
+   * Object containing the reference and floating refs and reactive setters.
+   */
+  refs: {
+    /**
+     * A React ref to the reference element.
+     */
+    reference: MutableRefObject<ReferenceType | undefined>
+    /**
+     * A React ref to the floating element.
+     */
+    floating: MutableRefObject<HTMLElement | undefined>
+    /**
+     * A callback to set the reference element (reactive).
+     */
+    setReference: (node: RT | undefined) => void
+    /**
+     * A callback to set the floating element (reactive).
+     */
+    setFloating: (node: HTMLElement | undefined) => void
+  }
+  /**
+   * Object containing the reference and floating elements.
+   */
+  elements: {
+    reference: Ref<ReferenceType | undefined>
+    floating: Ref<HTMLElement | undefined>
+  }
 }>
 
 export type UseFloatingCofnig = ComputePositionConfig

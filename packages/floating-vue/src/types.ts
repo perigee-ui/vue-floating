@@ -1,10 +1,11 @@
 import type { Ref } from 'vue'
 import type {
+  ReferenceType,
   UseFloatingCofnig as UsePositionCofnig,
   UseFloatingReturn as UsePositionFloatingReturn,
   UseFloatingOptions as UsePositionOptions,
-  VirtualElement,
 } from './core/index.ts'
+import type { MutableRefObject } from './vue/useRef.ts'
 
 // import type {ExtendedUserProps} from './hooks/useInteractions';
 
@@ -116,11 +117,11 @@ export type OpenChangeReason =
 export type NarrowedElement<T> = T extends Element ? T : Element
 
 export interface ExtendedRefs<RT> {
-  // reference: React.MutableRefObject<ReferenceType | null>
-  // floating: React.MutableRefObject<HTMLElement | null>
-  // domReference: React.MutableRefObject<NarrowedElement<RT> | null>
+  reference: MutableRefObject<ReferenceType | undefined>
+  floating: MutableRefObject<HTMLElement | undefined>
+  domReference: MutableRefObject<NarrowedElement<RT> | undefined>
   setReference: (node: RT | undefined) => void
-  // setFloating: (node: HTMLElement | null) => void
+  setFloating: (node: HTMLElement | undefined) => void
   setPositionReference: (node: ReferenceType | undefined) => void
 }
 
@@ -144,38 +145,37 @@ export interface ContextData {
   // [key: string]: any
 }
 
-// export interface FloatingRootContext<RT extends ReferenceType = ReferenceType> {
-//   dataRef: React.MutableRefObject<ContextData>
-//   open: boolean
-//   onOpenChange: (
-//     open: boolean,
-//     event?: Event,
-//     reason?: OpenChangeReason,
-//   ) => void
-//   elements: {
-//     domReference: Element | null
-//     reference: RT | null
-//     floating: HTMLElement | null
-//   }
-//   events: FloatingEvents
-//   floatingId: string
-//   refs: {
-//     setPositionReference: (node: ReferenceType | null) => void
-//   }
-// }
+export interface FloatingRootContext {
+  dataRef: ContextData
+  open: Ref<boolean>
+  onOpenChange: (
+    open: boolean,
+    event?: Event,
+    reason?: OpenChangeReason,
+  ) => void
+  elements: {
+    domReference: Ref<Element | undefined>
+    reference: Ref<ReferenceType | undefined>
+    floating: Ref<HTMLElement | undefined>
+  }
+  events: FloatingEvents
+  floatingId: string
+  refs: {
+    setPositionReference: (node: ReferenceType | undefined) => void
+  }
+}
 
-export type FloatingContext<RT extends ReferenceType = ReferenceType> = UsePositionFloatingReturn & {
+export type FloatingContext<RT extends ReferenceType = ReferenceType> = Omit<UsePositionFloatingReturn<RT>, 'refs' | 'elements'> & {
   open: Ref<boolean>
   onOpenChange: (open: boolean, event?: Event, reason?: OpenChangeReason) => void
   events: FloatingEvents
+  dataRef: ContextData
+
+  nodeId: string | undefined
+  floatingId: string
+
+  refs: ExtendedRefs<RT>
   elements: ExtendedElements<RT>
-  data: ContextData
-
-  // nodeId: string | undefined
-  // floatingId: string
-
-  // refs: ExtendedRefs<RT>
-  // elements: ExtendedElements<RT>
 }
 
 // export interface FloatingNodeType<RT extends ReferenceType = ReferenceType> {
@@ -197,12 +197,9 @@ export interface ElementProps {
   item?: Record<string, any>
 }
 
-export type ReferenceType = Element | VirtualElement
-
 // export type UseFloatingData = Prettify<UseFloatingReturn>
 
-export type UseFloatingReturn<RT extends ReferenceType = ReferenceType> = Prettify< UsePositionFloatingReturn & {
-  // TODO: Remove
+export type UseFloatingReturn<RT extends ReferenceType = ReferenceType> = Prettify<UsePositionFloatingReturn<RT> & {
   /**
    * `FloatingContext`
    */
@@ -211,26 +208,25 @@ export type UseFloatingReturn<RT extends ReferenceType = ReferenceType> = Pretti
    * Object containing the reference and floating refs and reactive setters.
    */
   refs: ExtendedRefs<RT>
-  //   elements: ExtendedElements<RT>
+  elements: ExtendedElements<RT>
 }>
 
 export type UseFloatingCofnig = Prettify<UsePositionCofnig>
 
 export interface UseFloatingOptions<RT extends ReferenceType = ReferenceType> extends Omit<UsePositionOptions<RT>, 'elements'> {
-  //   rootContext?: FloatingRootContext<RT>
+  rootContext?: FloatingRootContext
   /**
    * Object of external elements as an alternative to the `refs` object setters.
    */
-  elements: {
-    // TODO: add
-    // /**
-    //  * Externally passed reference element. Store in state.
-    //  */
-    // reference: Ref<RT | undefined>
+  elements?: {
+    /**
+     * Externally passed reference element. Store in state.
+     */
+    reference?: Ref<Element | undefined>
     /**
      * Externally passed floating element. Store in state.
      */
-    floating: Ref<HTMLElement | undefined>
+    floating?: Ref<HTMLElement | undefined>
   }
   /**
    * An event callback that is invoked when the floating element is opened or

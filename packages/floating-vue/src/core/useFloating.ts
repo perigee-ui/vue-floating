@@ -12,6 +12,7 @@ import {
 } from 'vue'
 
 import { isFunction } from '@vue/shared'
+import { useRef } from '../vue/index.ts'
 import type {
   ComputePositionConfig,
   MiddlewareData,
@@ -32,7 +33,7 @@ import { getDPR } from './utils/getDPR.ts'
 export function useFloating<RT extends ReferenceType = ReferenceType>(
   options: UseFloatingOptions<RT>,
   config: MaybeRefOrGetter<UseFloatingCofnig> = {},
-): UseFloatingReturn {
+): UseFloatingReturn<RT> {
   const isReactiveConfig = isRef(config) || isReactive(config) || isFunction(config) || false
   const configValue = toValue(config)
 
@@ -41,8 +42,8 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     whileElementsMounted,
     open,
     elements: {
-      reference,
-      floating,
+      reference: externalReference,
+      floating: externalFloating,
     },
   } = options
 
@@ -53,43 +54,35 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
   const middlewareData = shallowRef<MiddlewareData>({})
   const isPositioned = shallowRef(false)
 
-  const floatingStyles = computed<CSSProperties>(() => {
-    const initialStyles = {
-      position: strategy.value,
-      left: 0,
-      top: 0,
-    }
-
-    const floatingEl = toValue(floating)
-    if (!floatingEl)
-      return initialStyles
-
-    const xVal = roundByDPR(floatingEl, x.value)
-    const yVal = roundByDPR(floatingEl, y.value)
-
-    if (transform) {
-      return {
-        ...initialStyles,
-        transform: `translate(${xVal}px, ${yVal}px)`,
-        ...(getDPR(floatingEl) >= 1.5 && { willChange: 'transform' }),
-      }
-    }
-
-    return {
-      position: strategy.value,
-      left: `${xVal}px`,
-      top: `${yVal}px`,
-    }
-  })
-
   if (isReactiveConfig) {
     watch(config, update)
   }
 
+  const referenceRef = useRef<ReferenceType>()
+  const floatingRef = useRef<HTMLElement>()
+
+  const _reference = shallowRef<RT>()
+  const _floating = shallowRef<HTMLElement>()
+
+  function setReference(node: RT | undefined) {
+    if (node !== referenceRef.current) {
+      referenceRef.current = node
+      _reference.value = node
+    }
+  }
+
+  function setFloating(node: HTMLElement | undefined) {
+    if (node !== floatingRef.current) {
+      floatingRef.current = node
+      _floating.value = node
+    }
+  }
+
+  const referenceEl = computed(() => externalReference.value || _reference.value)
+  const floatingEl = computed(() => externalFloating.value || _floating.value)
+
   function update() {
-    const referenceEl = reference.value
-    const floatingEl = floating.value
-    if (!referenceEl || !floatingEl)
+    if (!referenceRef.current || !floatingRef.current)
       return
 
     const config: ComputePositionConfig = {
@@ -101,7 +94,7 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     if (configValue.platform)
       config.platform = configValue.platform
 
-    computePosition(referenceEl, floatingEl, config).then(
+    computePosition(referenceRef.current, floatingRef.current, config).then(
       (data) => {
         x.value = data.x
         y.value = data.y
@@ -119,10 +112,13 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
   })
 
   watchSyncEffect((onCleanup) => {
-    const referenceEl = toValue(reference)
-    const floatingEl = toValue(floating)
+    if (referenceEl.value)
+      referenceRef.current = referenceEl.value
 
-    if (!referenceEl || !floatingEl)
+    if (floatingEl.value)
+      floatingRef.current = floatingEl.value
+
+    if (!referenceEl.value || !floatingEl.value)
       return
 
     if (!whileElementsMounted) {
@@ -130,7 +126,36 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
       return
     }
 
-    onCleanup(whileElementsMounted(referenceEl, floatingEl, update))
+    onCleanup(whileElementsMounted(referenceEl.value, floatingEl.value, update))
+  })
+
+  const floatingStyles = computed<CSSProperties>(() => {
+    const initialStyles = {
+      position: strategy.value,
+      left: 0,
+      top: 0,
+    }
+
+    const floating = floatingEl.value
+    if (!floating)
+      return initialStyles
+
+    const xVal = roundByDPR(floating, x.value)
+    const yVal = roundByDPR(floating, y.value)
+
+    if (transform) {
+      return {
+        ...initialStyles,
+        transform: `translate(${xVal}px, ${yVal}px)`,
+        ...(getDPR(floating) >= 1.5 && { willChange: 'transform' }),
+      }
+    }
+
+    return {
+      position: strategy.value,
+      left: `${xVal}px`,
+      top: `${yVal}px`,
+    }
   })
 
   return {
@@ -141,6 +166,16 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     middlewareData,
     isPositioned,
     floatingStyles,
+    refs: {
+      reference: referenceRef,
+      floating: floatingRef,
+      setReference,
+      setFloating,
+    },
+    elements: {
+      reference: referenceEl,
+      floating: floatingEl,
+    },
     update,
   }
 }
