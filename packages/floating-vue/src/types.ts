@@ -6,6 +6,7 @@ import type {
   UseFloatingOptions as UsePositionOptions,
 } from './core/index.ts'
 import type { MutableRefObject } from './vue/useRef.ts'
+import type { ExtendedUserProps } from './hooks/useInteractions.ts'
 
 // import type {ExtendedUserProps} from './hooks/useInteractions';
 
@@ -194,7 +195,7 @@ export type FloatingContext<RT extends ReferenceType = ReferenceType> = Omit<Use
 export interface ElementProps {
   reference?: Record<string, any>
   floating?: Record<string, any>
-  item?: Record<string, any>
+  item?: Record<string, any> | ((props: ExtendedUserProps) => Record<string, any>)
 }
 
 // export type UseFloatingData = Prettify<UseFloatingReturn>

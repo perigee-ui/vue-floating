@@ -1,6 +1,14 @@
 import { isFunction } from '@vue/shared'
 import type { ElementProps } from '../types'
 
+const ACTIVE_KEY = 'active'
+const SELECTED_KEY = 'selected'
+
+export interface ExtendedUserProps {
+  [ACTIVE_KEY]?: boolean
+  [SELECTED_KEY]?: boolean
+}
+
 type Props = () => ElementProps | void
 
 function mergeProps(
