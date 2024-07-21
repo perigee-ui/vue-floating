@@ -1,7 +1,7 @@
-import { type MaybeRefOrGetter, type UnwrapRef, toValue, unref, watch, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, type UnwrapRef, computed, toValue, unref, watch, watchEffect } from 'vue'
 import { isElement } from '@floating-ui/utils/dom'
 import { contains, getDocument, isMouseLikePointerType } from '../utils.ts'
-import type { FloatingContext, OpenChangeReason } from '../types'
+import type { ElementProps, FloatingContext, OpenChangeReason } from '../types'
 import { createAttribute } from '../utils/createAttribute.ts'
 
 export interface HandleCloseFn {
@@ -75,13 +75,14 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     elements,
   } = context
   const {
-    enabled = true,
     delay = 0,
     handleClose = undefined,
     mouseOnly = false,
     restMs = 0,
     move = true,
   } = props
+
+  const enabled = computed(() => toValue(props.enabled || true))
 
   // const tree: any = undefined
 
@@ -120,7 +121,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
   })
 
   watchEffect((onCleanup) => {
-    if (!toValue(enabled))
+    if (!enabled.value)
       return
     if (!handleClose)
       return
@@ -175,7 +176,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
   // delegation system. If the cursor was on a disabled element and then entered
   // the reference (no gap), `mouseenter` doesn't fire in the delegation system.
   watchEffect((onCleanup) => {
-    if (!toValue(enabled))
+    if (!enabled.value)
       return
 
     const openVal = unref(open)
@@ -314,7 +315,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
   // handles nested floating elements.
   // https://github.com/floating-ui/floating-ui/issues/1722
   watchEffect((onCleanup) => {
-    if (!toValue(enabled))
+    if (!enabled.value)
       return
 
     if (!unref(open) || !handleClose?.__options.blockPointerEvents || !isHoverOpen())
@@ -357,7 +358,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
   })
 
   watch(
-    [() => toValue(enabled), () => elements.domReference.value],
+    [() => enabled.value, () => elements.domReference.value],
     (_val, _valOld, onCleanup) => {
       onCleanup(() => {
         cleanupMousemoveHandler()
@@ -372,7 +373,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     pointerTypeRef = event.pointerType
   }
 
-  const reference = {
+  const referenceProps: ElementProps['reference'] = {
     onPointerdown: setPointerRef,
     onPointerenter: setPointerRef,
     onMousemove(event: MouseEvent) {
@@ -397,7 +398,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     },
   }
 
-  const floating = {
+  const floatingProps: ElementProps['floating'] = {
     onMouseenter() {
       clearTimeout(timeoutRef)
     },
@@ -406,7 +407,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     },
   }
 
-  return () => toValue(enabled) ? { reference, floating } : undefined
+  return () => enabled.value ? { reference: referenceProps, floating: floatingProps } : undefined
 }
 
 export function getDelay(
