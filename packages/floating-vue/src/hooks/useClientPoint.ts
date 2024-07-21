@@ -162,10 +162,10 @@ export function useClientPoint(
   }
 
   const referenceProps: ElementProps['reference'] = {
-    onPointerDown: setPointerTypeRef,
-    onPointerEnter: setPointerTypeRef,
-    onMouseMove: handleReferenceEnterOrMove,
-    onMouseEnter: handleReferenceEnterOrMove,
+    onPointerdown: setPointerTypeRef,
+    onPointerenter: setPointerTypeRef,
+    onMousemove: handleReferenceEnterOrMove,
+    onMouseenter: handleReferenceEnterOrMove,
   }
 
   return () => enabled.value ? { reference: referenceProps } : undefined
