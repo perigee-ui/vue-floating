@@ -3,15 +3,12 @@ import {
   type CSSProperties,
   type MaybeRefOrGetter,
   computed,
-  isReactive,
-  isRef,
   shallowRef,
   toValue,
-  watch,
+  watchEffect,
   watchSyncEffect,
 } from 'vue'
 
-import { isFunction } from '@vue/shared'
 import { useRef } from '../vue/index.ts'
 import type {
   ComputePositionConfig,
@@ -31,11 +28,19 @@ import { getDPR } from './utils/getDPR.ts'
  * @see https://floating-ui.com/docs/vue
  */
 export function useFloating<RT extends ReferenceType = ReferenceType>(
-  options: UseFloatingOptions<RT>,
+  options: UseFloatingOptions<RT> = {},
   config: MaybeRefOrGetter<UseFloatingCofnig> = {},
 ): UseFloatingReturn<RT> {
-  const isReactiveConfig = isRef(config) || isReactive(config) || isFunction(config) || false
-  const configValue = toValue(config)
+  let configValue: UseFloatingCofnig
+
+  watchEffect(() => {
+    const shouldUpdate = configValue !== undefined
+    configValue = toValue(config)
+
+    if (shouldUpdate) {
+      update()
+    }
+  })
 
   const {
     transform = true,
@@ -44,19 +49,15 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     elements: {
       reference: externalReference,
       floating: externalFloating,
-    },
+    } = {},
   } = options
 
   const x = shallowRef(0)
   const y = shallowRef(0)
-  const strategy = shallowRef(configValue.strategy ?? 'absolute')
-  const placement = shallowRef(configValue.placement ?? 'bottom')
+  const strategy = shallowRef(configValue!.strategy ?? 'absolute')
+  const placement = shallowRef(configValue!.placement ?? 'bottom')
   const middlewareData = shallowRef<MiddlewareData>({})
   const isPositioned = shallowRef(false)
-
-  if (isReactiveConfig) {
-    watch(config, update)
-  }
 
   const referenceRef = useRef<ReferenceType>()
   const floatingRef = useRef<HTMLElement>()
@@ -66,6 +67,7 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
 
   function setReference(node: RT | undefined) {
     if (node !== referenceRef.current) {
+      console.error('setReference', node)
       referenceRef.current = node
       _reference.value = node
     }
@@ -78,8 +80,8 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     }
   }
 
-  const referenceEl = computed(() => externalReference.value || _reference.value)
-  const floatingEl = computed(() => externalFloating.value || _floating.value)
+  const referenceEl = computed(() => externalReference?.value || _reference.value)
+  const floatingEl = computed(() => externalFloating?.value || _floating.value)
 
   function update() {
     if (!referenceRef.current || !floatingRef.current)
