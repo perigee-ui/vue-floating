@@ -43,7 +43,7 @@ export function useRole(
   const { open, floatingId } = context
   const { role = 'dialog' } = props
 
-  const enabled = computed(() => toValue(props.enabled || true))
+  const enabled = computed(() => toValue(props.enabled ?? true))
 
   const ariaRole = (componentRoleToAriaRoleMap.get(role) ?? role) as
     | AriaRole

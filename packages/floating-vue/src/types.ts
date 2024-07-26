@@ -143,7 +143,7 @@ export interface ContextData {
   floatingContext?: FloatingContext
   // /** @deprecated use `onTypingChange` prop in `useTypeahead` */
   // typing?: boolean
-  // [key: string]: any
+  [key: string]: any
 }
 
 export interface FloatingRootContext {

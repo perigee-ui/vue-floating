@@ -57,7 +57,7 @@ export function useClick(
     keyboardHandlers = true,
   } = props
 
-  const enabled = computed(() => toValue(props.enabled || true))
+  const enabled = computed(() => toValue(props.enabled ?? true))
 
   let pointerTypeRef: 'mouse' | 'pen' | 'touch' | undefined
   let didKeyDownRef = false

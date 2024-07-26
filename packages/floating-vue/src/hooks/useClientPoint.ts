@@ -45,7 +45,7 @@ export function useClientPoint(
     refs,
   } = context
   const { axis = 'both', x = null, y = null } = props
-  const enabled = computed(() => toValue(props.enabled || true))
+  const enabled = computed(() => toValue(props.enabled ?? true))
 
   let initialRef = false
   let cleanupListenerRef: (() => void) | undefined

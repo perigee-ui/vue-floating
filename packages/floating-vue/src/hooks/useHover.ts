@@ -82,7 +82,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     move = true,
   } = props
 
-  const enabled = computed(() => toValue(props.enabled || true))
+  const enabled = computed(() => toValue(props.enabled ?? true))
 
   // const tree: any = undefined
 
