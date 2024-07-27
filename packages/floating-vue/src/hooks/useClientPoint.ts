@@ -1,4 +1,4 @@
-import { type MaybeRefOrGetter, computed, shallowRef, toValue, watch, watchEffect, watchSyncEffect } from 'vue'
+import { type MaybeRefOrGetter, computed, shallowRef, toValue, watchEffect, watchSyncEffect } from 'vue'
 import { getWindow } from '@floating-ui/utils/dom'
 import type { ContextData, ElementProps, FloatingRootContext } from '../types.ts'
 import { contains, getTarget, isMouseLikePointerType } from '../utils.ts'
@@ -19,14 +19,14 @@ export interface UseClientPointProps {
   axis?: 'x' | 'y' | 'both'
   /**
    * An explicitly defined `x` client coordinate.
-   * @default null
+   * @default undefined
    */
-  x?: number | null
+  x?: MaybeRefOrGetter<number | undefined>
   /**
    * An explicitly defined `y` client coordinate.
-   * @default null
+   * @default undefined
    */
-  y?: number | null
+  y?: MaybeRefOrGetter<number | undefined>
 }
 
 /**
@@ -44,8 +44,10 @@ export function useClientPoint(
     elements: { floating, domReference },
     refs,
   } = context
-  const { axis = 'both', x = null, y = null } = props
+  const { axis = 'both' } = props
   const enabled = computed(() => toValue(props.enabled ?? true))
+  const x = computed(() => toValue(props.x))
+  const y = computed(() => toValue(props.y))
 
   let initialRef = false
   let cleanupListenerRef: (() => void) | undefined
@@ -53,7 +55,7 @@ export function useClientPoint(
   const pointerType = shallowRef<string | undefined>(undefined)
   const reactive = shallowRef([])
 
-  function setReference(x: number | null, y: number | null) {
+  function setReference(x: number | undefined, y: number | undefined) {
     if (initialRef)
       return
 
@@ -79,7 +81,7 @@ export function useClientPoint(
   }
 
   function handleReferenceEnterOrMove(event: MouseEvent) {
-    if (x != null || y != null)
+    if (x.value != null || y.value != null)
       return
 
     if (!open.value) {
@@ -101,7 +103,7 @@ export function useClientPoint(
 
   function addListener() {
     // Explicitly specified `x`/`y` coordinates shouldn't add a listener.
-    if (!openCheck.value || !enabled.value || x != null || y != null)
+    if (!openCheck.value || !enabled.value || x.value != null || y.value != null)
       return
 
     const win = getWindow(floating.value)
@@ -131,13 +133,15 @@ export function useClientPoint(
     refs.setPositionReference(domReference.value)
   }
 
-  watch(reactive, (_val, _oldVal, onCleanup) => {
+  watchEffect((onCleanup) => {
+    // eslint-disable-next-line ts/no-unused-expressions
+    reactive.value
     const clean = addListener()
 
-    onCleanup(() => {
-      clean?.()
-    })
-  }, { immediate: true })
+    if (clean) {
+      onCleanup(clean)
+    }
+  })
 
   watchEffect(() => {
     if (enabled.value && !floating.value)
@@ -151,9 +155,9 @@ export function useClientPoint(
   })
 
   watchSyncEffect(() => {
-    if (enabled.value && (x != null || y != null)) {
+    if (enabled.value && (x.value != null || y.value != null)) {
       initialRef = false
-      setReference(x, y)
+      setReference(x.value, y.value)
     }
   })
 
@@ -177,12 +181,12 @@ function createVirtualElement(
     axis: 'x' | 'y' | 'both'
     dataRef: ContextData
     pointerType: string | undefined
-    x: number | null
-    y: number | null
+    x: number | undefined
+    y: number | undefined
   },
 ) {
-  let offsetX: number | null = null
-  let offsetY: number | null = null
+  let offsetX: number | undefined
+  let offsetY: number | undefined
   let isAutoUpdateEvent = false
 
   return {

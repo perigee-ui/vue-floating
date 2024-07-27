@@ -229,13 +229,11 @@ export function useDismiss(
     }
 
     // Check if the click occurred on the scrollbar
-    if (isHTMLElement(target) && elements.floating.value) {
+    if (isHTMLElement(target)) {
       // In Firefox, `target.scrollWidth > target.clientWidth` for inline
       // elements.
-      const canScrollX
-        = target.clientWidth > 0 && target.scrollWidth > target.clientWidth
-      const canScrollY
-        = target.clientHeight > 0 && target.scrollHeight > target.clientHeight
+      const canScrollX = target.clientWidth > 0 && target.scrollWidth > target.clientWidth
+      const canScrollY = target.clientHeight > 0 && target.scrollHeight > target.clientHeight
 
       let xCond = canScrollY && event.offsetX > target.clientWidth
 
