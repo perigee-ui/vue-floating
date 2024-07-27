@@ -135,23 +135,22 @@ it('middleware is always fresh and does not cause an infinite loop', async () =>
   const { getByTestId } = render(<StateMiddleware />)
   await act()
 
-  fireEvent.click(getByTestId('step1'))
-
+  await fireEvent.click(getByTestId('step1'))
   await act()
 
   expect(getByTestId('x').textContent).toBe('13')
 
-  fireEvent.click(getByTestId('step2'))
-
+  await fireEvent.click(getByTestId('step2'))
   await act()
 
   expect(getByTestId('x').textContent).toBe('5')
 
   // No `expect` as this test will fail if a render loop occurs
-  fireEvent.click(getByTestId('step3'))
-  fireEvent.click(getByTestId('step4'))
-
+  await fireEvent.click(getByTestId('step3'))
   await act()
+  await fireEvent.click(getByTestId('step4'))
+  await act()
+
   cleanup()
 })
 
@@ -209,7 +208,7 @@ describe('whileElementsMounted', () => {
     await act()
     expect(spy).toHaveBeenCalledTimes(0)
     await act()
-    fireEvent.click(screen.getByRole('button'))
+    await fireEvent.click(screen.getByRole('button'))
     await act()
     expect(spy).toHaveBeenCalledTimes(1)
 
@@ -241,7 +240,7 @@ describe('whileElementsMounted', () => {
     await act()
     expect(spy).toHaveBeenCalledTimes(0)
     await act()
-    fireEvent.click(screen.getByRole('tooltip'))
+    await fireEvent.click(screen.getByRole('tooltip'))
     await act()
     expect(spy).toHaveBeenCalledTimes(1)
 
@@ -366,7 +365,7 @@ it('isPositioned', async () => {
   const { getByRole } = render(<App />)
   await act()
 
-  fireEvent.click(getByRole('button'))
+  await fireEvent.click(getByRole('button'))
 
   expect(spy.mock.calls[0]?.[0]).toBe(false)
 
@@ -374,18 +373,19 @@ it('isPositioned', async () => {
 
   expect(spy.mock.calls[1]?.[0]).toBe(true)
 
-  fireEvent.click(getByRole('button'))
-
+  await fireEvent.click(getByRole('button'))
   await act()
+
   expect(spy.mock.calls[2]?.[0]).toBe(false)
 
-  fireEvent.click(getByRole('button'))
+  await fireEvent.click(getByRole('button'))
   await act()
 
   expect(spy.mock.calls[3]?.[0]).toBe(true)
 
-  fireEvent.click(getByRole('button'))
+  await fireEvent.click(getByRole('button'))
   await act()
+
   expect(spy.mock.calls[4]?.[0]).toBe(false)
   cleanup()
 })

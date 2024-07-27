@@ -67,7 +67,6 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
 
   function setReference(node: RT | undefined) {
     if (node !== referenceRef.current) {
-      console.error('setReference', node)
       referenceRef.current = node
       _reference.value = node
     }

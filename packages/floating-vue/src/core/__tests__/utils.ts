@@ -10,7 +10,7 @@ export async function tick(times: number) {
 // await rAF() after firing transition events.
 export async function act() {
   return new Promise((res) => {
-    requestAnimationFrame(async () => {
+    setTimeout(async () => {
       res(null)
     })
   })
