@@ -42,7 +42,7 @@ export interface UseClickProps {
 export function useClick(
   context: FloatingRootContext,
   props: UseClickProps = {},
-) {
+): () => ElementProps | undefined {
   const {
     open,
     onOpenChange,
@@ -63,10 +63,10 @@ export function useClick(
   let didKeyDownRef = false
 
   const referenceProps: ElementProps['reference'] = {
-    onPointerdown(event: PointerEvent) {
+    onPointerdown(event) {
       pointerTypeRef = event.pointerType as 'mouse' | 'pen' | 'touch'
     },
-    onMousedown(event: MouseEvent) {
+    onMousedown(event) {
       const pointerType = pointerTypeRef
 
       // Ignore all buttons except for the "main" button.
@@ -79,7 +79,7 @@ export function useClick(
         return
 
       if (
-        open
+        open.value
         && toggle
         && (dataRef.openEvent
           ? dataRef.openEvent.type === 'mousedown'
@@ -93,7 +93,7 @@ export function useClick(
         onOpenChange(true, event, 'click')
       }
     },
-    onClick(event: Event) {
+    onClick(event) {
       const pointerType = pointerTypeRef
 
       if (eventOption === 'mousedown' && pointerTypeRef) {
@@ -105,7 +105,7 @@ export function useClick(
         return
 
       if (
-        open
+        open.value
         && toggle
         && (dataRef.openEvent
           ? dataRef.openEvent.type === 'click'
@@ -117,7 +117,7 @@ export function useClick(
         onOpenChange(true, event, 'click')
       }
     },
-    onKeydown(event: KeyboardEvent) {
+    onKeydown(event) {
       pointerTypeRef = undefined
 
       if (
@@ -135,7 +135,7 @@ export function useClick(
       }
 
       if (event.key === 'Enter') {
-        if (open && toggle) {
+        if (open.value && toggle) {
           onOpenChange(false, event, 'click')
         }
         else {
@@ -143,7 +143,7 @@ export function useClick(
         }
       }
     },
-    onKeyup(event: KeyboardEvent) {
+    onKeyup(event) {
       if (
         event.defaultPrevented
         || !keyboardHandlers
@@ -155,7 +155,7 @@ export function useClick(
 
       if (event.key === ' ' && didKeyDownRef) {
         didKeyDownRef = false
-        if (open && toggle) {
+        if (open.value && toggle) {
           onOpenChange(false, event, 'click')
         }
         else {
@@ -165,7 +165,7 @@ export function useClick(
     },
   }
 
-  return () => enabled.value ? referenceProps : undefined
+  return () => enabled.value ? { reference: referenceProps } : undefined
 }
 
 function isButtonTarget(event: KeyboardEvent) {

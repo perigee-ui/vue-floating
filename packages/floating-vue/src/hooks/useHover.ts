@@ -1,4 +1,4 @@
-import { type MaybeRefOrGetter, type UnwrapRef, computed, toValue, unref, watch, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, type UnwrapRef, computed, toValue, watch, watchEffect } from 'vue'
 import { isElement } from '@floating-ui/utils/dom'
 import { contains, getDocument, isMouseLikePointerType } from '../utils.ts'
 import type { ElementProps, FloatingContext, OpenChangeReason } from '../types'
@@ -66,7 +66,7 @@ export interface UseHoverProps {
 
 const safePolygonIdentifier = createAttribute('safe-polygon')
 
-export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
+export function useHover(context: FloatingContext, props: UseHoverProps = {}): () => ElementProps | undefined {
   const {
     open,
     dataRef,
@@ -102,7 +102,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
   // When closing before opening, clear the delay timeouts to cancel it
   // from showing.
   watchEffect((onCleanup) => {
-    if (!unref(open))
+    if (!open.value)
       return
 
     function onOpenChange({ open }: { open: boolean }) {
@@ -125,7 +125,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
       return
     if (!handleClose)
       return
-    if (!unref(open))
+    if (!open.value)
       return
 
     function onLeave(event: MouseEvent) {
@@ -179,7 +179,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     if (!enabled.value)
       return
 
-    const openVal = unref(open)
+    const openVal = open.value
 
     if (!isElement(elements.domReference.value))
       return
@@ -222,7 +222,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
 
       if (handleClose && dataRef.floatingContext) {
         // Prevent clearing `onScrollMouseLeave` timeout.
-        if (!open) {
+        if (!openVal) {
           clearTimeout(timeoutRef)
         }
 
@@ -318,7 +318,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     if (!enabled.value)
       return
 
-    if (!unref(open) || !handleClose?.__options.blockPointerEvents || !isHoverOpen())
+    if (!open.value || !handleClose?.__options.blockPointerEvents || !isHoverOpen())
       return
     const floatingEl = elements.floating.value
     const body = getDocument(floatingEl).body
@@ -350,7 +350,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
 
   // Очистить при закрытии
   watchEffect(() => {
-    if (!unref(open)) {
+    if (!open.value) {
       pointerTypeRef = undefined
       cleanupMousemoveHandler()
       clearPointerEvents()
@@ -376,9 +376,9 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
   const referenceProps: ElementProps['reference'] = {
     onPointerdown: setPointerRef,
     onPointerenter: setPointerRef,
-    onMousemove(event: MouseEvent) {
+    onMousemove(event) {
       function handleMouseMove() {
-        if (!blockMouseMoveRef && !unref(open)) {
+        if (!blockMouseMoveRef && !open.value) {
           onOpenChange(true, event, 'hover')
         }
       }
@@ -386,7 +386,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
       if (mouseOnly && !isMouseLikePointerType(pointerTypeRef))
         return
 
-      if (open || restMs === 0)
+      if (open.value || restMs === 0)
         return
 
       clearTimeout(restTimeoutRef)
@@ -402,7 +402,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}) {
     onMouseenter() {
       clearTimeout(timeoutRef)
     },
-    onMouseleave(event: MouseEvent) {
+    onMouseleave(event) {
       closeWithDelay(event, false)
     },
   }

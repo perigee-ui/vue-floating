@@ -1,4 +1,4 @@
-import { computed, toValue, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, computed, toValue, watchEffect } from 'vue'
 import {
   getComputedStyle,
   getParentNode,
@@ -35,7 +35,7 @@ export interface UseDismissProps {
    * handlers.
    * @default true
    */
-  enabled?: boolean
+  enabled?: MaybeRefOrGetter<boolean>
   /**
    * Whether to dismiss the floating element upon pressing the `esc` key.
    * @default true
@@ -103,7 +103,7 @@ export interface UseDismissProps {
 export function useDismiss(
   context: FloatingRootContext,
   props: UseDismissProps = {},
-) {
+): () => ElementProps | undefined {
   const { open, onOpenChange, elements, dataRef } = context
 
   const {
@@ -395,7 +395,7 @@ export function useDismiss(
   // )
 
   const referenceProps: ElementProps['reference'] = {
-    onKeyDown: closeOnEscapeKeydown,
+    onKeydown: closeOnEscapeKeydown,
     [bubbleHandlerKeys[referencePressEvent]]: (event: Event) => {
       if (referencePress)
         onOpenChange(false, event, 'reference-press')
@@ -403,11 +403,11 @@ export function useDismiss(
   }
 
   const floatingProps: ElementProps['floating'] = {
-    onKeyDown: closeOnEscapeKeydown,
-    onMouseDown() {
+    onKeydown: closeOnEscapeKeydown,
+    onMousedown() {
       endedOrStartedInsideRef = true
     },
-    onMouseUp() {
+    onMouseup() {
       endedOrStartedInsideRef = true
     },
     [captureHandlerKeys[outsidePressEvent]]: () => {

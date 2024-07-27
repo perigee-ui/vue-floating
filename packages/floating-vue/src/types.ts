@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import type { AriaAttributes, Events, HTMLAttributes, Ref } from 'vue'
 import type {
   ReferenceType,
   UseFloatingCofnig as UsePositionCofnig,
@@ -192,10 +192,22 @@ export type FloatingContext<RT extends ReferenceType = ReferenceType> = Omit<Use
 //   removeNode: (node: FloatingNodeType) => void
 // }
 
+type CaptureEvents = {
+  [K in keyof Events as `${K}Capture`]: Events[K];
+}
+
+type EventHandlers<E> = {
+  [K in keyof E]?: E[K] extends (...args: any) => any ? E[K] : (payload: E[K]) => void;
+}
+
+type AllEventsHandlers = EventHandlers<Events & CaptureEvents>
+
+type ElProps = Partial<AllEventsHandlers & AriaAttributes & HTMLAttributes>
+
 export interface ElementProps {
-  reference?: Record<string, any>
-  floating?: Record<string, any>
-  item?: Record<string, any> | ((props: ExtendedUserProps) => Record<string, any>)
+  reference?: ElProps
+  floating?: ElProps
+  item?: ElProps | ((props: ExtendedUserProps) => ElProps)
 }
 
 // export type UseFloatingData = Prettify<UseFloatingReturn>

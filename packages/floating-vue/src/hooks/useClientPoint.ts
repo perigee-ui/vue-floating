@@ -37,7 +37,7 @@ export interface UseClientPointProps {
 export function useClientPoint(
   context: FloatingRootContext,
   props: UseClientPointProps = {},
-) {
+): () => ElementProps | undefined {
   const {
     open,
     dataRef,
@@ -82,7 +82,7 @@ export function useClientPoint(
     if (x != null || y != null)
       return
 
-    if (!open) {
+    if (!open.value) {
       setReference(event.clientX, event.clientY)
     }
     else if (!cleanupListenerRef) {
