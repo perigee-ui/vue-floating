@@ -40,7 +40,7 @@ export interface UseHoverProps {
   handleClose?: HandleCloseFn | undefined
   /**
    * Waits until the user’s cursor is at “rest” over the reference element
-   *  before changing the `open` state.
+   * before changing the `open` state.
    * @default 0
    */
   restMs?: number
@@ -357,17 +357,18 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     }
   })
 
-  watch(
-    [() => enabled.value, () => elements.domReference.value],
-    (_val, _valOld, onCleanup) => {
-      onCleanup(() => {
-        cleanupMousemoveHandler()
-        clearTimeout(timeoutRef)
-        clearTimeout(restTimeoutRef)
-        clearPointerEvents()
-      })
-    },
-  )
+  watchEffect((onCleanup) => {
+    // eslint-disable-next-line ts/no-unused-expressions
+    enabled.value
+    // eslint-disable-next-line ts/no-unused-expressions
+    elements.domReference.value
+    onCleanup(() => {
+      cleanupMousemoveHandler()
+      clearTimeout(timeoutRef)
+      clearTimeout(restTimeoutRef)
+      clearPointerEvents()
+    })
+  })
 
   function setPointerRef(event: PointerEvent) {
     pointerTypeRef = event.pointerType
