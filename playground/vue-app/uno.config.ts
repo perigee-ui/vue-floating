@@ -1,13 +1,12 @@
 import {
   defineConfig,
+  presetIcons,
   presetTypography,
   presetUno,
   presetWebFonts,
   transformerDirectives,
   transformerVariantGroup,
 } from 'unocss'
-// import presetUno from '@unocss/preset-uno'
-// import presetWebFonts from '@unocss/preset-web-fonts'
 import { createLocalFontProcessor } from '@unocss/preset-web-fonts/local'
 
 export default defineConfig({
@@ -18,7 +17,7 @@ export default defineConfig({
     },
   ],
   presets: [
-
+    presetIcons(),
     presetUno(),
     presetTypography(),
     presetWebFonts({

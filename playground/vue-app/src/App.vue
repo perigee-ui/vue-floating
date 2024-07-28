@@ -35,6 +35,16 @@ const route = useRoute()
     </main>
     <nav class="fixed top-0 left-0 flex-col hidden h-full p-8 overflow-y-auto bg-slate-100 lg:w-64 lg:flex">
       <div>
+        <a
+          href="https://github.com/perigee-ui/floating-vue"
+          class="flex mb-4 text-2xl font-bold gap-2 flex-items-center"
+        >
+          <span>
+            GitHub
+          </span>
+          <span class="i-radix-icons-github-logo block  " />
+        </a>
+
         <RouterLink to="/" class="block mb-4 text-2xl font-bold">
           Tests
         </RouterLink>

@@ -15,11 +15,10 @@
     "vue-router": "^4.4.0"
   },
   "devDependencies": {
+    "@iconify-json/radix-icons": "^1.1.14",
     "@perigee-ui/floating-vue": "workspace:*",
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^20.14.10",
-    "@unocss/core": "^0.61.6",
-    "@unocss/preset-uno": "^0.61.6",
     "@unocss/preset-web-fonts": "^0.61.6",
     "@unocss/reset": "^0.61.6",
     "@vitejs/plugin-vue": "^5.0.5",
