@@ -60,6 +60,7 @@ function mergeProps(
         map.get(key)?.push(value)
 
         mergedProps[key] = (...args: unknown[]) => {
+          let ret: unknown
           const fns = map.get(key)
 
           if (!fns)
@@ -68,11 +69,11 @@ function mergeProps(
           for (const fn of fns) {
             const result = fn(...args)
 
-            if (result !== undefined)
-              return result
+            if (ret === undefined && result !== undefined)
+              ret = result
           }
 
-          return undefined
+          return ret
         }
       }
       else {
