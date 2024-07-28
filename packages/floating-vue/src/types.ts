@@ -202,12 +202,12 @@ type EventHandlers<E> = {
 
 type AllEventsHandlers = EventHandlers<Events & CaptureEvents>
 
-type ElProps = Partial<AllEventsHandlers & AriaAttributes & HTMLAttributes>
+export type ElAttrs = Partial<AllEventsHandlers & AriaAttributes & HTMLAttributes>
 
 export interface ElementProps {
-  reference?: ElProps
-  floating?: ElProps
-  item?: ElProps | ((props: ExtendedUserProps) => ElProps)
+  reference?: ElAttrs
+  floating?: ElAttrs
+  item?: ElAttrs | ((props: ExtendedUserProps) => ElAttrs)
 }
 
 // export type UseFloatingData = Prettify<UseFloatingReturn>

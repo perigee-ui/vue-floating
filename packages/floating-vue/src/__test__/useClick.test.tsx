@@ -40,11 +40,16 @@ const App = defineComponent({
     return () => (
       <>
         <Tag
-          {...getReferenceProps({ ref: refs.setReference })}
+          ref={(el: any) => refs.setReference(el)}
+          {...getReferenceProps()}
           data-testid="reference"
         />
         {open.value && (
-          <div role="tooltip" {...getFloatingProps({ ref: refs.setFloating })} />
+          <div
+            ref={(el: any) => refs.setFloating(el)}
+            role="tooltip"
+            {...getFloatingProps()}
+          />
         )}
       </>
     )
@@ -263,11 +268,16 @@ it('with useHover does not close on mouseleave after click', async () => {
       return () => (
         <>
           <button
-            {...getReferenceProps({ ref: refs.setReference })}
+            ref={(el: any) => refs.setReference(el)}
+            {...getReferenceProps()}
             data-testid="reference"
           />
           {open.value && (
-            <div role="tooltip" {...getFloatingProps({ ref: refs.setFloating })} />
+            <div
+              ref={(el: any) => refs.setFloating(el)}
+              role="tooltip"
+              {...getFloatingProps()}
+            />
           )}
         </>
       )
@@ -307,11 +317,16 @@ it('reason string', async () => {
       return () => (
         <>
           <button
-            {...getReferenceProps({ ref: refs.setReference })}
+            ref={(el: any) => refs.setReference(el)}
+            {...getReferenceProps()}
             data-testid="reference"
           />
           {open.value && (
-            <div role="tooltip" {...getFloatingProps({ ref: refs.setFloating })} />
+            <div
+              ref={(el: any) => refs.setFloating(el)}
+              role="tooltip"
+              {...getFloatingProps()}
+            />
           )}
         </>
       )
