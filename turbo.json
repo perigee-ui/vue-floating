@@ -9,8 +9,20 @@
         "^build"
       ],
       "outputs": [
-        ".next/**",
-        "!.next/cache/**"
+        "dist/**"
+      ]
+    },
+    "build:packages": {
+      "outputs": [
+        "/packages/**/dist/**"
+      ]
+    },
+    "build:vue-app": {
+      "dependsOn": [
+        "build:packages"
+      ],
+      "outputs": [
+        "dist/**"
       ]
     },
     "lint": {
