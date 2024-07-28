@@ -16,3 +16,7 @@
 ## Description
 
 Vue Floating UI is a port of the [@floating-ui/react](https://floating-ui.com/docs/react) library to Vue. This library provides powerful and flexible tools for creating floating UI elements.
+
+## Demo
+
+Check out the live demo [here](https://floating-vue.netlify.app/).
