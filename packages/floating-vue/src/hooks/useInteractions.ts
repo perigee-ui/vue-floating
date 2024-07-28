@@ -92,15 +92,15 @@ function mergeProps(
  * @see https://floating-ui.com/docs/useInteractions
  */
 export function useInteractions(propsList: Array<Props> = []) {
-  function getReferenceProps(userProps: ElAttrs = {}) {
+  function getReferenceProps(userProps: ElAttrs & Record<string, unknown> = {}) {
     return mergeProps(userProps, propsList, 'reference')
   }
 
-  function getFloatingProps(userProps: ElAttrs = {}) {
+  function getFloatingProps(userProps: ElAttrs & Record<string, unknown> = {}) {
     return mergeProps(userProps, propsList, 'floating')
   }
 
-  function getItemProps(userProps: ElAttrs = {}) {
+  function getItemProps(userProps: ElAttrs & Record<string, unknown> = {}) {
     return mergeProps(userProps, propsList, 'item')
   }
 
