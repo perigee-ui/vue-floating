@@ -14,15 +14,15 @@
     },
     "build:packages": {
       "outputs": [
-        "/packages/**/dist/**"
+        "packages/**/dist/**"
       ]
     },
-    "build:vue-app": {
+    "build:playground": {
       "dependsOn": [
         "build:packages"
       ],
       "outputs": [
-        "dist/**"
+        "playgrounds/**/dist/**"
       ]
     },
     "lint": {
