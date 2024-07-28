@@ -103,6 +103,17 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     nodeId,
   }
 
+  watchEffect(() => {
+    rootContext.dataRef.floatingContext = context as unknown as FloatingContext
+
+    // const node = tree?.nodesRef.current.find((node) => node.id === nodeId);
+    // if (node) {
+    //   node.context = context;
+    // }
+  }, {
+    flush: 'sync',
+  })
+
   return {
     ...position,
     context,

@@ -11,17 +11,24 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
-    "vue": "^3.4.31"
+    "vue": "^3.4.31",
+    "vue-router": "^4.4.0"
   },
   "devDependencies": {
     "@perigee-ui/floating-vue": "workspace:*",
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^20.14.10",
+    "@unocss/core": "^0.61.6",
+    "@unocss/preset-uno": "^0.61.6",
+    "@unocss/preset-web-fonts": "^0.61.6",
+    "@unocss/reset": "^0.61.6",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vitejs/plugin-vue-jsx": "^4.0.0",
     "@vue/tsconfig": "^0.5.1",
     "npm-run-all2": "^6.2.2",
     "typescript": "~5.5.3",
+    "unocss": "^0.61.6",
+    "unplugin-vue-router": "^0.10.1",
     "vite": "^5.3.3",
     "vue-tsc": "^2.0.26"
   }

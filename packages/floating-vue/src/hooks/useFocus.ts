@@ -172,7 +172,7 @@ export function useFocus(
         // inside a shadow root.
         if (
           contains(
-            dataRef.current.floatingContext?.refs.floating.current,
+            dataRef.floatingContext?.refs.floating.current,
             activeEl,
           )
           || contains(elements.domReference.value, activeEl)
