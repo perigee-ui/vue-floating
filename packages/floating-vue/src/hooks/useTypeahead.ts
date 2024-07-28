@@ -61,7 +61,6 @@ export function useTypeahead(
 ): () => ElementProps | undefined {
   const { open, dataRef } = context
   const {
-    listRef,
     activeIndex,
     onMatch,
     onTypingChange,
@@ -125,7 +124,7 @@ export function useTypeahead(
       return str ? list.indexOf(str) : -1
     }
 
-    const listContent = listRef
+    const listContent = props.listRef
 
     if (stringRef.length > 0 && stringRef[0] !== ' ') {
       if (
