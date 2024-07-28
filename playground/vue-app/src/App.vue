@@ -30,10 +30,7 @@ const route = useRoute()
 
 <template>
   <div>
-    <main class="p-12 lg:ml-64">
-      <RouterView />
-    </main>
-    <nav class="fixed top-0 left-0 flex-col hidden h-full p-8 overflow-y-auto bg-slate-100 lg:w-64 lg:flex">
+    <nav class="flex-col h-full p-8 overflow-y-auto bg-slate-100 lg:w-64 lg:flex lg:fixed top-0 left-0">
       <div>
         <a
           href="https://github.com/perigee-ui/floating-vue"
@@ -65,5 +62,9 @@ const route = useRoute()
         </RouterLink>
       </ul>
     </nav>
+
+    <main class="p-12 lg:ml-64">
+      <RouterView />
+    </main>
   </div>
 </template>
