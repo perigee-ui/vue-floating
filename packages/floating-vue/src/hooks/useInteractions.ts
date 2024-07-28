@@ -1,3 +1,4 @@
+import { isOn } from '@vue/shared'
 import type { ElAttrs, ElementProps } from '../types'
 
 const ACTIVE_KEY = 'active'
@@ -20,24 +21,15 @@ function mergeProps(
   const map = new Map<string, Array<(...args: unknown[]) => void>>()
   const isItem = elementKey === 'item'
 
-  let domUserProps = userProps
-  if (isItem && userProps) {
-    const { [ACTIVE_KEY]: _, [SELECTED_KEY]: __, ...validProps } = userProps
-    domUserProps = validProps
-  }
-
-  const mergedProps: Record<string, unknown> = {
-    ...(elementKey === 'floating' && { tabIndex: -1 }),
-    ...domUserProps,
-  }
+  const mergedProps: Record<string, unknown> = elementKey === 'floating' ? { tabIndex: -1 } : {}
 
   const mergedPropsList = propsList
     .map((getVal) => {
       const value = getVal()
-      const propsOrGetProps = value ? value[elementKey] : null
+      const propsOrGetProps = value ? value[elementKey] : undefined
 
       if (typeof propsOrGetProps === 'function')
-        return userProps ? propsOrGetProps(userProps) : null
+        return userProps ? propsOrGetProps(userProps) : undefined
 
       return propsOrGetProps
     }).concat(userProps)
@@ -50,7 +42,7 @@ function mergeProps(
       if (isItem && EXCLUDE_ITEM_KEYS.has(key))
         continue
 
-      if (key.startsWith('on')) {
+      if (isOn(key)) {
         if (typeof value !== 'function')
           continue
 
