@@ -8,6 +8,7 @@ const ROUTES = [
   { path: 'use-role' },
   { path: 'use-dismiss' },
   { path: 'use-client-point' },
+  { path: 'use-typeahead' },
   // { path: 'tooltip' },
   // { path: 'popover' },
   // { path: 'menu' },

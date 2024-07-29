@@ -25,5 +25,6 @@ declare module 'vue-router/auto-routes' {
     '/use-focus': RouteRecordInfo<'/use-focus', '/use-focus', Record<never, never>, Record<never, never>>,
     '/use-hover': RouteRecordInfo<'/use-hover', '/use-hover', Record<never, never>, Record<never, never>>,
     '/use-role': RouteRecordInfo<'/use-role', '/use-role', Record<never, never>, Record<never, never>>,
+    '/use-typeahead': RouteRecordInfo<'/use-typeahead', '/use-typeahead', Record<never, never>, Record<never, never>>,
   }
 }

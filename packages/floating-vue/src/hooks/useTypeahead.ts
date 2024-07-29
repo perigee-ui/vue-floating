@@ -8,7 +8,7 @@ export interface UseTypeaheadProps {
    * elements of the list.
    * @default empty list
    */
-  listRef: Array<string | undefined>
+  list: Array<string | undefined>
   /**
    * The index of the active (focused or highlighted) item in the list.
    * @default undefined
@@ -124,7 +124,7 @@ export function useTypeahead(
       return str ? list.indexOf(str) : -1
     }
 
-    const listContent = props.listRef
+    const listContent = props.list
 
     if (stringRef.length > 0 && stringRef[0] !== ' ') {
       if (
