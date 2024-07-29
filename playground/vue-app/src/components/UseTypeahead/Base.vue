@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { useClick, useFloating, useInteractions, useTypeahead } from '@perigee-ui/floating-vue'
 import { offset } from '@perigee-ui/floating-vue/core'
-import { ref, shallowRef } from 'vue'
+import { ref } from 'vue'
 
 const open = ref(false)
 
@@ -15,7 +15,7 @@ const { context, floatingStyles, refs: { setFloating, setReference } } = useFloa
   middleware: [offset(20)],
 })
 
-const activeIndex = shallowRef<number>()
+const activeIndex = ref<number>()
 
 const items = ref(['one', 'two', 'three'])
 
