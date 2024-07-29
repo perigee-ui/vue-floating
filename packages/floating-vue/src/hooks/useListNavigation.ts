@@ -5,14 +5,14 @@ import { enqueueFocus } from '../utils/enqueueFocus.ts'
 import { activeElement, contains, getDocument, isMac, isSafari } from '../utils.ts'
 import { ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, getMaxIndex, getMinIndex, isIndexOutOfBounds } from '../utils/composite.ts'
 
-let isPreventScrollSupported = false
+let isPreventScrollSupported: boolean | undefined
 
 export interface UseListNavigationProps {
   /**
    * A ref that holds an array of list items.
    * @default empty list
    */
-  listRef: Array<HTMLElement | undefined>
+  list: Array<HTMLElement | undefined>
   /**
    * The index of the currently active (focused or highlighted) item, which may
    * or may not be selected.
@@ -205,8 +205,8 @@ export function useListNavigation(
   let indexRef = selectedIndex?.value ?? -1
   let keyRef = <undefined | string>undefined
   const isPointerModalityRef = true
-  const previousMountedRef = !!elements.floating
-  const previousOpenRef = open
+  let previousMountedRef = !!elements.floating.value
+  let previousOpenRef = open.value
   let forceSyncFocus = false
   let forceScrollIntoViewRef = false
 
@@ -214,7 +214,7 @@ export function useListNavigation(
   const virtualId = shallowRef<string | undefined>()
 
   function focusItem(
-    listRef: Array<HTMLElement | undefined>,
+    list: Array<HTMLElement | undefined>,
     indexRef: number,
     forceScrollIntoView = false,
   ) {
@@ -246,14 +246,14 @@ export function useListNavigation(
       }
     }
 
-    const initialItem = listRef[indexRef]
+    const initialItem = list[indexRef]
 
     if (initialItem) {
       runFocus(initialItem)
     }
 
     requestAnimationFrame(() => {
-      const waitedItem = listRef[indexRef] || initialItem
+      const waitedItem = list[indexRef] || initialItem
 
       if (!waitedItem)
         return
@@ -277,7 +277,8 @@ export function useListNavigation(
     })
   }
 
-  if (window !== undefined) {
+  if (window !== undefined && isPreventScrollSupported !== undefined) {
+    isPreventScrollSupported = false
     document.createElement('div').focus({
       get preventScroll() {
         isPreventScrollSupported = true
@@ -327,7 +328,7 @@ export function useListNavigation(
         // Reset while the floating element was open (e.g. the list changed).
         if (previousMountedRef) {
           indexRef = -1
-          focusItem(props.listRef, indexRef)
+          focusItem(props.list, indexRef)
         }
 
         // Initial sync.
@@ -339,7 +340,7 @@ export function useListNavigation(
         ) {
           let runs = 0
           const waitForListPopulated = () => {
-            if (props.listRef[0] == null) {
+            if (props.list[0] == null) {
               // Avoid letting the browser paint if possible on the first try,
               // otherwise use rAF. Don't try more than twice, since something
               // is wrong otherwise.
@@ -354,8 +355,8 @@ export function useListNavigation(
                 = keyRef == null
                 || isMainOrientationToEndKey(keyRef, orientation, rtl)
                 || nested
-                  ? getMinIndex(props.listRef, props.disabledIndices)
-                  : getMaxIndex(props.listRef, props.disabledIndices)
+                  ? getMinIndex(props.list, props.disabledIndices)
+                  : getMaxIndex(props.list, props.disabledIndices)
               keyRef = undefined
               onNavigate?.(indexRef)
             }
@@ -364,9 +365,9 @@ export function useListNavigation(
           waitForListPopulated()
         }
       }
-      else if (!isIndexOutOfBounds(props.listRef, activeIndex.value)) {
+      else if (!isIndexOutOfBounds(props.list, activeIndex.value)) {
         indexRef = activeIndex.value
-        focusItem(props.listRef, indexRef, forceScrollIntoViewRef)
+        focusItem(props.list, indexRef, forceScrollIntoViewRef)
         forceScrollIntoViewRef = false
       }
     }
@@ -423,6 +424,54 @@ export function useListNavigation(
       (tree as any).events.off('virtualfocus', handleVirtualFocus)
     })
   })
+
+  watchEffect(() => {
+    previousMountedRef = !!elements.floating.value
+  })
+
+  watchEffect(() => {
+    if (!open.value) {
+      keyRef = undefined
+    }
+
+    previousOpenRef = open.value
+  })
+
+  const hasActiveIndex = () => activeIndex != null
+
+  function syncCurrentTarget(currentTarget: HTMLElement | null) {
+    if (!open)
+      return
+    const index = listRef.current.indexOf(currentTarget)
+    if (index !== -1) {
+      onNavigate(index)
+    }
+  }
+
+  const item: ElementProps['item'] = {
+    onFocus({ currentTarget }) {
+      syncCurrentTarget(currentTarget)
+    },
+    onClick: ({ currentTarget }) => currentTarget.focus({ preventScroll: true }), // Safari
+    ...(focusItemOnHover && {
+      onMouseMove({ currentTarget }) {
+        syncCurrentTarget(currentTarget)
+      },
+      onPointerLeave({ pointerType }) {
+        if (!isPointerModalityRef.current || pointerType === 'touch') {
+          return
+        }
+
+        indexRef.current = -1
+        focusItem(listRef, indexRef)
+        onNavigate(null)
+
+        if (!virtual) {
+          enqueueFocus(floatingRef.current, { preventScroll: true })
+        }
+      },
+    }),
+  }
 }
 
 function doSwitch(
