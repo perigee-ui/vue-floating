@@ -348,7 +348,6 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     })
   })
 
-  // Очистить при закрытии
   watchEffect(() => {
     if (!open.value) {
       pointerTypeRef = undefined
@@ -359,9 +358,8 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
 
   watchEffect((onCleanup) => {
     // eslint-disable-next-line ts/no-unused-expressions
-    enabled.value
-    // eslint-disable-next-line ts/no-unused-expressions
-    elements.domReference.value
+    enabled.value ? elements.domReference.value : undefined
+
     onCleanup(() => {
       cleanupMousemoveHandler()
       clearTimeout(timeoutRef)
