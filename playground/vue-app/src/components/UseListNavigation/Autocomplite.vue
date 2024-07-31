@@ -1,7 +1,7 @@
 <script setup lang="tsx">
-import { useDismiss, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue'
-import { offset } from '@perigee-ui/floating-vue/core'
 import { computed, shallowRef } from 'vue'
+import { useDismiss, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue/index.ts'
+import { offset } from '@perigee-ui/floating-vue/core/index.ts'
 
 const isOpen = shallowRef(false)
 const inputValue = shallowRef('')
@@ -54,7 +54,7 @@ function onItemClick(item: string) {
   refs.domReference.current?.focus()
 }
 
-const allItems = ['one', 'two', 'three']
+const allItems = ['a', 'ab', 'abc', 'abcd']
 
 const items = computed(() => {
   return allItems.filter(item => item.includes(inputValue.value))

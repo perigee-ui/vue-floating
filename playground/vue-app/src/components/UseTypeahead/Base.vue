@@ -1,7 +1,7 @@
 <script setup lang="tsx">
-import { useClick, useFloating, useInteractions, useTypeahead } from '@perigee-ui/floating-vue'
-import { offset } from '@perigee-ui/floating-vue/core'
 import { ref } from 'vue'
+import { offset } from '@perigee-ui/floating-vue/core/index.ts'
+import { useClick, useFloating, useInteractions, useTypeahead } from '@perigee-ui/floating-vue/index.ts'
 
 const open = ref(false)
 

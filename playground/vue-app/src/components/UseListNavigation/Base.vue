@@ -1,10 +1,10 @@
 <script setup lang="tsx">
-import { useClick, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue'
-import { offset } from '@perigee-ui/floating-vue/core'
-import { shallowRef } from 'vue'
+import { ref, shallowRef, watchEffect } from 'vue'
+import { offset } from '@perigee-ui/floating-vue/core/index.ts'
+import { useClick, useDismiss, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue/index.ts'
 
 const isOpen = shallowRef(false)
-const activeIndex = shallowRef<number | undefined>(undefined)
+const activeIndex = ref<number | null>(null)
 
 const listRef: (HTMLElement | undefined)[] = []
 
@@ -19,7 +19,7 @@ const { refs, context, floatingStyles } = useFloating({
 })
 
 const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([
-  useClick(context),
+  useDismiss(context),
   useListNavigation(
     context,
     {

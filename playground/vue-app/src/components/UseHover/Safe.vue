@@ -1,7 +1,7 @@
 <script setup lang="tsx">
-import { safePolygon, useFloating, useHover, useInteractions } from '@perigee-ui/floating-vue'
-import { offset } from '@perigee-ui/floating-vue/core'
 import { ref } from 'vue'
+import { offset } from '@perigee-ui/floating-vue/core'
+import { safePolygon, useFloating, useHover, useInteractions } from '@perigee-ui/floating-vue'
 
 const open = ref(false)
 
