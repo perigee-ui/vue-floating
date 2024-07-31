@@ -33,7 +33,7 @@ const route = useRoute()
 
 <template>
   <div>
-    <nav class="flex-col h-full p-8 overflow-y-auto bg-slate-100 lg:w-64 lg:flex lg:fixed top-0 left-0">
+    <nav class="max-h-60 flex-col p-8 overflow-y-auto bg-slate-100 lg:max-h-full lg:h-full lg:w-64 lg:flex lg:fixed top-0 left-0">
       <div>
         <a
           href="https://github.com/perigee-ui/floating-vue"
