@@ -28,7 +28,7 @@ const { getReferenceProps, getFloatingProps } = useInteractions([useHover(contex
       type="button"
       v-bind="getReferenceProps()"
     >
-      Trigger (safePolygon)
+      Trigger
     </button>
 
     <div
