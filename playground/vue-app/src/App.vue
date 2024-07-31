@@ -9,6 +9,7 @@ const ROUTES = [
   { path: 'use-dismiss' },
   { path: 'use-client-point' },
   { path: 'use-typeahead' },
+  { path: 'use-list-navigation' },
   // { path: 'tooltip' },
   // { path: 'popover' },
   // { path: 'menu' },

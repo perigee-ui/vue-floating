@@ -3,8 +3,32 @@ import { type Ref, computed, shallowRef, toValue, watchEffect } from 'vue'
 import { isHTMLElement } from '@floating-ui/utils/dom'
 import type { ElementProps, FloatingRootContext } from '../types'
 import { enqueueFocus } from '../utils/enqueueFocus.ts'
-import { activeElement, contains, getDocument, isMac, isSafari, isTypeableCombobox, isVirtualClick, isVirtualPointerEvent, stopEvent } from '../utils.ts'
-import { ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, buildCellMap, findNonDisabledIndex, getCellIndexOfCorner, getCellIndices, getGridNavigatedIndex, getMaxIndex, getMinIndex, isDisabled, isIndexOutOfBounds } from '../utils/composite.ts'
+import {
+  activeElement,
+  contains,
+  getDocument,
+  isMac,
+  isSafari,
+  isTypeableCombobox,
+  isVirtualClick,
+  isVirtualPointerEvent,
+  stopEvent,
+} from '../utils.ts'
+import {
+  ARROW_DOWN,
+  ARROW_LEFT,
+  ARROW_RIGHT,
+  ARROW_UP,
+  buildCellMap,
+  findNonDisabledIndex,
+  getCellIndexOfCorner,
+  getCellIndices,
+  getGridNavigatedIndex,
+  getMaxIndex,
+  getMinIndex,
+  isDisabled,
+  isIndexOutOfBounds,
+} from '../utils/composite.ts'
 
 let isPreventScrollSupported: boolean | undefined
 
@@ -129,7 +153,7 @@ export interface UseListNavigationProps {
    * the root reference handling the events. Requires `FloatingTree` to be
    * setup.
    */
-  virtualItemRef?: HTMLElement | undefined
+  virtualItem?: HTMLElement | undefined
   /**
    * Only for `cols > 1`, specify sizes for grid items.
    * `{ width: 2, height: 2 }` means an item is 2 columns wide and 2 rows tall.
@@ -173,7 +197,7 @@ export function useListNavigation(
     dense = false,
   } = props
 
-  let _virtualItemRef = props.virtualItemRef
+  let _virtualItem = props.virtualItem
 
   const enabled = computed(() => toValue(props.enabled ?? true))
 
@@ -224,8 +248,8 @@ export function useListNavigation(
         activeId.value = item.id
         // TODO: Emit virtual focus event
         // tree?.events.emit('virtualfocus', item)
-        if (_virtualItemRef) {
-          _virtualItemRef = item
+        if (_virtualItem) {
+          _virtualItem = item
         }
       }
       else {
@@ -414,8 +438,8 @@ export function useListNavigation(
     function handleVirtualFocus(item: HTMLElement) {
       virtualId.value = item.id
 
-      if (_virtualItemRef) {
-        _virtualItemRef = item
+      if (_virtualItem) {
+        _virtualItem = item
       }
     }
 
@@ -726,7 +750,7 @@ export function useListNavigation(
           //   : null
           // const deepestNode = null
 
-          // if (isArrowKey && deepestNode && _virtualItemRef) {
+          // if (isArrowKey && deepestNode && _virtualItem) {
           //   const eventObject = new KeyboardEvent('keydown', {
           //     key: event.key,
           //     bubbles: true,
