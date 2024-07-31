@@ -173,7 +173,7 @@ export function stopEvent(event: Event) {
   event.stopPropagation()
 }
 
-export function isTypeableCombobox(element: Element | null) {
+export function isTypeableCombobox(element: Element | undefined) {
   if (!element)
     return false
 

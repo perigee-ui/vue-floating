@@ -8,7 +8,7 @@ interface Options {
 
 let rafId = 0
 export function enqueueFocus(
-  el: FocusableElement | null,
+  el: FocusableElement | undefined,
   options: Options = {},
 ) {
   const { preventScroll = false, cancelPrevious = true, sync = false } = options
