@@ -44,7 +44,7 @@ const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([u
     <div
       v-if="open"
       :ref="(el:any) => setFloating(el)"
-      class="flex flex-col rounded bg-white shadow-lg outline-none p-1 border border-slate-900/10 bg-clip-padding w-25"
+      class="listbox"
       role="listbox"
       :style="floatingStyles"
       v-bind="getFloatingProps()"
