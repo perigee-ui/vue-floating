@@ -1,4 +1,4 @@
-<script setup lang="tsx">
+<script setup lang="ts">
 import { computed, shallowRef } from 'vue'
 import { useDismiss, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue/index.ts'
 import { offset } from '@perigee-ui/floating-vue/core/index.ts'

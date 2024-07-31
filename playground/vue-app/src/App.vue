@@ -10,6 +10,7 @@ const ROUTES = [
   { path: 'use-client-point' },
   { path: 'use-typeahead' },
   { path: 'use-list-navigation' },
+  { path: 'use-transiton' },
   // { path: 'tooltip' },
   // { path: 'popover' },
   // { path: 'menu' },

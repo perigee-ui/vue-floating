@@ -7,6 +7,13 @@ export { useRole, type UseRoleProps } from './hooks/useRole.ts'
 export { useDismiss, type UseDismissProps } from './hooks/useDismiss.ts'
 export { useTypeahead, type UseTypeaheadProps } from './hooks/useTypeahead.ts'
 export { useListNavigation, type UseListNavigationProps } from './hooks/useListNavigation.ts'
+export {
+  useTransitionStatus,
+  useTransitionStyles,
+  type TransitionStatus,
+  type UseTransitionStatusProps,
+  type UseTransitionStylesProps,
+} from './hooks/useTransition.ts'
 export { useClientPoint, type UseClientPointProps } from './hooks/useClientPoint.ts'
 export { useId } from './hooks/useId.ts'
 export { safePolygon, type SafePolygonOptions } from './safePolygon.ts'
