@@ -69,7 +69,12 @@ const App = defineComponent({
                   tabindex={-1}
                   {...getItemProps({
                     ref(node: HTMLLIElement) {
-                      listRef[index] = node
+                      if (!node) {
+                        listRef.splice(index, 1)
+                      }
+                      else {
+                        listRef[index] = node
+                      }
                     },
                   })}
                 >
@@ -216,7 +221,12 @@ it('resets indexRef to -1 upon close', async () => {
                     key={item}
                     {...getItemProps({
                       ref(node: any) {
-                        listRef[index] = node
+                        if (!node) {
+                          listRef.splice(index, 1)
+                        }
+                        else {
+                          listRef[index] = node
+                        }
                       },
                       onClick() {
                         onItemClick(item)

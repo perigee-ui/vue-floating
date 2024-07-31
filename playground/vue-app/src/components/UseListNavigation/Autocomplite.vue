@@ -100,7 +100,12 @@ const items = computed(() => {
           }"
           v-bind="getItemProps({
             ref(node: HTMLLIElement) {
-              listRef[index] = node;
+              if (!node) {
+                listRef.splice(index, 1)
+              }
+              else {
+                listRef[index] = node;
+              }
             },
             onClick() {
               onItemClick(item)
