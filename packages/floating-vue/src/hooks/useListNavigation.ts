@@ -1,5 +1,5 @@
 import type { Dimensions } from '@floating-ui/utils'
-import { type Ref, computed, shallowRef, toValue, watchEffect } from 'vue'
+import { type Ref, computed, shallowRef, toValue, watch, watchEffect } from 'vue'
 import { isHTMLElement } from '@floating-ui/utils/dom'
 import type { ElementProps, FloatingRootContext } from '../types'
 import { enqueueFocus } from '../utils/enqueueFocus.ts'
@@ -264,9 +264,9 @@ export function useListNavigation(
           // so we can use that instead.
           // iOS Safari must be async or the first item will not be focused.
           sync:
-              isMac() && isSafari()
-                ? isPreventScrollSupported || forceSyncFocus
-                : false,
+            isMac() && isSafari()
+              ? isPreventScrollSupported || forceSyncFocus
+              : false,
         })
       }
     }
@@ -336,65 +336,65 @@ export function useListNavigation(
     }
   })
 
-  // Sync `activeIndex` to be the focused item while the floating element is
-  // open.
-  watchEffect(() => {
+  // Sync `activeIndex` to be the focused item while the floating element is open.
+  watch(() => enabled.value && open.value && elements.floating.value ? activeIndex.value : Number.NaN, () => {
     if (!enabled.value)
       return
 
-    if (open.value && elements.floating.value) {
-      if (activeIndex.value == null) {
-        forceSyncFocus = false
+    if (!open.value || !elements.floating.value)
+      return
 
-        if (props.selectedIndex?.value != null) {
-          return
-        }
+    if (activeIndex.value == null) {
+      forceSyncFocus = false
 
-        // Reset while the floating element was open (e.g. the list changed).
-        if (previousMountedRef) {
-          indexRef = -1
-          focusItem(props.list, indexRef)
-        }
+      if (props.selectedIndex?.value != null) {
+        return
+      }
 
-        // Initial sync.
-        if (
-          (!previousOpenRef || !previousMountedRef)
-          && focusItemOnOpenRef
-          && (keyRef != null
-          || (focusItemOnOpenRef === true && keyRef == null))
-        ) {
-          let runs = 0
-          const waitForListPopulated = () => {
-            if (props.list[0] == null) {
-              // Avoid letting the browser paint if possible on the first try,
-              // otherwise use rAF. Don't try more than twice, since something
-              // is wrong otherwise.
-              if (runs < 2) {
-                const scheduler = runs ? requestAnimationFrame : queueMicrotask
-                scheduler(waitForListPopulated)
-              }
-              runs++
+      // Reset while the floating element was open (e.g. the list changed).
+      if (previousMountedRef) {
+        indexRef = -1
+        focusItem(props.list, indexRef)
+      }
+
+      // Initial sync.
+      if (
+        (!previousOpenRef || !previousMountedRef)
+        && focusItemOnOpenRef
+        && (keyRef != null
+        || (focusItemOnOpenRef === true && keyRef == null))
+      ) {
+        let runs = 0
+        const waitForListPopulated = () => {
+          if (props.list[0] == null) {
+            // Avoid letting the browser paint if possible on the first try,
+            // otherwise use rAF. Don't try more than twice, since something
+            // is wrong otherwise.
+            if (runs < 2) {
+              const scheduler = runs ? requestAnimationFrame : queueMicrotask
+              scheduler(waitForListPopulated)
             }
-            else {
-              indexRef
-                = keyRef == null
-                || isMainOrientationToEndKey(keyRef, orientation, rtl)
-                || nested
-                  ? getMinIndex(props.list, props.disabledIndices)
-                  : getMaxIndex(props.list, props.disabledIndices)
-              keyRef = undefined
-              onNavigate?.(indexRef)
-            }
+            runs++
           }
-
-          waitForListPopulated()
+          else {
+            indexRef
+              = keyRef == null
+              || isMainOrientationToEndKey(keyRef, orientation, rtl)
+              || nested
+                ? getMinIndex(props.list, props.disabledIndices)
+                : getMaxIndex(props.list, props.disabledIndices)
+            keyRef = undefined
+            onNavigate?.(indexRef)
+          }
         }
+
+        waitForListPopulated()
       }
-      else if (!isIndexOutOfBounds(props.list, activeIndex.value)) {
-        indexRef = activeIndex.value
-        focusItem(props.list, indexRef, forceScrollIntoViewRef)
-        forceScrollIntoViewRef = false
-      }
+    }
+    else if (!isIndexOutOfBounds(props.list, activeIndex.value)) {
+      indexRef = activeIndex.value
+      focusItem(props.list, indexRef, forceScrollIntoViewRef)
+      forceScrollIntoViewRef = false
     }
   })
 
@@ -413,8 +413,7 @@ export function useListNavigation(
 
     // TODO: tree
     const nodes = (tree as any).nodesRef
-    const parent = nodes.find((node: any) => node.id === parentId)?.context?.elements
-      .floating
+    const parent = nodes.find((node: any) => node.id === parentId)?.context?.elements.floating
     const activeEl = activeElement(getDocument(elements.floating.value))
     const treeContainsActiveEl = nodes.some(
       (node: any) => node.context && contains(node.context.elements.floating, activeEl),
@@ -452,7 +451,7 @@ export function useListNavigation(
 
   watchEffect(() => {
     previousMountedRef = !!elements.floating.value
-  })
+  }, { flush: 'post' })
 
   watchEffect(() => {
     if (!open.value) {
@@ -533,6 +532,7 @@ export function useListNavigation(
     if (event.key === 'End') {
       stopEvent(event)
       indexRef = maxIndex
+
       onNavigate?.(indexRef)
     }
 
@@ -689,15 +689,15 @@ export function useListNavigation(
       virtual
       && open.value
       && hasActiveIndex() && {
-        'aria-activedescendant': virtualId || activeId,
+        'aria-activedescendant': virtualId.value || activeId.value,
       }
-    )
+    ) || undefined
   })
 
   const floatingProps = computed<ElementProps['floating']>(() => {
     return {
       'aria-orientation': orientation === 'both' ? undefined : orientation,
-      ...(!isTypeableCombobox(elements.domReference.value) && ariaActiveDescendantProp),
+      ...(!isTypeableCombobox(elements.domReference.value) && ariaActiveDescendantProp.value),
       'onKeydown': commonOnKeydown,
       onPointermove() {
         isPointerModalityRef = true
@@ -724,9 +724,10 @@ export function useListNavigation(
 
   const referenceProps = computed<ElementProps['reference']>(() => {
     return {
-      ...ariaActiveDescendantProp,
+      ...ariaActiveDescendantProp.value,
       onKeydown(event) {
         isPointerModalityRef = false
+        const isOpen = open.value
 
         const isArrowKey = event.key.indexOf('Arrow') === 0
         const isCrossOpenKey = isCrossOrientationOpenKey(
@@ -742,7 +743,7 @@ export function useListNavigation(
         const isMainKey = isMainOrientationKey(event.key, orientation)
         const isNavigationKey = (nested ? isCrossOpenKey : isMainKey) || event.key === 'Enter' || event.key.trim() === ''
 
-        if (virtual && open.value) {
+        if (virtual && isOpen) {
           // const rootNode = (tree as any)?.nodesRef.current.find((node: any) => node.parentId == null)
 
           // const deepestNode = tree && rootNode
@@ -795,7 +796,7 @@ export function useListNavigation(
 
         // If a floating element should not open on arrow key down, avoid
         // setting `activeIndex` while it's closed.
-        if (!open.value && !openOnArrowKeyDown && isArrowKey) {
+        if (!isOpen && !openOnArrowKeyDown && isArrowKey) {
           return
         }
 
@@ -807,11 +808,8 @@ export function useListNavigation(
           if (isCrossOpenKey) {
             stopEvent(event)
 
-            if (open.value) {
-              indexRef = getMinIndex(
-                props.list,
-                disabledIndices,
-              )
+            if (isOpen) {
+              indexRef = getMinIndex(props.list, disabledIndices)
               onNavigate?.(indexRef)
             }
             else {
@@ -829,14 +827,14 @@ export function useListNavigation(
 
           stopEvent(event)
 
-          if (!open.value && openOnArrowKeyDown) {
+          if (!isOpen && openOnArrowKeyDown) {
             onOpenChange(true, event, 'list-navigation')
           }
           else {
             commonOnKeydown(event)
           }
 
-          if (open.value) {
+          if (isOpen) {
             onNavigate?.(indexRef)
           }
         }
