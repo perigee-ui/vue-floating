@@ -1,9 +1,9 @@
 <script setup lang="tsx">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import { offset } from '@perigee-ui/floating-vue/core'
 import { safePolygon, useFloating, useHover, useInteractions } from '@perigee-ui/floating-vue'
 
-const open = ref(false)
+const open = shallowRef(false)
 
 const { context, floatingStyles, refs: { setFloating, setReference } } = useFloating({
   open,

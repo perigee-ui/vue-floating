@@ -1,10 +1,10 @@
 <script setup lang="tsx">
-import { ref, shallowRef, watchEffect } from 'vue'
+import { shallowRef, watchEffect } from 'vue'
 import { offset } from '@perigee-ui/floating-vue/core/index.ts'
 import { useClick, useDismiss, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue/index.ts'
 
 const isOpen = shallowRef(false)
-const activeIndex = ref<number | null>(null)
+const activeIndex = shallowRef<number | undefined>(undefined)
 
 const listRef: (HTMLElement | undefined)[] = []
 
