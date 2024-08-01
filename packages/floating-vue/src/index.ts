@@ -17,3 +17,8 @@ export {
 export { useClientPoint, type UseClientPointProps } from './hooks/useClientPoint.ts'
 export { useId } from './hooks/useId.ts'
 export { safePolygon, type SafePolygonOptions } from './safePolygon.ts'
+
+export {
+  type FloatingArrowProps,
+  FloatingArrow,
+} from './components/FloatingArrow/index.ts'

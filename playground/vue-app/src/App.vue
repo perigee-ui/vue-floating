@@ -20,7 +20,7 @@ const ROUTES = [
   // { path: 'autocomplete' },
   // { path: 'navigation' },
   // { path: 'drawer' },
-  // { path: 'arrow' },
+  { path: 'arrow' },
   // { path: 'menubar' },
   // { path: 'menu-virtual' },
   // { path: 'omnibox' },
