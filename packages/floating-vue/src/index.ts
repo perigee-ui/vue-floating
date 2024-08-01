@@ -22,3 +22,12 @@ export {
   type FloatingArrowProps,
   FloatingArrow,
 } from './components/FloatingArrow/index.ts'
+export {
+  type FloatingDelayGroupProps,
+  type GroupContext,
+  type UseGroupOptions,
+  useFloatingDelayGroup,
+  useDelayGroup,
+  provideFloatingDelayGroupContext,
+  useFloatingDelayGroupContext,
+} from './components/FloatingDelayGroup/FloatingDelayGroup.ts'

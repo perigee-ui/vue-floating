@@ -1,4 +1,4 @@
-import { shallowReactive, watchEffect } from 'vue'
+import { type Ref, shallowReactive, shallowRef, watchEffect } from 'vue'
 import { createContext } from '../../utils/createContext.ts'
 import type { FloatingRootContext } from '../../types'
 import { getDelay } from '../../hooks/useHover.ts'
@@ -11,13 +11,13 @@ type Delay = number | Partial<{ open: number, close: number }>
 interface GroupState {
   delay: Delay
   initialDelay: Delay
-  currentId: any
   timeoutMs: number
-  isInstantPhase: boolean
 }
 
 export interface GroupContext {
+  currentId: Ref<any>
   state: GroupState
+  isInstantPhase: Ref<boolean>
   setCurrentId: (id: string | number) => void
   setState: (state: Partial<GroupState>) => void
 }
@@ -44,29 +44,29 @@ export function useFloatingDelayGroup(props: FloatingDelayGroupProps) {
   const state = shallowReactive({
     delay,
     initialDelay: props.delay,
-    currentId: undefined,
     timeoutMs: timeoutMs ?? 0,
-    isInstantPhase: false,
   })
+  const currentId = shallowRef<any>(undefined)
+  const isInstantPhase = shallowRef(false)
 
-  let initialCurrentIdRef = state.currentId
+  let initialCurrentIdRef = currentId.value
 
   function setCurrentId(newCurrentId: any) {
-    state.currentId = newCurrentId
+    currentId.value = newCurrentId
   }
 
   watchEffect(() => {
-    if (state.currentId) {
+    if (currentId.value) {
       if (initialCurrentIdRef == null) {
-        initialCurrentIdRef = state.currentId
+        initialCurrentIdRef = currentId.value
       }
-      else if (!state.isInstantPhase) {
-        state.isInstantPhase = true
+      else if (!isInstantPhase.value) {
+        isInstantPhase.value = true
       }
     }
     else {
-      if (state.isInstantPhase) {
-        state.isInstantPhase = false
+      if (isInstantPhase.value) {
+        isInstantPhase.value = false
       }
       initialCurrentIdRef = undefined
     }
@@ -78,6 +78,8 @@ export function useFloatingDelayGroup(props: FloatingDelayGroupProps) {
 
   provideFloatingDelayGroupContext({
     state,
+    currentId,
+    isInstantPhase,
     setCurrentId,
     setState,
   })
@@ -95,16 +97,16 @@ export interface UseGroupOptions {
 export function useDelayGroup(
   context: FloatingRootContext,
   options: UseGroupOptions = {},
-) {
+): GroupContext {
   const { open, onOpenChange, floatingId } = context
   const { id: optionId } = options
   const id = optionId ?? floatingId
 
   const groupContext = useFloatingDelayGroupContext('useDelayGroup')
-  const { state, setCurrentId, setState } = groupContext
+  const { state, currentId, setCurrentId, setState } = groupContext
 
   watchEffect(() => {
-    if (!state.currentId)
+    if (!currentId.value)
       return
 
     setState({
@@ -114,7 +116,7 @@ export function useDelayGroup(
       },
     })
 
-    if (state.currentId !== id) {
+    if (currentId.value !== id) {
       onOpenChange(false)
     }
   })
@@ -122,13 +124,14 @@ export function useDelayGroup(
   watchEffect((onCleanup) => {
     function unset() {
       onOpenChange(false)
-      setState({ delay: state.initialDelay, currentId: undefined })
+      currentId.value = undefined
+      setState({ delay: state.initialDelay })
     }
 
-    if (!state.currentId)
+    if (!currentId.value)
       return
 
-    if (!open && state.currentId === id) {
+    if (!open.value && currentId.value === id) {
       if (state.timeoutMs) {
         const timeout = window.setTimeout(unset, state.timeoutMs)
         onCleanup(() => {
