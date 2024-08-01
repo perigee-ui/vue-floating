@@ -11,8 +11,8 @@ const borderWidth = 1
 
 <template>
   <div>
-    <h1 class="text-5xl font-bold">
-      Arrow
+    <h1 class="text-5xl font-bold underline mb-6">
+      <a href="https://floating-ui.com/docs/FloatingArrow" target="_blank" rel="noopener noreferrer">FloatingArrow</a>
     </h1>
     <h2 class="text-xl font-bold mb-6 my-8">
       Slight transparency
