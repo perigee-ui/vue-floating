@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shallowRef, watchSyncEffect } from 'vue'
+import { shallowRef } from 'vue'
 import { useClick, useFloating, useInteractions, useTransitionStatus } from '@perigee-ui/floating-vue/index.ts'
 import { autoUpdate, offset } from '@perigee-ui/floating-vue/core/index.ts'
 
@@ -29,7 +29,6 @@ const { isMounted, status } = useTransitionStatus(context)
       class="reference"
       type="button"
       v-bind="getReferenceProps()"
-      :data-status="status"
     >
       Trigger
     </button>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shallowRef, watchSyncEffect } from 'vue'
+import { shallowRef } from 'vue'
 import { useClick, useFloating, useInteractions, useTransitionStyles } from '@perigee-ui/floating-vue/index.ts'
 import { autoUpdate, offset } from '@perigee-ui/floating-vue/core/index.ts'
 
@@ -38,7 +38,6 @@ const { isMounted, styles } = useTransitionStyles(context, {
       class="reference"
       type="button"
       v-bind="getReferenceProps()"
-      :data-status="status"
     >
       Trigger
     </button>
@@ -50,24 +49,8 @@ const { isMounted, styles } = useTransitionStyles(context, {
       class="floating"
       :style="[floatingStyles, styles]"
       v-bind="getFloatingProps()"
-      :data-status="status"
     >
       floating
     </div>
   </div>
 </template>
-
-<style scoped>
-#floating {
-  transition-property: opacity, transform;
-}
-#floating[data-status="open"],
-#floating[data-status="close"] {
-  transition-duration: 250ms;
-}
-#floating[data-status="initial"],
-#floating[data-status="close"] {
-  opacity: 0;
-  transform: scale(0.4);
-}
-</style>
