@@ -40,8 +40,8 @@ const guards = supportsInert() ? props.guards : true
 const tree = null
 const portalContext = null
 
-const startDismissButtonRef: HTMLButtonElement
-const endDismissButtonRef: HTMLButtonElement
+let startDismissButtonRef: HTMLButtonElement
+let endDismissButtonRef: HTMLButtonElement
 let preventReturnFocusRef = false
 let isPointerDownRef = false
 let tabbableIndexRef = -1
@@ -55,7 +55,7 @@ const floatingFocusNode = computed(() => {
   return firstElementChild?.id === context.floatingId ? firstElementChild : context.elements.floating.value
 })
 
-function getTabbableContent(container: Element | null = floatingFocusNode) {
+function getTabbableContent(container: Element | null = floatingFocusNode.value) {
   return container ? tabbable(container, getTabbableOptions()) : []
 }
 
