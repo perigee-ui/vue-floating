@@ -37,7 +37,7 @@ const isUntrappedTypeableCombobox = computed(() => isTypeableCombobox(context.el
 // Force the guards to be rendered if the `inert` attribute is not supported.
 const guards = supportsInert() ? props.guards : true
 
-const tree = null
+// const tree = null
 const portalContext = null
 
 let startDismissButtonRef: HTMLButtonElement
