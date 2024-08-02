@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type ComponentPublicInstance, type StyleValue, computed, shallowRef } from 'vue'
-import { FloatingArrow, useClick, useFloating, useInteractions } from '@perigee-ui/floating-vue/index.ts'
-import { type Placement, arrow, offset } from '@perigee-ui/floating-vue/core/index.ts'
+import { FloatingArrow, useClick, useFloating, useInteractions } from '@perigee-ui/floating-vue'
+import { type Placement, arrow, offset } from '@perigee-ui/floating-vue/core'
 
 const props = withDefaults(defineProps<{
   floatingClass?: string
