@@ -1,4 +1,4 @@
-import { type CSSProperties, type Ref, computed, shallowRef, watch, watchEffect } from 'vue'
+import { type CSSProperties, type Ref, computed, shallowRef, toValue, watch, watchEffect } from 'vue'
 import type { FloatingContext, Placement, Side } from '../types.ts'
 import type { ReferenceType } from '../core/types.ts'
 
@@ -7,7 +7,7 @@ export interface UseTransitionStatusProps {
    * The duration of the transition in milliseconds, or an object containing
    * `open` and `close` keys for different durations.
    */
-  duration?: number | { open?: number, close?: number }
+  duration?: number | (() => number) | { open?: number | (() => number), close?: number | (() => number) }
 }
 
 export type TransitionStatus = 'unmounted' | 'initial' | 'open' | 'close'
@@ -31,7 +31,8 @@ export function useTransitionStatus<RT extends ReferenceType = ReferenceType>(
   const { duration = 250 } = props
 
   const isNumberDuration = typeof duration === 'number'
-  const closeDuration = (isNumberDuration ? duration : duration.close) || 0
+  const isFunctionDuration = typeof duration === 'function'
+  const closeDuration = (isNumberDuration || isFunctionDuration ? duration : duration.close) || 0
 
   const status = shallowRef<TransitionStatus>('unmounted')
   const isMounted = useDelayUnmount(open, closeDuration)
@@ -112,8 +113,9 @@ export function useTransitionStyles<RT extends ReferenceType = ReferenceType>(
   const placement = context.placement
   const fnArgs = computed(() => ({ side: context.placement.value.split('-')[0] as Side, placement: placement.value }))
   const isNumberDuration = typeof duration === 'number'
-  const openDuration = (isNumberDuration ? duration : duration.open) || 0
-  const closeDuration = (isNumberDuration ? duration : duration.close) || 0
+  const isFunctionDuration = typeof duration === 'function'
+  const openDuration = (isNumberDuration || isFunctionDuration ? duration : duration.open) || 0
+  const closeDuration = (isNumberDuration || isFunctionDuration ? duration : duration.close) || 0
 
   const styles = shallowRef<CSSProperties>(({
     ...execWithArgsOrReturn(props.common, fnArgs.value),
@@ -146,7 +148,7 @@ export function useTransitionStyles<RT extends ReferenceType = ReferenceType>(
         transitionProperty: Object.keys(openStyles)
           .map(camelCaseToKebabCase)
           .join(','),
-        transitionDuration: `${openDuration}ms`,
+        transitionDuration: `${toValue(openDuration)}ms`,
         ...commonStyles,
         ...openStyles,
       }
@@ -158,7 +160,7 @@ export function useTransitionStyles<RT extends ReferenceType = ReferenceType>(
         transitionProperty: Object.keys(_styles)
           .map(camelCaseToKebabCase)
           .join(','),
-        transitionDuration: `${closeDuration}ms`,
+        transitionDuration: `${toValue(closeDuration)}ms`,
         ...commonStyles,
         ..._styles,
       }
@@ -187,14 +189,14 @@ function execWithArgsOrReturn<Value extends object | undefined, SidePlacement>(
   return typeof valueOrFn === 'function' ? valueOrFn(args) : valueOrFn
 }
 
-function useDelayUnmount(open: Ref<boolean>, durationMs: number): Ref<boolean> {
+function useDelayUnmount(open: Ref<boolean>, durationMs: number | (() => number)): Ref<boolean> {
   const isMounted = shallowRef(open.value)
 
   watchEffect((onCleanup) => {
     if (!open.value && isMounted.value) {
       const timeout = setTimeout(() => {
         isMounted.value = false
-      }, durationMs)
+      }, toValue(durationMs))
 
       onCleanup(() => {
         clearTimeout(timeout)

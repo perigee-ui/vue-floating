@@ -49,7 +49,9 @@ export interface UseHoverProps {
    * the `open` state.
    * @default 0
    */
-  delay?: number | { open?: number, close?: number }
+  delay?: number
+  | { open?: number | (() => number), close?: number | (() => number) }
+  | (() => { open?: number, close?: number } | number)
   /**
    * Whether the logic only runs for mouse input, ignoring touch input.
    * Note: due to a bug with Linux Chrome, "pen" inputs are considered "mouse".
@@ -143,7 +145,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
   })
 
   function closeWithDelay(event: Event, runElseBranch = true, reason: OpenChangeReason = 'hover') {
-    const closeDelay = getDelay(delay, 'close', pointerTypeRef)
+    const closeDelay = toValue(getDelay(delay, 'close', pointerTypeRef))
     if (closeDelay && !handlerRef) {
       clearTimeout(timeoutRef)
       timeoutRef = window.setTimeout(
@@ -194,10 +196,10 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
       clearTimeout(timeoutRef)
       blockMouseMoveRef = false
 
-      if ((mouseOnly && !isMouseLikePointerType(pointerTypeRef)) || (restMs > 0 && !getDelay(props.delay, 'open')))
+      if ((mouseOnly && !isMouseLikePointerType(pointerTypeRef)) || (restMs > 0 && !toValue(getDelay(props.delay, 'open'))))
         return
 
-      const openDelay = getDelay(props.delay, 'open', pointerTypeRef)
+      const openDelay = toValue(getDelay(props.delay, 'open', pointerTypeRef))
 
       if (openDelay) {
         timeoutRef = window.setTimeout(() => {
@@ -416,6 +418,10 @@ export function getDelay(
 ) {
   if (pointerType && !isMouseLikePointerType(pointerType))
     return 0
+
+  if (typeof value === 'function') {
+    return getDelay(value(), prop, pointerType)
+  }
 
   if (typeof value === 'number')
     return value

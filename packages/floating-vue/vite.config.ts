@@ -45,7 +45,6 @@ export default defineConfig({
     vue(),
     vueJsx(),
     dts({
-      exclude: ['./src/main.ts'],
       tsconfigPath: 'tsconfig.app.json',
     }),
   ],

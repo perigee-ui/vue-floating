@@ -703,6 +703,8 @@ it('scheduled list population', async () => {
   await act()
 
   expect(screen.getAllByRole('option')[0]).toHaveFocus()
+
+  cleanup()
 })
 
 // TODO: add tests

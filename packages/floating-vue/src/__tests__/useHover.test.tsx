@@ -73,12 +73,12 @@ describe('delay', () => {
 
     await fireEvent.mouseEnter(screen.getByRole('button'))
 
-    vi.advanceTimersByTime(999)
+    await vi.advanceTimersByTime(999)
     await act()
 
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
 
-    vi.advanceTimersByTime(1)
+    await vi.advanceTimersByTime(1)
     await act()
 
     expect(screen.queryByRole('tooltip')).toBeInTheDocument()
@@ -99,12 +99,12 @@ describe('delay', () => {
 
     await fireEvent.mouseEnter(screen.getByRole('button'))
 
-    vi.advanceTimersByTime(499)
+    await vi.advanceTimersByTime(499)
     await act()
 
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
 
-    vi.advanceTimersByTime(1)
+    await vi.advanceTimersByTime(1)
     await act()
 
     expect(screen.queryByRole('tooltip')).toBeInTheDocument()
@@ -126,12 +126,12 @@ describe('delay', () => {
     await fireEvent.mouseEnter(screen.getByRole('button'))
     await fireEvent.mouseLeave(screen.getByRole('button'))
 
-    vi.advanceTimersByTime(499)
+    await vi.advanceTimersByTime(499)
     await act()
 
     expect(screen.queryByRole('tooltip')).toBeInTheDocument()
 
-    vi.advanceTimersByTime(1)
+    await vi.advanceTimersByTime(1)
     await act()
 
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
@@ -152,12 +152,12 @@ describe('delay', () => {
 
     await fireEvent.mouseEnter(screen.getByRole('button'))
 
-    vi.advanceTimersByTime(499)
+    await vi.advanceTimersByTime(499)
     await act()
 
     await fireEvent.mouseLeave(screen.getByRole('button'))
 
-    vi.advanceTimersByTime(1)
+    await vi.advanceTimersByTime(1)
     await act()
 
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
@@ -179,7 +179,7 @@ describe('delay', () => {
 
     await fireEvent.mouseEnter(screen.getByRole('button'))
 
-    vi.advanceTimersByTime(99)
+    await vi.advanceTimersByTime(99)
     await act()
 
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
@@ -199,19 +199,19 @@ it('restMs', async () => {
 
   await fireEvent.mouseMove(screen.getByRole('button'))
 
-  vi.advanceTimersByTime(99)
+  await vi.advanceTimersByTime(99)
   await act()
 
   await fireEvent.mouseMove(screen.getByRole('button'))
 
-  vi.advanceTimersByTime(1)
+  await vi.advanceTimersByTime(1)
   await act()
 
   expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
 
   await fireEvent.mouseMove(screen.getByRole('button'))
 
-  vi.advanceTimersByTime(100)
+  await vi.advanceTimersByTime(100)
   await act()
 
   expect(screen.queryByRole('tooltip')).toBeInTheDocument()
@@ -294,14 +294,14 @@ it('does not show after delay if domReference changes', async () => {
   await fireEvent.mouseEnter(screen.getByRole('button'))
   await act()
 
-  vi.advanceTimersByTime(1)
+  await vi.advanceTimersByTime(1)
   await act()
 
   await rerender({
     showReference: false,
   })
 
-  vi.advanceTimersByTime(999)
+  await vi.advanceTimersByTime(999)
   await act()
 
   expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()

@@ -20,6 +20,7 @@ declare module 'vue-router/auto-routes' {
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
     '/arrow': RouteRecordInfo<'/arrow', '/arrow', Record<never, never>, Record<never, never>>,
+    '/delay-group': RouteRecordInfo<'/delay-group', '/delay-group', Record<never, never>, Record<never, never>>,
     '/use-click': RouteRecordInfo<'/use-click', '/use-click', Record<never, never>, Record<never, never>>,
     '/use-client-point': RouteRecordInfo<'/use-client-point', '/use-client-point', Record<never, never>, Record<never, never>>,
     '/use-dismiss': RouteRecordInfo<'/use-dismiss', '/use-dismiss', Record<never, never>, Record<never, never>>,

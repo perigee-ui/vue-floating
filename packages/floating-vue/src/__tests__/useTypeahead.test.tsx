@@ -188,21 +188,21 @@ it('starts from the current activeIndex and correctly loops', async () => {
   await userEvent.keyboard('y')
   expect(spy).not.toHaveBeenCalled()
 
-  vi.advanceTimersByTime(750)
+  await vi.advanceTimersByTime(750)
 
   await userEvent.keyboard('t')
   await userEvent.keyboard('o')
   await userEvent.keyboard('y')
   expect(spy).toHaveBeenCalledWith(1)
 
-  vi.advanceTimersByTime(750)
+  await vi.advanceTimersByTime(750)
 
   await userEvent.keyboard('t')
   await userEvent.keyboard('o')
   await userEvent.keyboard('y')
   expect(spy).toHaveBeenCalledWith(2)
 
-  vi.advanceTimersByTime(750)
+  await vi.advanceTimersByTime(750)
 
   await userEvent.keyboard('t')
   await userEvent.keyboard('o')
@@ -329,7 +329,7 @@ it('onTypingChange is called when typing starts or stops', async () => {
   expect(spy).toHaveBeenCalledTimes(1)
   expect(spy).toHaveBeenCalledWith(true)
 
-  vi.advanceTimersByTime(750)
+  await vi.advanceTimersByTime(750)
   expect(spy).toHaveBeenCalledTimes(2)
   expect(spy).toHaveBeenCalledWith(false)
 
@@ -358,10 +358,12 @@ it('typing spaces on <div> references does not open the menu', async () => {
 
   expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
 
-  vi.advanceTimersByTime(750)
+  await vi.advanceTimersByTime(750)
 
   await userEvent.keyboard(' ')
   await act()
 
   expect(screen.queryByRole('listbox')).toBeInTheDocument()
+
+  cleanup()
 })
