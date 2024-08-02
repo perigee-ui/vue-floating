@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue'
-import { useClick, useDelayGroup, useDismiss, useFloating, useFocus, useInteractions, useRole, useTransitionStyles } from '@perigee-ui/floating-vue/index.ts'
-import { offset } from '@perigee-ui/floating-vue/core/index.ts'
+import { useClick, useDelayGroup, useDismiss, useFloating, useFocus, useInteractions, useRole, useTransitionStyles } from '@perigee-ui/floating-vue'
+import { offset } from '@perigee-ui/floating-vue/core'
 
 const open = shallowRef(false)
 

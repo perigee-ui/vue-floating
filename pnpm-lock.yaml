@@ -132,6 +132,9 @@ importers:
       '@iconify-json/radix-icons':
         specifier: ^1.1.14
         version: 1.1.14
+      '@perigee-ui/floating-vue':
+        specifier: workspace:*
+        version: link:../../packages/floating-vue
       '@tsconfig/node20':
         specifier: ^20.1.4
         version: 20.1.4

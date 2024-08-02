@@ -7,11 +7,9 @@
 
     "baseUrl": ".",
     "paths": {
-      "@perigee-ui/floating-vue": ["../../packages/floating-vue/src/index.ts"],
-      "@perigee-ui/floating-vue/*": ["../../packages/floating-vue/src/*"],
       "@/*": ["./src/*"]
     }
   },
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "../../packages/floating-vue/**/*"],
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
   "exclude": ["src/**/__tests__/*"]
 }

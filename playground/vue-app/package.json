@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@iconify-json/radix-icons": "^1.1.14",
+    "@perigee-ui/floating-vue": "workspace:*",
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^20.14.10",
     "@unocss/preset-web-fonts": "^0.61.6",
