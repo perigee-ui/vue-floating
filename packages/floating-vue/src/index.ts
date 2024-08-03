@@ -31,3 +31,7 @@ export {
   provideFloatingDelayGroupContext,
   useFloatingDelayGroupContext,
 } from './components/FloatingDelayGroup/FloatingDelayGroup.ts'
+export {
+  type FloatingFocusManagerProps,
+  FloatingFocusManager,
+} from './components/FloatingFocusManager/index.ts'

@@ -125,6 +125,7 @@ export const HIDDEN_STYLES: CSSProperties = {
   left: 0,
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 let activeElement: HTMLElement | undefined
 let timeoutId: number | undefined
 

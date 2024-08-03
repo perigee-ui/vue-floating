@@ -2,7 +2,7 @@
 import { computed, watchEffect } from 'vue'
 import { type FocusableElement, tabbable } from 'tabbable'
 import { isHTMLElement } from '@floating-ui/utils/dom'
-import { activeElement, contains, getDocument, getTarget, isTypeableCombobox, stopEvent } from '../../utils.ts'
+import { activeElement, contains, getDocument, getTarget, isTypeableCombobox, isVirtualClick, isVirtualPointerEvent, stopEvent } from '../../utils.ts'
 import { markOthers, supportsInert } from '../../utils/markOthers.ts'
 import { getClosestTabbableElement, getTabbableOptions } from '../../utils/tabbable.ts'
 import { enqueueFocus } from '../../utils/enqueueFocus.ts'
@@ -10,7 +10,6 @@ import { createAttribute } from '../../utils/createAttribute.ts'
 import type { OpenChangeReason } from '../../types.ts'
 import { type FloatingFocusManagerProps, HIDDEN_STYLES, ORDER_DEFAULT, addPreviouslyFocusedElement, getPreviouslyFocusedElement } from './FloatingFocusManager.ts'
 import FocusGuard from './FocusGuard.vue'
-import VisuallyHiddenDismiss from './VisuallyHiddenDismiss.vue'
 
 const props = withDefaults(defineProps<FloatingFocusManagerProps>(), {
   disabled: false,
@@ -55,7 +54,7 @@ const floatingFocusNode = computed(() => {
   return firstElementChild?.id === context.floatingId ? firstElementChild : context.elements.floating.value
 })
 
-function getTabbableContent(container: Element | null = floatingFocusNode.value) {
+function getTabbableContent(container: Element | null | undefined = floatingFocusNode.value) {
   return container ? tabbable(container, getTabbableOptions()) : []
 }
 
@@ -253,6 +252,9 @@ watchEffect((onCleanup) => {
   if (props.disabled)
     return
 
+  if (!context.elements.floating.value)
+    return
+
   // Don't hide portals nested within the parent portal.
   // const portalNodes = Array.from(
   //   portalContext?.portalNode?.querySelectorAll(
@@ -262,9 +264,6 @@ watchEffect((onCleanup) => {
 
   const portalNodes: any = []
 
-  if (!context.elements.floating.value) {
-    return
-  }
   const insideElements = [
     context.elements.floating.value,
     ...portalNodes,
@@ -327,41 +326,25 @@ watchEffect((onCleanup) => {
 
   // Dismissing via outside press should always ignore `returnFocus` to
   // prevent unwanted scrolling.
-  function onOpenChange({
-    open,
-    reason,
-    event,
-    nested,
-  }: {
-    open: boolean
-    reason: OpenChangeReason
-    event: Event
-    nested: boolean
-  }) {
-    if (open) {
+  function onOpenChange({ open, reason, event, nested }: { open: boolean, reason: OpenChangeReason, event: Event, nested: boolean }) {
+    if (open)
       openEvent = event
-    }
 
-    if (reason === 'escape-key' && context.refs.domReference.current) {
+    if (reason === 'escape-key' && context.refs.domReference.current)
       addPreviouslyFocusedElement(context.refs.domReference.current)
-    }
 
-    if (reason === 'hover' && event.type === 'mouseleave') {
+    if (reason === 'hover' && event.type === 'mouseleave')
       preventReturnFocusRef = true
-    }
 
     if (reason !== 'outside-press')
       return
 
     if (nested) {
-      preventReturnFocusRef.current = false
+      preventReturnFocusRef = false
       preventReturnFocusScroll = true
     }
     else {
-      preventReturnFocusRef.current = !(
-        isVirtualClick(event as MouseEvent)
-        || isVirtualPointerEvent(event as PointerEvent)
-      )
+      preventReturnFocusRef = !(isVirtualClick(event as MouseEvent) || isVirtualPointerEvent(event as PointerEvent))
     }
   }
 
@@ -376,30 +359,21 @@ watchEffect((onCleanup) => {
     // && getChildren(tree.nodesRef.current, nodeId).some(node =>
     //   contains(node.context?.elements.floating, activeEl),
     // ))
-    const shouldFocusReference = isFocusInsideFloatingTree
-      || (openEvent && ['click', 'mousedown'].includes(openEvent.type))
+    const shouldFocusReference = isFocusInsideFloatingTree || (openEvent && ['click', 'mousedown'].includes(openEvent.type))
 
-    if (shouldFocusReference && context.refs.domReference.current) {
+    if (shouldFocusReference && context.refs.domReference.current)
       addPreviouslyFocusedElement(context.refs.domReference.current)
-    }
 
     const returnContextElement = domReference || previouslyFocusedElement
-    const tabbableElements = tabbable(
-      getDocument(returnContextElement).body,
-      getTabbableOptions(),
-    )
+    const tabbableElements = tabbable(getDocument(returnContextElement).body, getTabbableOptions())
 
     // Wait for the return element to get potentially disconnected before
     // checking.
     queueMicrotask(() => {
       let returnElement = getPreviouslyFocusedElement()
-      if (!returnElement && isHTMLElement(returnContextElement) && context.elements.floating.value) {
-        returnElement = getClosestTabbableElement(
-          tabbableElements,
-          returnContextElement,
-          context.elements.floating.value,
-        )
-      }
+
+      if (!returnElement && isHTMLElement(returnContextElement) && context.elements.floating.value)
+        returnElement = getClosestTabbableElement(tabbableElements, returnContextElement, context.elements.floating.value)
 
       if (
         props.restoreFocus
@@ -441,6 +415,7 @@ watchEffect((onCleanup) => {
   if (props.disabled)
     return
   const floatingFocusNodeValue = floatingFocusNode.value
+
   if (!floatingFocusNodeValue)
     return
   if (typeof MutationObserver !== 'function')
@@ -458,13 +433,9 @@ watchEffect((onCleanup) => {
       tabbableIndexRef = tabbableIndex
     }
 
-    if (
-      props.order.includes('floating')
-      || (activeEl !== context.refs.domReference.current && tabbableContent.length === 0)
-    ) {
-      if (tabIndex !== '0') {
+    if (props.order.includes('floating') || (activeEl !== context.refs.domReference.current && tabbableContent.length === 0)) {
+      if (tabIndex !== '0')
         floatingFocusNodeValue.setAttribute('tabindex', '0')
-      }
     }
     else if (tabIndex !== '-1') {
       floatingFocusNodeValue.setAttribute('tabindex', '-1')
@@ -513,9 +484,9 @@ function onFocusBeforeGuard(_event: FocusEvent) {
 }
 
 function onFocusAfterGuard(_event: FocusEvent) {
-  if (props.modal) {
+  if (props.modal)
     enqueueFocus(getTabbableElements()[0])
-  }
+
   // else if (
   //   portalContext?.preserveTabOrder
   //   && portalContext.portalNode
@@ -534,7 +505,7 @@ function onFocusAfterGuard(_event: FocusEvent) {
   // }
 }
 
-function onClickHidden(event: Event) {
+function onVisuallyHiddenDismissClick(event: Event) {
   context.onOpenChange(false, event)
 }
 </script>
@@ -554,7 +525,7 @@ function onClickHidden(event: Event) {
     tabindex="-1"
     type="button"
     :style="HIDDEN_STYLES"
-    @click="onClickHidden"
+    @click="onVisuallyHiddenDismissClick"
   >
     {{ typeof visuallyHiddenDismiss === 'string' ? visuallyHiddenDismiss : 'Dismiss' }}
   </button>
@@ -569,7 +540,7 @@ function onClickHidden(event: Event) {
     tabindex="-1"
     type="button"
     :style="HIDDEN_STYLES"
-    @click="onClickHidden"
+    @click="onVisuallyHiddenDismissClick"
   >
     {{ typeof visuallyHiddenDismiss === 'string' ? visuallyHiddenDismiss : 'Dismiss' }}
   </button>
