@@ -62,12 +62,8 @@ export function useClientPoint(
     // Prevent setting if the open event was not a mouse-like one
     // (e.g. focus to open, then hover over the reference element).
     // Only apply if the event exists.
-    if (
-      dataRef.openEvent
-      && !isMouseBasedEvent(dataRef.openEvent)
-    ) {
+    if (dataRef.openEvent && !isMouseBasedEvent(dataRef.openEvent))
       return
-    }
 
     refs.setPositionReference(
       createVirtualElement(domReference.value, {
@@ -99,11 +95,11 @@ export function useClientPoint(
   // mouse even if the floating element is transitioning out. On touch
   // devices, this is undesirable because the floating element will move to
   // the dismissal touch point.
-  const openCheck = computed(() => isMouseLikePointerType(pointerType.value) ? floating.value : open.value)
+  const openCheck = () => isMouseLikePointerType(pointerType.value) ? floating.value : open.value
 
   function addListener() {
     // Explicitly specified `x`/`y` coordinates shouldn't add a listener.
-    if (!openCheck.value || !enabled.value || x.value != null || y.value != null)
+    if (!enabled.value || x.value != null || y.value != null || !openCheck())
       return
 
     const win = getWindow(floating.value)
@@ -122,11 +118,14 @@ export function useClientPoint(
 
     if (!dataRef.openEvent || isMouseBasedEvent(dataRef.openEvent)) {
       win.addEventListener('mousemove', handleMouseMove)
+
       const cleanup = () => {
         win.removeEventListener('mousemove', handleMouseMove)
         cleanupListenerRef = undefined
       }
+
       cleanupListenerRef = cleanup
+
       return cleanup
     }
 
@@ -146,15 +145,10 @@ export function useClientPoint(
   watchEffect(() => {
     if (enabled.value && !floating.value)
       initialRef = false
-  })
 
-  watchEffect(() => {
-    if (!enabled.value && open.value) {
+    if (!enabled.value && open.value)
       initialRef = true
-    }
-  })
 
-  watchSyncEffect(() => {
     if (enabled.value && (x.value != null || y.value != null)) {
       initialRef = false
       setReference(x.value, y.value)
@@ -201,10 +195,7 @@ function createVirtualElement(
 
       const isXAxis = data.axis === 'x' || data.axis === 'both'
       const isYAxis = data.axis === 'y' || data.axis === 'both'
-      const canTrackCursorOnAutoUpdate
-        = ['mouseenter', 'mousemove'].includes(
-          data.dataRef.openEvent?.type || '',
-        ) && data.pointerType !== 'touch'
+      const canTrackCursorOnAutoUpdate = ['mouseenter', 'mousemove'].includes(data.dataRef.openEvent?.type || '') && data.pointerType !== 'touch'
 
       let width = domRect.width
       let height = domRect.height

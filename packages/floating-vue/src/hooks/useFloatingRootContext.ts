@@ -29,7 +29,7 @@ export function useFloatingRootContext(options: UseFloatingRootContextOptions): 
   } = elementsProp
 
   const floatingId = useId()
-  const dataRef = <ContextData>({})
+  const dataRef = <ContextData>{}
   const events = createPubSub()
   // const nested = useFloatingParentNodeId() != null;
   const nested = false

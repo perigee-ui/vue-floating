@@ -14,11 +14,11 @@ export function contains(parent?: Element | null | undefined, child?: Element | 
   if (!parent || !child)
     return false
 
-  const rootNode = child.getRootNode?.()
-
   // First, attempt with faster native method
   if (parent.contains(child))
     return true
+
+  const rootNode = child.getRootNode?.()
 
   // then fallback to custom implementation with Shadow DOM support
   if (rootNode && isShadowRoot(rootNode)) {
@@ -80,18 +80,22 @@ export function isVirtualPointerEvent(event: PointerEvent) {
 
   return (
     (!isAndroid() && event.width === 0 && event.height === 0)
-    || (isAndroid()
-    && event.width === 1
-    && event.height === 1
-    && event.pressure === 0
-    && event.detail === 0
-    && event.pointerType === 'mouse')
+    || (
+      isAndroid()
+      && event.width === 1
+      && event.height === 1
+      && event.pressure === 0
+      && event.detail === 0
+      && event.pointerType === 'mouse'
+    )
     // iOS VoiceOver returns 0.333• for width/height.
-    || (event.width < 1
-    && event.height < 1
-    && event.pressure === 0
-    && event.detail === 0
-    && event.pointerType === 'touch')
+    || (
+      event.width < 1
+      && event.height < 1
+      && event.pressure === 0
+      && event.detail === 0
+      && event.pointerType === 'touch'
+    )
   )
 }
 
@@ -135,10 +139,7 @@ export function getDocument(node: Element | null | undefined) {
   return node?.ownerDocument || document
 }
 
-export function isEventTargetWithin(
-  event: Event,
-  node: Node | null | undefined,
-) {
+export function isEventTargetWithin(event: Event, node: Node | null | undefined) {
   if (node == null)
     return false
 

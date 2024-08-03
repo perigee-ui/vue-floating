@@ -7,18 +7,16 @@ interface Options {
 }
 
 let rafId = 0
-export function enqueueFocus(
-  el: FocusableElement | undefined,
-  options: Options = {},
-) {
+
+export function enqueueFocus(el: FocusableElement | undefined, options: Options = {}) {
   const { preventScroll = false, cancelPrevious = true, sync = false } = options
   if (cancelPrevious)
     cancelAnimationFrame(rafId)
+
   const exec = () => el?.focus({ preventScroll })
-  if (sync) {
+
+  if (sync)
     exec()
-  }
-  else {
+  else
     rafId = requestAnimationFrame(exec)
-  }
 }

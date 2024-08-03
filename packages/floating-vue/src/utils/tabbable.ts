@@ -17,20 +17,15 @@ export function getTabbableOptions() {
   }) as const
 }
 
-export function getTabbableIn(
-  container: HTMLElement,
-  direction: 'next' | 'prev',
-) {
+export function getTabbableIn(container: HTMLElement, direction: 'next' | 'prev') {
   const allTabbable = tabbable(container, getTabbableOptions())
 
-  if (direction === 'prev') {
+  if (direction === 'prev')
     allTabbable.reverse()
-  }
 
-  const activeIndex = allTabbable.indexOf(
-    activeElement(getDocument(container)) as HTMLElement,
-  )
+  const activeIndex = allTabbable.indexOf(activeElement(getDocument(container)) as HTMLElement)
   const nextTabbableElements = allTabbable.slice(activeIndex + 1)
+
   return nextTabbableElements[0]
 }
 
@@ -42,35 +37,34 @@ export function getPreviousTabbable() {
   return getTabbableIn(document.body, 'prev')
 }
 
-export function isOutsideEvent(
-  event: FocusEvent,
-  container?: Element,
-) {
+export function isOutsideEvent(event: FocusEvent, container?: Element) {
   const containerElement = container || (event.currentTarget as Element)
   const relatedTarget = event.relatedTarget as HTMLElement | null
+
   return !relatedTarget || !contains(containerElement, relatedTarget)
 }
 
 export function disableFocusInside(container: HTMLElement) {
   const tabbableElements = tabbable(container, getTabbableOptions())
-  tabbableElements.forEach((element) => {
+
+  for (const element of tabbableElements) {
     element.dataset.tabindex = element.getAttribute('tabindex') || ''
     element.setAttribute('tabindex', '-1')
-  })
+  }
 }
 
 export function enableFocusInside(container: HTMLElement) {
   const elements = container.querySelectorAll<HTMLElement>('[data-tabindex]')
-  elements.forEach((element) => {
+
+  for (const element of elements) {
     const tabindex = element.dataset.tabindex
     delete element.dataset.tabindex
-    if (tabindex) {
+
+    if (tabindex)
       element.setAttribute('tabindex', tabindex)
-    }
-    else {
+    else
       element.removeAttribute('tabindex')
-    }
-  })
+  }
 }
 
 export function getClosestTabbableElement(
@@ -85,18 +79,12 @@ export function getClosestTabbableElement(
     let index = elementIndex + (next ? 1 : 0)
     let currentElement = tabbableElements[index]
 
-    while (
-      currentElement
-      && (!currentElement.isConnected
-      || currentElement.hasAttribute(attr)
-      || contains(floating, currentElement))
-    ) {
-      if (next) {
+    while (currentElement && (!currentElement.isConnected || currentElement.hasAttribute(attr) || contains(floating, currentElement))) {
+      if (next)
         index++
-      }
-      else {
+      else
         index--
-      }
+
       currentElement = tabbableElements[index]
     }
 
@@ -105,9 +93,8 @@ export function getClosestTabbableElement(
 
   // First, try to find the next tabbable element
   const next = traverseTabbableElements(true)
-  if (next) {
+  if (next)
     return next
-  }
 
   // If we can't find a next tabbable element, try to find the previous one
   return traverseTabbableElements(false)

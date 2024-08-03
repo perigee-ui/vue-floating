@@ -88,9 +88,8 @@ export function useFocus(
       return
 
     function onOpenChange({ reason }: { reason: OpenChangeReason }) {
-      if (reason === 'reference-press' || reason === 'escape-key') {
+      if (reason === 'reference-press' || reason === 'escape-key')
         blockFocusRef = true
-      }
     }
 
     events.on('openchange', onOpenChange)
@@ -131,9 +130,8 @@ export function useFocus(
         }
         catch {
           // Old browsers will throw an error when using `:focus-visible`.
-          if (!keyboardModalityRef && !isTypeableElement(target)) {
+          if (!keyboardModalityRef && !isTypeableElement(target))
             return
-          }
         }
       }
 
@@ -146,18 +144,13 @@ export function useFocus(
 
       // Hit the non-modal focus management portal guard. Focus will be
       // moved into the floating element immediately after.
-      const movedToFocusGuard
-          = isElement(relatedTarget)
-          && relatedTarget.hasAttribute(createAttribute('focus-guard'))
-          && relatedTarget.getAttribute('data-type') === 'outside'
+      const movedToFocusGuard = isElement(relatedTarget)
+        && relatedTarget.hasAttribute(createAttribute('focus-guard'))
+        && relatedTarget.getAttribute('data-type') === 'outside'
 
       // Wait for the window blur listener to fire.
       timeoutRef = window.setTimeout(() => {
-        const activeEl = activeElement(
-          elements.domReference.value
-            ? elements.domReference.value.ownerDocument
-            : document,
-        )
+        const activeEl = activeElement(elements.domReference.value ? elements.domReference.value.ownerDocument : document)
 
         // Focus left the page, keep it open.
         if (!relatedTarget && activeEl === elements.domReference.value)
@@ -171,10 +164,7 @@ export function useFocus(
         // and not the element that actually has received focus if it is located
         // inside a shadow root.
         if (
-          contains(
-            dataRef.floatingContext?.refs.floating.current,
-            activeEl,
-          )
+          contains(dataRef.floatingContext?.refs.floating.current, activeEl)
           || contains(elements.domReference.value, activeEl)
           || movedToFocusGuard
         ) {

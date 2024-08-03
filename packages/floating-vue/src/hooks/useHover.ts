@@ -187,9 +187,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
       return
 
     function isClickLikeOpenEvent() {
-      return dataRef.openEvent
-        ? ['click', 'mousedown'].includes(dataRef.openEvent.type)
-        : false
+      return dataRef.openEvent ? ['click', 'mousedown'].includes(dataRef.openEvent.type) : false
     }
 
     function onMouseenter(event: MouseEvent) {
@@ -203,9 +201,8 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
 
       if (openDelay) {
         timeoutRef = window.setTimeout(() => {
-          if (!openVal) {
+          if (!openVal)
             onOpenChange(true, event, 'hover')
-          }
         }, openDelay)
       }
       else {
@@ -322,6 +319,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
 
     if (!open.value || !handleClose?.__options.blockPointerEvents || !isHoverOpen())
       return
+
     const floatingEl = elements.floating.value
     const body = getDocument(floatingEl).body
     body.setAttribute(safePolygonIdentifier, '')
@@ -379,9 +377,8 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     onPointerenter: setPointerRef,
     onMousemove(event) {
       function handleMouseMove() {
-        if (!blockMouseMoveRef && !open.value) {
+        if (!blockMouseMoveRef && !open.value)
           onOpenChange(true, event, 'hover')
-        }
       }
 
       if (mouseOnly && !isMouseLikePointerType(pointerTypeRef))
@@ -411,17 +408,12 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
   return () => enabled.value ? { reference: referenceProps, floating: floatingProps } : undefined
 }
 
-export function getDelay(
-  value: UseHoverProps['delay'],
-  prop: 'open' | 'close',
-  pointerType?: PointerEvent['pointerType'],
-) {
+export function getDelay(value: UseHoverProps['delay'], prop: 'open' | 'close', pointerType?: PointerEvent['pointerType']) {
   if (pointerType && !isMouseLikePointerType(pointerType))
     return 0
 
-  if (typeof value === 'function') {
+  if (typeof value === 'function')
     return getDelay(value(), prop, pointerType)
-  }
 
   if (typeof value === 'number')
     return value

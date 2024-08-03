@@ -87,9 +87,8 @@ export function useTypeahead(
 
   watchEffect(() => {
     // Sync arrow key navigation but not typeahead navigation.
-    if (open.value && stringRef === '') {
+    if (open.value && stringRef === '')
       prevIndexRef = selectedIndex?.value ?? activeIndex?.value ?? -1
-    }
   })
 
   function setTypingChange(value: boolean) {
@@ -108,18 +107,10 @@ export function useTypeahead(
   }
 
   function onKeydown(event: KeyboardEvent) {
-    function getMatchingIndex(
-      list: Array<string | undefined>,
-      orderedList: Array<string | undefined>,
-      string: string,
-    ) {
+    function getMatchingIndex(list: Array<string | undefined>, orderedList: Array<string | undefined>, string: string) {
       const str = findMatch
         ? findMatch(orderedList, string)
-        : orderedList.find(
-          text =>
-            text?.toLocaleLowerCase().indexOf(string.toLocaleLowerCase())
-            === 0,
-        )
+        : orderedList.find(text => text?.toLocaleLowerCase().indexOf(string.toLocaleLowerCase()) === 0)
 
       return str ? list.indexOf(str) : -1
     }
@@ -127,9 +118,7 @@ export function useTypeahead(
     const listContent = props.list
 
     if (stringRef.length > 0 && stringRef[0] !== ' ') {
-      if (
-        getMatchingIndex(listContent, listContent, stringRef) === -1
-      ) {
+      if (getMatchingIndex(listContent, listContent, stringRef) === -1) {
         setTypingChange(false)
       }
       else if (event.key === ' ') {

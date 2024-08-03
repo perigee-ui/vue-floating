@@ -67,24 +67,20 @@ export function useClick(
       pointerTypeRef = event.pointerType as 'mouse' | 'pen' | 'touch'
     },
     onMousedown(event) {
+      if (eventOption === 'click')
+        return
+
       const pointerType = pointerTypeRef
 
       // Ignore all buttons except for the "main" button.
       // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
       if (event.button !== 0)
         return
-      if (eventOption === 'click')
-        return
+
       if (isMouseLikePointerType(pointerType, true) && ignoreMouse)
         return
 
-      if (
-        open.value
-        && toggle
-        && (dataRef.openEvent
-          ? dataRef.openEvent.type === 'mousedown'
-          : true)
-      ) {
+      if (open.value && toggle && (dataRef.openEvent ? dataRef.openEvent.type === 'mousedown' : true)) {
         onOpenChange(false, event, 'click')
       }
       else {
@@ -104,29 +100,16 @@ export function useClick(
       if (isMouseLikePointerType(pointerType, true) && ignoreMouse)
         return
 
-      if (
-        open.value
-        && toggle
-        && (dataRef.openEvent
-          ? dataRef.openEvent.type === 'click'
-          : true)
-      ) {
+      if (open.value && toggle && (dataRef.openEvent ? dataRef.openEvent.type === 'click' : true))
         onOpenChange(false, event, 'click')
-      }
-      else {
+      else
         onOpenChange(true, event, 'click')
-      }
     },
     onKeydown(event) {
       pointerTypeRef = undefined
 
-      if (
-        event.defaultPrevented
-        || !keyboardHandlers
-        || isButtonTarget(event)
-      ) {
+      if (event.defaultPrevented || !keyboardHandlers || isButtonTarget(event))
         return
-      }
 
       if (event.key === ' ' && !isSpaceIgnored(domReference.value)) {
         // Prevent scrolling
@@ -134,34 +117,27 @@ export function useClick(
         didKeyDownRef = true
       }
 
-      if (event.key === 'Enter') {
-        if (open.value && toggle) {
-          onOpenChange(false, event, 'click')
-        }
-        else {
-          onOpenChange(true, event, 'click')
-        }
-      }
+      if (event.key !== 'Enter')
+        return
+
+      if (open.value && toggle)
+        onOpenChange(false, event, 'click')
+      else
+        onOpenChange(true, event, 'click')
     },
     onKeyup(event) {
-      if (
-        event.defaultPrevented
-        || !keyboardHandlers
-        || isButtonTarget(event)
-        || isSpaceIgnored(domReference.value)
-      ) {
+      if (event.defaultPrevented || !keyboardHandlers || isButtonTarget(event) || isSpaceIgnored(domReference.value))
         return
-      }
 
-      if (event.key === ' ' && didKeyDownRef) {
-        didKeyDownRef = false
-        if (open.value && toggle) {
-          onOpenChange(false, event, 'click')
-        }
-        else {
-          onOpenChange(true, event, 'click')
-        }
-      }
+      if (event.key !== ' ' || !didKeyDownRef)
+        return
+
+      didKeyDownRef = false
+
+      if (open.value && toggle)
+        onOpenChange(false, event, 'click')
+      else
+        onOpenChange(true, event, 'click')
     },
   }
 

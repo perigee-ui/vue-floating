@@ -35,20 +35,14 @@ function correctElements(parent: HTMLElement, targets: Element[]): Element[] {
       }
     }
 
-    if (_target != null) {
+    if (_target != null)
       ret.push(_target)
-    }
   }
 
   return ret
 }
 
-function applyAttributeToOthers(
-  uncorrectedAvoidElements: Element[],
-  body: HTMLElement,
-  ariaHidden: boolean,
-  inert: boolean,
-): Undo {
+function applyAttributeToOthers(uncorrectedAvoidElements: Element[], body: HTMLElement, ariaHidden: boolean, inert: boolean): Undo {
   const markerName = 'data-floating-ui-inert'
   const controlAttribute = inert ? 'inert' : ariaHidden ? 'aria-hidden' : null
   const avoidElements = correctElements(body, uncorrectedAvoidElements)
@@ -56,9 +50,8 @@ function applyAttributeToOthers(
   const elementsToStop = new Set<Node>(avoidElements)
   const hiddenElements: Element[] = []
 
-  if (!markerMap[markerName]) {
+  if (!markerMap[markerName])
     markerMap[markerName] = new WeakMap()
-  }
 
   const markerCounter = markerMap[markerName]
 
@@ -67,20 +60,18 @@ function applyAttributeToOthers(
   elementsToKeep.clear()
 
   function keep(el: Node | undefined) {
-    if (!el || elementsToKeep.has(el)) {
+    if (!el || elementsToKeep.has(el))
       return
-    }
 
     elementsToKeep.add(el)
-    if (el.parentNode) {
+
+    if (el.parentNode)
       keep(el.parentNode)
-    }
   }
 
   function deep(parent: Element | null) {
-    if (!parent || elementsToStop.has(parent)) {
+    if (!parent || elementsToStop.has(parent))
       return
-    }
 
     for (const node of parent.children) {
       if (getNodeName(node) === 'script')
@@ -148,12 +139,9 @@ function applyAttributeToOthers(
   }
 }
 
-export function markOthers(
-  avoidElements: Element[],
-  ariaHidden = false,
-  inert = false,
-): Undo {
+export function markOthers(avoidElements: Element[], ariaHidden = false, inert = false): Undo {
   const body = getDocument(avoidElements[0]).body
+
   return applyAttributeToOthers(
     avoidElements.concat(Array.from(body.querySelectorAll('[aria-live]'))),
     body,
