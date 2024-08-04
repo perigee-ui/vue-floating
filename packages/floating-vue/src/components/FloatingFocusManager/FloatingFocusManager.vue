@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, watchEffect } from 'vue'
+import { computed, watch, watchEffect } from 'vue'
 import { type FocusableElement, tabbable } from 'tabbable'
 import { isHTMLElement } from '@floating-ui/utils/dom'
+// eslint-disable-next-line vue/prefer-import-from-vue
+import { isObject } from '@vue/shared'
 import { activeElement, contains, getDocument, getTarget, isTypeableCombobox, isVirtualClick, isVirtualPointerEvent, stopEvent } from '../../utils.ts'
 import { markOthers, supportsInert } from '../../utils/markOthers.ts'
 import { getClosestTabbableElement, getTabbableOptions } from '../../utils/tabbable.ts'
@@ -100,9 +102,11 @@ function onKeydown(event: KeyboardEvent) {
   if (props.order[0] === 'reference' && target === context.elements.domReference.value) {
     stopEvent(event)
     if (event.shiftKey) {
+      // console.error('enqueueFocus:1')
       enqueueFocus(els[els.length - 1])
     }
     else {
+      // console.error('enqueueFocus:2')
       enqueueFocus(els[1])
     }
   }
@@ -113,6 +117,7 @@ function onKeydown(event: KeyboardEvent) {
     && event.shiftKey
   ) {
     stopEvent(event)
+    // console.error('enqueueFocus:3')
     enqueueFocus(els[0])
   }
 }
@@ -196,6 +201,7 @@ function handleFocusOutside(event: FocusEvent) {
       // Let `FloatingPortal` effect knows that focus is still inside the
       // floating tree.
       if (isHTMLElement(floatingFocusNode.value)) {
+        // console.error('foces:1')
         floatingFocusNode.value?.focus()
       }
 
@@ -206,6 +212,7 @@ function handleFocusOutside(event: FocusEvent) {
         || floatingFocusNode.value
 
       if (isHTMLElement(nodeToFocus)) {
+        // console.error('foces:2')
         nodeToFocus.focus()
       }
     }
@@ -261,6 +268,7 @@ watchEffect((onCleanup) => {
   //       `[${createAttribute('portal')}]`,
   //   ) || [],
   // )
+  // console.error('f')
 
   const portalNodes: any = []
 
@@ -269,12 +277,12 @@ watchEffect((onCleanup) => {
     ...portalNodes,
     startDismissButtonRef,
     endDismissButtonRef,
-    props.order.includes('reference') || isUntrappedTypeableCombobox
+    props.order.includes('reference') || isUntrappedTypeableCombobox.value
       ? context.elements.domReference.value
       : undefined,
   ].filter((x): x is Element => x != null)
 
-  const cleanup = props.modal || isUntrappedTypeableCombobox
+  const cleanup = props.modal || isUntrappedTypeableCombobox.value
     ? markOthers(insideElements, guards, !guards)
     : markOthers(insideElements)
 
@@ -284,25 +292,26 @@ watchEffect((onCleanup) => {
 })
 
 watchEffect(() => {
-  if (props.disabled || !isHTMLElement(floatingFocusNode))
+  if (props.disabled || !isHTMLElement(floatingFocusNode.value))
     return
 
-  const doc = getDocument(floatingFocusNode)
-  const previouslyFocusedElement = activeElement(doc)
+  const doc = getDocument(floatingFocusNode.value)
 
   // Wait for any layout effect state setters to execute to set `tabIndex`.
   queueMicrotask(() => {
-    const focusableElements = getTabbableElements(floatingFocusNode)
-    const initialFocusValue = props.initialFocus
-    const elToFocus = (typeof initialFocusValue === 'number'
-      ? focusableElements[initialFocusValue]
-      : initialFocusValue) || floatingFocusNode
-    const focusAlreadyInsideFloatingEl = contains(
-      floatingFocusNode,
-      previouslyFocusedElement,
-    )
+    const previouslyFocusedElement = activeElement(doc)
 
+    const focusableElements = getTabbableElements(floatingFocusNode.value)
+    const initialFocusValue = isObject(props.initialFocus) ? props.initialFocus.current : props.initialFocus
+    const elToFocus = (typeof initialFocusValue === 'number' ? focusableElements[initialFocusValue] : initialFocusValue) || floatingFocusNode.value as FocusableElement | undefined
+    const focusAlreadyInsideFloatingEl = contains(floatingFocusNode.value, previouslyFocusedElement)
+    // console.error('previouslyFocusedElement::', previouslyFocusedElement)
+
+    // console.error('props.initialFocus', props.initialFocus)
+    // console.error('initialFocusValue', initialFocusValue)
+    // console.error('elToFocus', elToFocus)
     if (!ignoreInitialFocus() && !focusAlreadyInsideFloatingEl && context.open.value) {
+      // console.error('enqueueFocus:4', elToFocus)
       enqueueFocus(elToFocus, {
         preventScroll: elToFocus === floatingFocusNode.value,
       })
@@ -310,85 +319,97 @@ watchEffect(() => {
   })
 })
 
-watchEffect((onCleanup) => {
-  if (props.disabled || !floatingFocusNode.value)
-    return
-
-  let preventReturnFocusScroll = false
-
-  const doc = getDocument(floatingFocusNode.value)
-  const previouslyFocusedElement = activeElement(doc)
-  const contextData = context.dataRef
-  let openEvent = contextData.openEvent
-  const domReference = context.refs.domReference.current
-
-  addPreviouslyFocusedElement(previouslyFocusedElement)
-
-  // Dismissing via outside press should always ignore `returnFocus` to
-  // prevent unwanted scrolling.
-  function onOpenChange({ open, reason, event, nested }: { open: boolean, reason: OpenChangeReason, event: Event, nested: boolean }) {
-    if (open)
-      openEvent = event
-
-    if (reason === 'escape-key' && context.refs.domReference.current)
-      addPreviouslyFocusedElement(context.refs.domReference.current)
-
-    if (reason === 'hover' && event.type === 'mouseleave')
-      preventReturnFocusRef = true
-
-    if (reason !== 'outside-press')
+watch(
+  () => !props.disabled ? floatingFocusNode.value : false,
+  (_, __, onCleanup) => {
+    if (props.disabled || !floatingFocusNode.value)
       return
 
-    if (nested) {
-      preventReturnFocusRef = false
-      preventReturnFocusScroll = true
-    }
-    else {
-      preventReturnFocusRef = !(isVirtualClick(event as MouseEvent) || isVirtualPointerEvent(event as PointerEvent))
-    }
-  }
+    let preventReturnFocusScroll = false
 
-  context.events.on('openchange', onOpenChange)
+    const doc = getDocument(floatingFocusNode.value)
+    const previouslyFocusedElement = activeElement(doc)
+    const contextData = context.dataRef
+    let openEvent = contextData.openEvent
+    const domReference = context.refs.domReference.current
+    const floating = context.elements.floating.value
 
-  onCleanup(() => {
-    context.events.off('openchange', onOpenChange)
+    addPreviouslyFocusedElement(previouslyFocusedElement)
 
-    const activeEl = activeElement(doc)
-    const isFocusInsideFloatingTree = contains(context.elements.floating.value, activeEl)
-    // || (tree
-    // && getChildren(tree.nodesRef.current, nodeId).some(node =>
-    //   contains(node.context?.elements.floating, activeEl),
-    // ))
-    const shouldFocusReference = isFocusInsideFloatingTree || (openEvent && ['click', 'mousedown'].includes(openEvent.type))
+    // Dismissing via outside press should always ignore `returnFocus` to
+    // prevent unwanted scrolling.
+    function onOpenChange({ open, reason, event, nested }: { open: boolean, reason: OpenChangeReason, event: Event, nested: boolean }) {
+      if (open)
+        openEvent = event
 
-    if (shouldFocusReference && context.refs.domReference.current)
-      addPreviouslyFocusedElement(context.refs.domReference.current)
+      if (reason === 'escape-key' && context.refs.domReference.current)
+        addPreviouslyFocusedElement(context.refs.domReference.current)
 
-    const returnContextElement = domReference || previouslyFocusedElement
-    const tabbableElements = tabbable(getDocument(returnContextElement).body, getTabbableOptions())
+      if (reason === 'hover' && event.type === 'mouseleave')
+        preventReturnFocusRef = true
 
-    // Wait for the return element to get potentially disconnected before
-    // checking.
-    queueMicrotask(() => {
-      let returnElement = getPreviouslyFocusedElement()
+      if (reason !== 'outside-press')
+        return
 
-      if (!returnElement && isHTMLElement(returnContextElement) && context.elements.floating.value)
-        returnElement = getClosestTabbableElement(tabbableElements, returnContextElement, context.elements.floating.value)
-
-      if (
-        props.restoreFocus
-        && !preventReturnFocusRef
-        && isHTMLElement(returnElement)
-        // If the focus moved somewhere else after mount, avoid returning focus
-        // since it likely entered a different element which should be
-        // respected: https://github.com/floating-ui/floating-ui/issues/2607
-        && (returnElement !== activeEl && activeEl !== doc.body ? isFocusInsideFloatingTree : true)
-      ) {
-        returnElement.focus({ preventScroll: preventReturnFocusScroll })
+      if (nested) {
+        preventReturnFocusRef = false
+        preventReturnFocusScroll = true
       }
+      else {
+        preventReturnFocusRef = !(isVirtualClick(event as MouseEvent) || isVirtualPointerEvent(event as PointerEvent))
+      }
+    }
+
+    context.events.on('openchange', onOpenChange)
+
+    onCleanup(() => {
+      context.events.off('openchange', onOpenChange)
+
+      const activeEl = activeElement(doc)
+      const isFocusInsideFloatingTree = contains(context.elements.floating.value, activeEl)
+      // || (tree
+      // && getChildren(tree.nodesRef.current, nodeId).some(node =>
+      //   contains(node.context?.elements.floating, activeEl),
+      // ))
+      const shouldFocusReference = isFocusInsideFloatingTree || (openEvent && ['click', 'mousedown'].includes(openEvent.type))
+
+      if (shouldFocusReference && context.refs.domReference.current)
+        addPreviouslyFocusedElement(context.refs.domReference.current)
+
+      const returnContextElement = domReference || previouslyFocusedElement
+      const tabbableElements = tabbable(getDocument(returnContextElement).body, getTabbableOptions())
+
+      // console.error('FF::0::', returnContextElement, domReference, previouslyFocusedElement)
+
+      // Wait for the return element to get potentially disconnected before
+      // checking.
+      queueMicrotask(() => {
+        let returnElement = getPreviouslyFocusedElement()
+        // console.error('FF::1::', returnElement)
+
+        if (!returnElement && isHTMLElement(returnContextElement) && floating) {
+          returnElement = getClosestTabbableElement(tabbableElements, returnContextElement, floating)
+          // console.error('FF::2::', returnElement?.className)
+        }
+
+        // console.error('END::', props.returnFocus)
+
+        if (
+          props.returnFocus
+          && !preventReturnFocusRef
+          && isHTMLElement(returnElement)
+          // If the focus moved somewhere else after mount, avoid returning focus
+          // since it likely entered a different element which should be
+          // respected: https://github.com/floating-ui/floating-ui/issues/2607
+          && (returnElement !== activeEl && activeEl !== doc.body ? isFocusInsideFloatingTree : true)
+        ) {
+          // console.error('foces:3', returnElement?.className)
+          returnElement.focus({ preventScroll: preventReturnFocusScroll })
+        }
+      })
     })
-  })
-})
+  },
+)
 
 // Synchronize the `context` & `modal` value to the FloatingPortal context.
 // It will decide whether or not it needs to render its own guards.
@@ -466,6 +487,7 @@ const shouldRenderGuards = computed(() =>
 function onFocusBeforeGuard(_event: FocusEvent) {
   if (props.modal) {
     const els = getTabbableElements()
+    // console.error('enqueueFocus:5')
     enqueueFocus(props.order[0] === 'reference' ? els[0] : els[els.length - 1])
   }
   // else if (
@@ -484,8 +506,10 @@ function onFocusBeforeGuard(_event: FocusEvent) {
 }
 
 function onFocusAfterGuard(_event: FocusEvent) {
-  if (props.modal)
+  if (props.modal) {
+    // console.error('enqueueFocus:6')
     enqueueFocus(getTabbableElements()[0])
+  }
 
   // else if (
   //   portalContext?.preserveTabOrder

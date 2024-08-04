@@ -5,6 +5,7 @@ import { isTabbable, tabbable } from 'tabbable'
 import type { CSSProperties } from 'vue'
 import type { FloatingContext } from '../../types.ts'
 import { getTabbableOptions } from '../../utils/tabbable.ts'
+import type { MutableRefObject } from '../../vue/useRef.ts'
 
 // eslint-disable-next-line ts/consistent-type-definitions
 export type FloatingFocusManagerProps = {
@@ -29,7 +30,7 @@ export type FloatingFocusManagerProps = {
    * specified by the `order`) or a ref.
    * @default 0
    */
-  initialFocus?: number | HTMLElement | null | undefined
+  initialFocus?: number | MutableRefObject<HTMLElement | undefined> | undefined
   /**
    * Determines if the focus guards are rendered. If not, focus can escape into
    * the address bar/console/browser UI, like in native dialogs.

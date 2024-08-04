@@ -67,11 +67,7 @@ export function enableFocusInside(container: HTMLElement) {
   }
 }
 
-export function getClosestTabbableElement(
-  tabbableElements: Array<FocusableElement>,
-  element: HTMLElement,
-  floating: HTMLElement,
-) {
+export function getClosestTabbableElement(tabbableElements: Array<FocusableElement>, element: HTMLElement, floating: HTMLElement) {
   const elementIndex = tabbableElements.indexOf(element)
 
   function traverseTabbableElements(next: boolean) {
