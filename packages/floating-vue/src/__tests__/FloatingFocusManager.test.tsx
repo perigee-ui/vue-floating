@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { type PropType, defineComponent, shallowRef, watchEffect } from 'vue'
 import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
 import userEvent from '@testing-library/user-event'
-import { FloatingFocusManager, type FloatingFocusManagerProps, useClick, useFloating, useInteractions } from '../index.ts'
+import { FloatingFocusManager, type FloatingFocusManagerProps, useClick, useDismiss, useFloating, useInteractions, useRole } from '../index.ts'
 import { act } from '../core/__tests__/utils.ts'
 import { useRef } from '../vue/useRef.ts'
 
@@ -735,4 +735,500 @@ describe('modal', () => {
 
     cleanup()
   })
+})
+
+describe('disabled', () => {
+  it('true -> false', async () => {
+    const App = defineComponent({
+      setup() {
+        const isOpen = shallowRef(false)
+        const disabled = shallowRef(true)
+
+        const { refs, context } = useFloating({
+          open: isOpen,
+          onOpenChange(v) {
+            isOpen.value = v
+          },
+        })
+        return () => (
+          <>
+            <button
+              data-testid="reference"
+              ref={refs.setReference as any}
+              onClick={() => {
+                isOpen.value = !isOpen.value
+              }}
+            />
+            <button
+              data-testid="toggle"
+              onClick={() => {
+                disabled.value = !disabled.value
+              }}
+            />
+            {isOpen.value && (
+              <FloatingFocusManager getContext={() => context} disabled={disabled.value}>
+                <div ref={refs.setFloating as any} data-testid="floating" />
+              </FloatingFocusManager>
+            )}
+          </>
+        )
+      },
+    })
+
+    render(App)
+
+    await fireEvent.click(screen.getByTestId('reference'))
+    await act()
+    expect(screen.getByTestId('floating')).not.toHaveFocus()
+    await fireEvent.click(screen.getByTestId('toggle'))
+    await act()
+    expect(screen.getByTestId('floating')).toHaveFocus()
+    cleanup()
+  })
+
+  it('false', async () => {
+    const App = defineComponent({
+      setup() {
+        const isOpen = shallowRef(false)
+        const disabled = shallowRef(false)
+
+        const { refs, context } = useFloating({
+          open: isOpen,
+          onOpenChange(v) {
+            isOpen.value = v
+          },
+        })
+        return () => (
+          <>
+            <button
+              data-testid="reference"
+              ref={refs.setReference as any}
+              onClick={() => {
+                isOpen.value = !isOpen.value
+              }}
+            />
+            <button
+              data-testid="toggle"
+              onClick={() => {
+                disabled.value = !disabled.value
+              }}
+            />
+            {isOpen.value && (
+              <FloatingFocusManager getContext={() => context} disabled={disabled.value}>
+                <div ref={refs.setFloating as any} data-testid="floating" />
+              </FloatingFocusManager>
+            )}
+          </>
+        )
+      },
+    })
+
+    render(App)
+
+    await fireEvent.click(screen.getByTestId('reference'))
+    await act()
+    expect(screen.getByTestId('floating')).toHaveFocus()
+    cleanup()
+  })
+})
+
+describe('order', () => {
+  it('[reference, content]', async () => {
+    render(App, {
+      props: {
+        focusProps: {
+          order: ['reference', 'content'],
+        },
+      },
+    })
+
+    await fireEvent.click(screen.getByTestId('reference'))
+    await act()
+
+    expect(screen.getByTestId('reference')).toHaveFocus()
+
+    await userEvent.tab()
+    expect(screen.getByTestId('one')).toHaveFocus()
+
+    await userEvent.tab()
+    expect(screen.getByTestId('two')).toHaveFocus()
+    cleanup()
+  })
+
+  it('[floating, content]', async () => {
+    render(App, {
+      props: {
+        focusProps: {
+          order: ['floating', 'content'],
+        },
+      },
+    })
+
+    await fireEvent.click(screen.getByTestId('reference'))
+    await act()
+
+    expect(screen.getByTestId('floating')).toHaveFocus()
+
+    await userEvent.tab()
+    expect(screen.getByTestId('one')).toHaveFocus()
+
+    await userEvent.tab()
+    expect(screen.getByTestId('two')).toHaveFocus()
+
+    await userEvent.tab()
+    expect(screen.getByTestId('three')).toHaveFocus()
+
+    await userEvent.tab()
+    expect(screen.getByTestId('floating')).toHaveFocus()
+
+    await userEvent.tab({ shift: true })
+    expect(screen.getByTestId('three')).toHaveFocus()
+
+    await userEvent.tab({ shift: true })
+    expect(screen.getByTestId('two')).toHaveFocus()
+
+    await userEvent.tab({ shift: true })
+    expect(screen.getByTestId('one')).toHaveFocus()
+
+    await userEvent.tab({ shift: true })
+    expect(screen.getByTestId('floating')).toHaveFocus()
+    cleanup()
+  })
+
+  it('[reference, floating, content]', async () => {
+    render(App, {
+      props: {
+        focusProps: {
+          order: ['reference', 'floating', 'content'],
+        },
+      },
+    })
+
+    await fireEvent.click(screen.getByTestId('reference'))
+    await act()
+
+    expect(screen.getByTestId('reference')).toHaveFocus()
+
+    await userEvent.tab()
+    expect(screen.getByTestId('floating')).toHaveFocus()
+
+    await userEvent.tab()
+    expect(screen.getByTestId('one')).toHaveFocus()
+
+    await userEvent.tab()
+    expect(screen.getByTestId('two')).toHaveFocus()
+
+    await userEvent.tab()
+    expect(screen.getByTestId('three')).toHaveFocus()
+
+    await userEvent.tab()
+    expect(screen.getByTestId('reference')).toHaveFocus()
+
+    await userEvent.tab({ shift: true })
+    expect(screen.getByTestId('three')).toHaveFocus()
+
+    await userEvent.tab({ shift: true })
+    await userEvent.tab({ shift: true })
+    await userEvent.tab({ shift: true })
+    await userEvent.tab({ shift: true })
+
+    expect(screen.getByTestId('reference')).toHaveFocus()
+    cleanup()
+  })
+})
+
+describe.todo('non-modal + FloatingPortal')
+
+describe.todo('navigation')
+
+describe.todo('drawer')
+
+describe('restoreFocus', () => {
+  const App = defineComponent({
+    props: {
+      restoreFocus: {
+        type: Boolean,
+        default: true,
+      },
+    },
+    setup(props) {
+      const isOpen = shallowRef(false)
+      const removedIndex = shallowRef(0)
+
+      const { refs, context } = useFloating({
+        open: isOpen,
+        onOpenChange(v) {
+          isOpen.value = v
+        },
+      })
+
+      const click = useClick(context)
+
+      const { getReferenceProps, getFloatingProps } = useInteractions([click])
+
+      return () => (
+        <>
+          <button
+            ref={refs.setReference as any}
+            {...getReferenceProps()}
+            data-testid="reference"
+          />
+          {isOpen.value && (
+            <FloatingFocusManager
+              getContext={() => context}
+              initialFocus={1}
+              restoreFocus={props.restoreFocus}
+            >
+              <div
+                ref={refs.setFloating as any}
+                {...getFloatingProps()}
+                data-testid="floating"
+              >
+                {removedIndex.value < 3 && (
+                  <button onClick={() => {
+                    removedIndex.value = removedIndex.value + 1
+                  }}
+                  >
+                    three
+                  </button>
+                )}
+                {removedIndex.value < 1 && (
+                  <button onClick={() => {
+                    removedIndex.value = removedIndex.value + 1
+                  }}
+                  >
+                    one
+                  </button>
+                )}
+                {removedIndex.value < 2 && (
+                  <button onClick={() => {
+                    removedIndex.value = removedIndex.value + 1
+                  }}
+                  >
+                    two
+                  </button>
+                )}
+              </div>
+            </FloatingFocusManager>
+          )}
+        </>
+      )
+    },
+  })
+
+  it('true: restores focus to nearest tabbable element if currently focused element is removed', async () => {
+    render(App)
+
+    await userEvent.click(screen.getByTestId('reference'))
+    await act()
+
+    const one = screen.getByRole('button', { name: 'one' })
+    const two = screen.getByRole('button', { name: 'two' })
+    const three = screen.getByRole('button', { name: 'three' })
+    const floating = screen.getByTestId('floating')
+
+    expect(one).toHaveFocus()
+    await fireEvent.click(one)
+    await fireEvent.focusOut(floating)
+
+    await act()
+
+    expect(two).toHaveFocus()
+    await fireEvent.click(two)
+    await fireEvent.focusOut(floating)
+
+    await act()
+
+    expect(three).toHaveFocus()
+    await fireEvent.click(three)
+    await fireEvent.focusOut(floating)
+
+    await act()
+
+    expect(floating).toHaveFocus()
+    cleanup()
+  })
+
+  it('false: does not restore focus to nearest tabbable element if currently focused element is removed', async () => {
+    render(App, {
+      props: {
+        restoreFocus: false,
+      },
+    })
+
+    await userEvent.click(screen.getByTestId('reference'))
+    await act()
+
+    const one = screen.getByRole('button', { name: 'one' })
+    const floating = screen.getByTestId('floating')
+
+    expect(one).toHaveFocus()
+    await fireEvent.click(one)
+    await fireEvent.focusOut(floating)
+
+    await act()
+
+    expect(document.body).toHaveFocus()
+    cleanup()
+  })
+})
+
+it('trapped combobox prevents focus moving outside floating element', async () => {
+  const App = defineComponent({
+    setup() {
+      const isOpen = shallowRef(false)
+      const { refs, floatingStyles, context } = useFloating({
+        open: isOpen,
+        onOpenChange(v) {
+          isOpen.value = v
+        },
+      })
+
+      const role = useRole(context)
+      const dismiss = useDismiss(context)
+      const click = useClick(context)
+
+      const { getReferenceProps, getFloatingProps } = useInteractions([
+        role,
+        dismiss,
+        click,
+      ])
+
+      return () => (
+        <div class="App">
+          <input
+            ref={refs.setReference as any}
+            {...getReferenceProps()}
+            data-testid="input"
+            role="combobox"
+          />
+          {isOpen.value && (
+            <FloatingFocusManager getContext={() => context}>
+              <div
+                ref={refs.setFloating as any}
+                style={floatingStyles.value}
+                {...getFloatingProps()}
+              >
+                <button>one</button>
+                <button>two</button>
+              </div>
+            </FloatingFocusManager>
+          )}
+        </div>
+      )
+    },
+  })
+
+  render(App)
+  await userEvent.click(screen.getByTestId('input'))
+  await act()
+  expect(screen.getByTestId('input')).not.toHaveFocus()
+  expect(screen.getByRole('button', { name: 'one' })).toHaveFocus()
+  await userEvent.tab()
+  expect(screen.getByRole('button', { name: 'two' })).toHaveFocus()
+  await userEvent.tab()
+  expect(screen.getByRole('button', { name: 'one' })).toHaveFocus()
+  cleanup()
+})
+
+it.todo('untrapped combobox creates non-modal focus management')
+
+it.todo('returns focus to last connected element')
+
+it('focus is placed on element with floating props when floating element is a wrapper', async () => {
+  const App = defineComponent({
+    setup() {
+      const isOpen = shallowRef(false)
+
+      const { refs, context } = useFloating({
+        open: isOpen,
+        onOpenChange(v) {
+          isOpen.value = v
+        },
+      })
+
+      const role = useRole(context)
+
+      const { getReferenceProps, getFloatingProps } = useInteractions([role])
+
+      return () => (
+        <>
+          <button
+            ref={refs.setReference as any}
+            {...getReferenceProps({
+              onClick: () => {
+                isOpen.value = !isOpen.value
+              },
+            })}
+          />
+          {isOpen.value && (
+            <FloatingFocusManager getContext={() => context}>
+              <div ref={refs.setFloating as any} data-testid="outer">
+                <div {...getFloatingProps()} data-testid="inner"></div>
+              </div>
+            </FloatingFocusManager>
+          )}
+        </>
+      )
+    },
+  })
+
+  render(App)
+
+  await userEvent.click(screen.getByRole('button'))
+  await act()
+
+  expect(screen.getByTestId('inner')).toHaveFocus()
+  cleanup()
+})
+
+it('floating element closes upon tabbing out of modal combobox', async () => {
+  const App = defineComponent({
+    setup() {
+      const isOpen = shallowRef(false)
+      const { refs, context } = useFloating({
+        open: isOpen,
+        onOpenChange(v) {
+          isOpen.value = v
+        },
+      })
+
+      const click = useClick(context)
+
+      const { getReferenceProps, getFloatingProps } = useInteractions([click])
+
+      return () => (
+        <>
+          <input
+            ref={refs.setReference as any}
+            {...getReferenceProps()}
+            data-testid="input"
+            role="combobox"
+          />
+          {isOpen.value && (
+            <FloatingFocusManager getContext={() => context} initialFocus={-1}>
+              <div
+                ref={refs.setFloating as any}
+                {...getFloatingProps()}
+                data-testid="floating"
+              >
+                <button tabindex={-1}>one</button>
+              </div>
+            </FloatingFocusManager>
+          )}
+          <button data-testid="after" />
+        </>
+      )
+    },
+  })
+
+  render(<App />)
+  await userEvent.click(screen.getByTestId('input'))
+  await act()
+  expect(screen.getByTestId('input')).toHaveFocus()
+  await userEvent.tab()
+  await act()
+  expect(screen.getByTestId('after')).toHaveFocus()
+
+  cleanup()
 })

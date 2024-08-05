@@ -44,8 +44,8 @@ export function useClientPoint(
     elements: { floating, domReference },
     refs,
   } = context
-  const { axis = 'both' } = props
-  const enabled = computed(() => toValue(props.enabled ?? true))
+  const { enabled = true, axis = 'both' } = props
+
   const x = computed(() => toValue(props.x))
   const y = computed(() => toValue(props.y))
 
@@ -80,7 +80,7 @@ export function useClientPoint(
     if (x.value != null || y.value != null)
       return
 
-    if (!open.value) {
+    if (!toValue(open)) {
       setReference(event.clientX, event.clientY)
     }
     else if (!cleanupListenerRef) {
@@ -95,11 +95,11 @@ export function useClientPoint(
   // mouse even if the floating element is transitioning out. On touch
   // devices, this is undesirable because the floating element will move to
   // the dismissal touch point.
-  const openCheck = () => isMouseLikePointerType(pointerType.value) ? floating.value : open.value
+  const openCheck = () => isMouseLikePointerType(pointerType.value) ? floating.value : toValue(open)
 
   function addListener() {
     // Explicitly specified `x`/`y` coordinates shouldn't add a listener.
-    if (!enabled.value || x.value != null || y.value != null || !openCheck())
+    if (!toValue(enabled) || x.value != null || y.value != null || !openCheck())
       return
 
     const win = getWindow(floating.value)
@@ -143,13 +143,14 @@ export function useClientPoint(
   })
 
   watchEffect(() => {
-    if (enabled.value && !floating.value)
+    const enabledValue = toValue(enabled)
+    if (enabledValue && !floating.value)
       initialRef = false
 
-    if (!enabled.value && open.value)
+    if (!enabledValue && toValue(open))
       initialRef = true
 
-    if (enabled.value && (x.value != null || y.value != null)) {
+    if (enabledValue && (x.value != null || y.value != null)) {
       initialRef = false
       setReference(x.value, y.value)
     }
@@ -166,7 +167,7 @@ export function useClientPoint(
     onMouseenter: handleReferenceEnterOrMove,
   }
 
-  return () => enabled.value ? { reference: referenceProps } : undefined
+  return () => toValue(enabled) ? { reference: referenceProps } : undefined
 }
 
 function createVirtualElement(

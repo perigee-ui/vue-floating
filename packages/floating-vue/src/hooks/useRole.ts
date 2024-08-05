@@ -41,9 +41,7 @@ export function useRole(
   props: UseRoleProps = {},
 ): () => ElementProps | undefined {
   const { open, floatingId } = context
-  const { role = 'dialog' } = props
-
-  const enabled = computed(() => toValue(props.enabled ?? true))
+  const { enabled = true, role = 'dialog' } = props
 
   const ariaRole = (componentRoleToAriaRoleMap.get(role) ?? role) as
     | AriaRole
@@ -56,18 +54,19 @@ export function useRole(
   const isNested = parentId != null
 
   const referenceProps = computed<ElementProps['reference']>(() => {
+    const openValue = toValue(open)
     if (ariaRole === 'tooltip' || role === 'label') {
       return {
-        [`aria-${role === 'label' ? 'labelledby' : 'describedby'}`]: open.value
+        [`aria-${role === 'label' ? 'labelledby' : 'describedby'}`]: openValue
           ? floatingId
           : undefined,
       }
     }
 
     return {
-      'aria-expanded': open.value ? 'true' : 'false',
+      'aria-expanded': openValue ? 'true' : 'false',
       'aria-haspopup': ariaRole === 'alertdialog' ? 'dialog' : ariaRole,
-      'aria-controls': open.value ? floatingId : undefined,
+      'aria-controls': openValue ? floatingId : undefined,
       ...(ariaRole === 'listbox' && { role: 'combobox' }),
       ...(ariaRole === 'menu' && { id: referenceId }),
       ...(ariaRole === 'menu' && isNested && { role: 'menuitem' }),
@@ -120,5 +119,11 @@ export function useRole(
     return {}
   }
 
-  return () => enabled.value ? { reference: referenceProps.value, floating: floatingProps, item: itemProps } : undefined
+  return () => toValue(enabled)
+    ? {
+        reference: referenceProps.value,
+        floating: floatingProps,
+        item: itemProps,
+      }
+    : undefined
 }

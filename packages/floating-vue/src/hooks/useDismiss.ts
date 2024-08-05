@@ -1,4 +1,4 @@
-import { type MaybeRefOrGetter, computed, toValue, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, toValue, watchEffect } from 'vue'
 import {
   getComputedStyle,
   getParentNode,
@@ -107,6 +107,7 @@ export function useDismiss(
   const { open, onOpenChange, elements, dataRef } = context
 
   const {
+    enabled = true,
     escapeKey = true,
     outsidePress = true,
     outsidePressEvent = 'pointerdown',
@@ -117,7 +118,7 @@ export function useDismiss(
     capture,
   } = props
 
-  const enabled = computed(() => toValue(props.enabled ?? true))
+  // const enabled = computed(() => toValue(props.enabled ?? true))
 
   // const tree = useFloatingTree();
   // const tree = null
@@ -129,7 +130,7 @@ export function useDismiss(
   const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture } = normalizeProp(capture)
 
   function closeOnEscapeKeydown(event: KeyboardEvent) {
-    if (!open.value || !enabled.value || !escapeKey || event.key !== 'Escape')
+    if (!toValue(open) || !toValue(enabled) || !escapeKey || event.key !== 'Escape')
       return
 
     // const nodeId = dataRef.floatingContext?.nodeId
@@ -298,7 +299,7 @@ export function useDismiss(
   }
 
   watchEffect((onCleanup) => {
-    if (!open.value || !enabled.value)
+    if (!toValue(open) || !toValue(enabled))
       return
 
     dataRef.__escapeKeyBubbles = escapeKeyBubbles
@@ -375,7 +376,7 @@ export function useDismiss(
     },
   }
 
-  return () => enabled.value ? { reference: referenceProps, floating: floatingProps } : undefined
+  return () => toValue(enabled) ? { reference: referenceProps, floating: floatingProps } : undefined
 }
 
 export function normalizeProp(normalizable?: boolean | { escapeKey?: boolean, outsidePress?: boolean }) {

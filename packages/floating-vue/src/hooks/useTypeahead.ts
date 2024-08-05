@@ -61,6 +61,7 @@ export function useTypeahead(
 ): () => ElementProps | undefined {
   const { open, dataRef } = context
   const {
+    enabled = true,
     activeIndex,
     onMatch,
     onTypingChange,
@@ -70,15 +71,13 @@ export function useTypeahead(
     selectedIndex = undefined,
   } = props
 
-  const enabled = computed(() => toValue(props.enabled ?? true))
-
   let timeoutIdRef: NodeJS.Timeout | undefined
   let stringRef = ''
   let prevIndexRef: number | undefined = selectedIndex?.value ?? activeIndex?.value ?? -1
   let matchIndexRef: number | undefined
 
   watchEffect(() => {
-    if (open.value) {
+    if (toValue(open)) {
       clearTimeout(timeoutIdRef)
       matchIndexRef = undefined
       stringRef = ''
@@ -87,7 +86,7 @@ export function useTypeahead(
 
   watchEffect(() => {
     // Sync arrow key navigation but not typeahead navigation.
-    if (open.value && stringRef === '')
+    if (toValue(open) && stringRef === '')
       prevIndexRef = selectedIndex?.value ?? activeIndex?.value ?? -1
   })
 
@@ -199,5 +198,5 @@ export function useTypeahead(
     },
   }
 
-  return () => enabled.value ? { reference, floating } : undefined
+  return () => toValue(enabled) ? { reference, floating } : undefined
 }

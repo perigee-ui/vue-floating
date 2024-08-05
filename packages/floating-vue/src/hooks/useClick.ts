@@ -1,5 +1,5 @@
 import { isHTMLElement } from '@floating-ui/utils/dom'
-import { type MaybeRefOrGetter, computed, toValue } from 'vue'
+import { type MaybeRefOrGetter, toValue } from 'vue'
 import { isMouseLikePointerType, isTypeableElement } from '../utils.ts'
 import type { ElementProps, FloatingRootContext } from '../types'
 
@@ -51,13 +51,12 @@ export function useClick(
   } = context
 
   const {
+    enabled = true,
     event: eventOption = 'click',
     toggle = true,
     ignoreMouse = false,
     keyboardHandlers = true,
   } = props
-
-  const enabled = computed(() => toValue(props.enabled ?? true))
 
   let pointerTypeRef: 'mouse' | 'pen' | 'touch' | undefined
   let didKeyDownRef = false
@@ -80,7 +79,7 @@ export function useClick(
       if (isMouseLikePointerType(pointerType, true) && ignoreMouse)
         return
 
-      if (open.value && toggle && (dataRef.openEvent ? dataRef.openEvent.type === 'mousedown' : true)) {
+      if (toValue(open) && toggle && (dataRef.openEvent ? dataRef.openEvent.type === 'mousedown' : true)) {
         onOpenChange(false, event, 'click')
       }
       else {
@@ -100,7 +99,7 @@ export function useClick(
       if (isMouseLikePointerType(pointerType, true) && ignoreMouse)
         return
 
-      if (open.value && toggle && (dataRef.openEvent ? dataRef.openEvent.type === 'click' : true))
+      if (toValue(open) && toggle && (dataRef.openEvent ? dataRef.openEvent.type === 'click' : true))
         onOpenChange(false, event, 'click')
       else
         onOpenChange(true, event, 'click')
@@ -120,7 +119,7 @@ export function useClick(
       if (event.key !== 'Enter')
         return
 
-      if (open.value && toggle)
+      if (toValue(open) && toggle)
         onOpenChange(false, event, 'click')
       else
         onOpenChange(true, event, 'click')
@@ -134,14 +133,14 @@ export function useClick(
 
       didKeyDownRef = false
 
-      if (open.value && toggle)
+      if (toValue(open) && toggle)
         onOpenChange(false, event, 'click')
       else
         onOpenChange(true, event, 'click')
     },
   }
 
-  return () => enabled.value ? { reference: referenceProps } : undefined
+  return () => toValue(enabled) ? { reference: referenceProps } : undefined
 }
 
 function isButtonTarget(event: KeyboardEvent) {

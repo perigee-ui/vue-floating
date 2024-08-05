@@ -1,4 +1,4 @@
-import type { AriaAttributes, Events, HTMLAttributes, Ref } from 'vue'
+import type { AriaAttributes, Events, HTMLAttributes, MaybeRefOrGetter, Ref } from 'vue'
 import type {
   ReferenceType,
   UseFloatingCofnig as UsePositionCofnig,
@@ -148,7 +148,7 @@ export interface ContextData {
 
 export interface FloatingRootContext {
   dataRef: ContextData
-  open: Ref<boolean>
+  open: MaybeRefOrGetter<boolean>
   onOpenChange: (
     open: boolean,
     event?: Event,
@@ -167,7 +167,7 @@ export interface FloatingRootContext {
 }
 
 export type FloatingContext<RT extends ReferenceType = ReferenceType> = Omit<UsePositionFloatingReturn<RT>, 'refs' | 'elements'> & {
-  open: Ref<boolean>
+  open: MaybeRefOrGetter<boolean>
   onOpenChange: (open: boolean, event?: Event, reason?: OpenChangeReason) => void
   events: FloatingEvents
   dataRef: ContextData

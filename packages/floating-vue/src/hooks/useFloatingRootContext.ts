@@ -1,10 +1,10 @@
-import { type Ref, computed, shallowRef } from 'vue'
+import { type MaybeRefOrGetter, type Ref, computed, shallowRef } from 'vue'
 import type { ContextData, FloatingRootContext, OpenChangeReason, ReferenceElement } from '../types'
 import { createPubSub } from '../utils/createPubSub.ts'
 import { useId } from './useId.ts'
 
 export interface UseFloatingRootContextOptions {
-  open?: Ref<boolean>
+  open?: MaybeRefOrGetter<boolean>
   onOpenChange?: (
     open: boolean,
     event?: Event,

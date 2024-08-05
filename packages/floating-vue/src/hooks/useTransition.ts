@@ -1,4 +1,4 @@
-import { type CSSProperties, type Ref, computed, shallowRef, toValue, watch, watchEffect } from 'vue'
+import { type CSSProperties, type MaybeRefOrGetter, type Ref, computed, shallowRef, toValue, watch, watchEffect } from 'vue'
 import type { FloatingContext, Placement, Side } from '../types.ts'
 import type { ReferenceType } from '../core/types.ts'
 
@@ -46,7 +46,7 @@ export function useTransitionStatus<RT extends ReferenceType = ReferenceType>(
   watchEffect(async (onCleanup) => {
     if (!floating.value)
       return
-    if (open.value) {
+    if (toValue(open)) {
       status.value = 'initial'
 
       const frame = requestAnimationFrame(() => {
@@ -189,11 +189,11 @@ function execWithArgsOrReturn<Value extends object | undefined, SidePlacement>(
   return typeof valueOrFn === 'function' ? valueOrFn(args) : valueOrFn
 }
 
-function useDelayUnmount(open: Ref<boolean>, durationMs: number | (() => number)): Ref<boolean> {
-  const isMounted = shallowRef(open.value)
+function useDelayUnmount(open: MaybeRefOrGetter<boolean>, durationMs: number | (() => number)): Ref<boolean> {
+  const isMounted = shallowRef(toValue(open))
 
   watchEffect((onCleanup) => {
-    if (!open.value && isMounted.value) {
+    if (!toValue(open) && isMounted.value) {
       const timeout = setTimeout(() => {
         isMounted.value = false
       }, toValue(durationMs))
@@ -202,7 +202,7 @@ function useDelayUnmount(open: Ref<boolean>, durationMs: number | (() => number)
         clearTimeout(timeout)
       })
     }
-    else if (open.value && !isMounted.value) {
+    else if (toValue(open) && !isMounted.value) {
       isMounted.value = true
     }
   })

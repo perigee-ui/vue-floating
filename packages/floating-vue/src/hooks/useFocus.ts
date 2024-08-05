@@ -1,5 +1,5 @@
 import { getWindow, isElement, isHTMLElement } from '@floating-ui/utils/dom'
-import { type MaybeRefOrGetter, computed, onScopeDispose, toValue, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, onScopeDispose, toValue, watchEffect } from 'vue'
 import {
   activeElement,
   contains,
@@ -43,15 +43,14 @@ export function useFocus(
   props: UseFocusProps = {},
 ): () => ElementProps | undefined {
   const { open, onOpenChange, events, dataRef, elements } = context
-  const { visibleOnly = true } = props
-  const enabled = computed(() => toValue(props.enabled ?? true))
+  const { enabled = true, visibleOnly = true } = props
 
   let blockFocusRef = false
   let timeoutRef: number
   let keyboardModalityRef = true
 
   watchEffect((onCleanup) => {
-    if (!enabled.value)
+    if (!toValue(enabled))
       return
 
     const win = getWindow(elements.domReference.value)
@@ -61,7 +60,7 @@ export function useFocus(
     // return to the tab/window.
     function onBlur() {
       if (
-        !open.value
+        !toValue(open)
         && isHTMLElement(elements.domReference.value)
         && elements.domReference.value
         === activeElement(getDocument(elements.domReference.value))
@@ -84,7 +83,7 @@ export function useFocus(
   })
 
   watchEffect((onCleanup) => {
-    if (!enabled.value)
+    if (!toValue(enabled))
       return
 
     function onOpenChange({ reason }: { reason: OpenChangeReason }) {
@@ -176,5 +175,5 @@ export function useFocus(
     },
   }
 
-  return () => enabled.value ? { reference: referenceProps } : undefined
+  return () => toValue(enabled) ? { reference: referenceProps } : undefined
 }
