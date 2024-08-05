@@ -22,6 +22,7 @@ const ROUTES = [
   // { path: 'drawer' },
   { path: 'arrow' },
   { path: 'delay-group' },
+  { path: 'focus-manager' },
   // { path: 'menubar' },
   // { path: 'menu-virtual' },
   // { path: 'omnibox' },

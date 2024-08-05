@@ -11,24 +11,15 @@ export function isDifferentRow(index: number, cols: number, prevRow: number) {
   return Math.floor(index / cols) !== prevRow
 }
 
-export function isIndexOutOfBounds(
-  listRef: Array<HTMLElement | undefined>,
-  index: number,
-) {
+export function isIndexOutOfBounds(listRef: Array<HTMLElement | undefined>, index: number) {
   return index < 0 || index >= listRef.length
 }
 
-export function getMinIndex(
-  listRef: Array<HTMLElement | undefined>,
-  disabledIndices: Array<number> | undefined,
-) {
+export function getMinIndex(listRef: Array<HTMLElement | undefined>, disabledIndices: Array<number> | undefined) {
   return findNonDisabledIndex(listRef, { disabledIndices })
 }
 
-export function getMaxIndex(
-  listRef: Array<HTMLElement | undefined>,
-  disabledIndices: Array<number> | undefined,
-) {
+export function getMaxIndex(listRef: Array<HTMLElement | undefined>, disabledIndices: Array<number> | undefined) {
   return findNonDisabledIndex(listRef, {
     decrement: true,
     startingIndex: listRef.length,
@@ -219,13 +210,12 @@ export function getGridNavigatedIndex(
 
     if (isIndexOutOfBounds(elementsRef, nextIndex)) {
       if (loop && lastRow) {
-        nextIndex
-          = event.key === ARROW_LEFT
-            ? maxIndex
-            : findNonDisabledIndex(elementsRef, {
-              startingIndex: prevIndex - (prevIndex % cols) - 1,
-              disabledIndices,
-            })
+        nextIndex = event.key === ARROW_LEFT
+          ? maxIndex
+          : findNonDisabledIndex(elementsRef, {
+            startingIndex: prevIndex - (prevIndex % cols) - 1,
+            disabledIndices,
+          })
       }
       else {
         nextIndex = prevIndex
@@ -246,16 +236,14 @@ export function buildCellMap(
   let startIndex = 0
   sizes.forEach(({ width, height }, index) => {
     if (width > cols) {
-      if (__DEV__) {
-        throw new Error(
-          `[Floating UI]: Invalid grid - item width at index ${index} is greater than grid columns`,
-        )
-      }
+      if (__DEV__)
+        throw new Error(`[Floating UI]: Invalid grid - item width at index ${index} is greater than grid columns`)
     }
+
     let itemPlaced = false
-    if (dense) {
+    if (dense)
       startIndex = 0
-    }
+
     while (!itemPlaced) {
       const targetCells: number[] = []
       for (let i = 0; i < width; i++) {
@@ -263,13 +251,12 @@ export function buildCellMap(
           targetCells.push(startIndex + i + j * cols)
         }
       }
-      if (
-        (startIndex % cols) + width <= cols
-        && targetCells.every(cell => cellMap[cell] == null)
-      ) {
-        targetCells.forEach((cell) => {
+
+      if ((startIndex % cols) + width <= cols && targetCells.every(cell => cellMap[cell] == null)) {
+        for (const cell of targetCells) {
           cellMap[cell] = index
-        })
+        }
+
         itemPlaced = true
       }
       else {
@@ -300,14 +287,14 @@ export function getCellIndexOfCorner(
     case 'tl':
       return firstCellIndex
     case 'tr':
-      if (!sizeItem) {
+      if (!sizeItem)
         return firstCellIndex
-      }
+
       return firstCellIndex + sizeItem.width - 1
     case 'bl':
-      if (!sizeItem) {
+      if (!sizeItem)
         return firstCellIndex
-      }
+
       return firstCellIndex + (sizeItem.height - 1) * cols
     case 'br':
       return cellMap.lastIndexOf(index)
@@ -315,28 +302,14 @@ export function getCellIndexOfCorner(
 }
 
 /** Gets all cell indices that correspond to the specified indices */
-export function getCellIndices(
-  indices: (number | undefined)[],
-  cellMap: (number | undefined)[],
-) {
-  return cellMap.flatMap((index, cellIndex) =>
-    indices.includes(index) ? [cellIndex] : [],
-  )
+export function getCellIndices(indices: (number | undefined)[], cellMap: (number | undefined)[]) {
+  return cellMap.flatMap((index, cellIndex) => indices.includes(index) ? [cellIndex] : [])
 }
 
-export function isDisabled(
-  list: Array<HTMLElement | undefined>,
-  index: number,
-  disabledIndices?: Array<number>,
-) {
-  if (disabledIndices) {
+export function isDisabled(list: Array<HTMLElement | undefined>, index: number, disabledIndices?: Array<number>) {
+  if (disabledIndices)
     return disabledIndices.includes(index)
-  }
 
   const element = list[index]
-  return (
-    element == null
-    || element.hasAttribute('disabled')
-    || element.getAttribute('aria-disabled') === 'true'
-  )
+  return (element == null || element.hasAttribute('disabled') || element.getAttribute('aria-disabled') === 'true')
 }

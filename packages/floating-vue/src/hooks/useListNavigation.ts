@@ -178,6 +178,7 @@ export function useListNavigation(
 ): () => ElementProps | undefined {
   const { open, onOpenChange, elements } = context
   const {
+    enabled = true,
     activeIndex,
     onNavigate,
     selectedIndex = null,
@@ -198,8 +199,6 @@ export function useListNavigation(
   } = props
 
   let _virtualItem = props.virtualItem
-
-  const enabled = computed(() => toValue(props.enabled ?? true))
 
   if (__DEV__) {
     if (allowEscape) {
@@ -231,7 +230,7 @@ export function useListNavigation(
   let keyRef = <undefined | string>undefined
   let isPointerModalityRef = true
   let previousMountedRef = !!elements.floating.value
-  let previousOpenRef = open.value
+  let previousOpenRef = toValue(open)
   let forceSyncFocus = false
   let forceScrollIntoViewRef = false
 
@@ -315,10 +314,10 @@ export function useListNavigation(
   // Sync `selectedIndex` to be the `activeIndex` upon opening the floating
   // element. Also, reset `activeIndex` upon closing the floating element.
   watchEffect(() => {
-    if (!enabled.value)
+    if (!toValue(enabled))
       return
 
-    if (open.value && elements.floating.value) {
+    if (toValue(open) && elements.floating.value) {
       if (focusItemOnOpenRef && selectedIndex?.value != null) {
         // Regardless of the pointer modality, we want to ensure the selected
         // item comes into view when the floating element is opened.
@@ -337,11 +336,11 @@ export function useListNavigation(
   })
 
   // Sync `activeIndex` to be the focused item while the floating element is open.
-  watch(() => enabled.value && open.value && elements.floating.value ? activeIndex.value : Number.NaN, () => {
-    if (!enabled.value)
+  watch(() => toValue(enabled) && toValue(open) && elements.floating.value ? activeIndex.value : Number.NaN, () => {
+    if (!toValue(enabled))
       return
 
-    if (!open.value || !elements.floating.value)
+    if (!toValue(open) || !elements.floating.value)
       return
 
     if (activeIndex.value == null) {
@@ -402,7 +401,7 @@ export function useListNavigation(
   // to allow arrow key navigation to work after the pointer leaves the child.
   watchEffect(() => {
     if (
-      !enabled.value
+      !toValue(enabled)
       || elements.floating.value
       || !tree
       || virtual
@@ -425,7 +424,7 @@ export function useListNavigation(
   })
 
   watchEffect((onCleanup) => {
-    if (!enabled.value)
+    if (!toValue(enabled))
       return
     if (!tree)
       return
@@ -454,17 +453,17 @@ export function useListNavigation(
   }, { flush: 'post' })
 
   watchEffect(() => {
-    if (!open.value) {
+    if (!toValue(open)) {
       keyRef = undefined
     }
 
-    previousOpenRef = open.value
+    previousOpenRef = toValue(open)
   })
 
   const hasActiveIndex = () => activeIndex != null
 
   function syncCurrentTarget(currentTarget: HTMLElement | undefined) {
-    if (!open.value)
+    if (!toValue(open))
       return
     const index = props.list.indexOf(currentTarget)
     if (index !== -1) {
@@ -504,7 +503,7 @@ export function useListNavigation(
     // If the floating element is animating out, ignore navigation. Otherwise,
     // the `activeIndex` gets set to 0 despite not being open so the next time
     // the user ArrowDowns, the first item won't be focused.
-    if (!open.value && event.currentTarget === elements.floating.value) {
+    if (!toValue(open) && event.currentTarget === elements.floating.value) {
       return
     }
 
@@ -613,7 +612,7 @@ export function useListNavigation(
 
       // Reset the index if no item is focused.
       if (
-        open.value
+        toValue(open)
         && !virtual
         && activeElement((event.currentTarget as HTMLElement).ownerDocument) === event.currentTarget
       ) {
@@ -687,7 +686,7 @@ export function useListNavigation(
   const ariaActiveDescendantProp = computed(() => {
     return (
       virtual
-      && open.value
+      && toValue(open)
       && hasActiveIndex() && {
         'aria-activedescendant': virtualId.value || activeId.value,
       }
@@ -727,7 +726,7 @@ export function useListNavigation(
       ...ariaActiveDescendantProp.value,
       onKeydown(event) {
         isPointerModalityRef = false
-        const isOpen = open.value
+        const isOpen = toValue(open)
 
         const isArrowKey = event.key.indexOf('Arrow') === 0
         const isCrossOpenKey = isCrossOrientationOpenKey(
@@ -840,7 +839,7 @@ export function useListNavigation(
         }
       },
       onFocus() {
-        if (open.value && !virtual) {
+        if (toValue(open) && !virtual) {
           onNavigate?.(undefined)
         }
       },
@@ -850,7 +849,7 @@ export function useListNavigation(
     }
   })
 
-  return () => enabled.value
+  return () => toValue(enabled)
     ? {
         reference: referenceProps.value,
         floating: floatingProps.value,

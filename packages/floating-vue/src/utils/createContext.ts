@@ -19,9 +19,8 @@ export function createContext<T>(
   const useContext = (consumerName?: string) => {
     const state = inject(key, defaultValue)
 
-    if (!state) {
+    if (!state)
       throw new Error(`\`${consumerName}\` must be used within \`${contextName}\``)
-    }
 
     return state
   }

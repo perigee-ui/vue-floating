@@ -77,14 +77,13 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     elements,
   } = context
   const {
+    enabled = true,
     delay = 0,
     handleClose = undefined,
     mouseOnly = false,
     restMs = 0,
     move = true,
   } = props
-
-  const enabled = computed(() => toValue(props.enabled ?? true))
 
   // const tree: any = undefined
 
@@ -104,7 +103,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
   // When closing before opening, clear the delay timeouts to cancel it
   // from showing.
   watchEffect((onCleanup) => {
-    if (!open.value)
+    if (!toValue(open))
       return
 
     function onOpenChange({ open }: { open: boolean }) {
@@ -123,11 +122,11 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
   })
 
   watchEffect((onCleanup) => {
-    if (!enabled.value)
+    if (!toValue(enabled))
       return
     if (!handleClose)
       return
-    if (!open.value)
+    if (!toValue(open))
       return
 
     function onLeave(event: MouseEvent) {
@@ -178,18 +177,16 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
   // delegation system. If the cursor was on a disabled element and then entered
   // the reference (no gap), `mouseenter` doesn't fire in the delegation system.
   watchEffect((onCleanup) => {
-    if (!enabled.value)
+    if (!toValue(enabled))
       return
 
-    const openVal = open.value
+    const openVal = toValue(open)
 
     if (!isElement(elements.domReference.value))
       return
 
     function isClickLikeOpenEvent() {
-      return dataRef.openEvent
-        ? ['click', 'mousedown'].includes(dataRef.openEvent.type)
-        : false
+      return dataRef.openEvent ? ['click', 'mousedown'].includes(dataRef.openEvent.type) : false
     }
 
     function onMouseenter(event: MouseEvent) {
@@ -203,9 +200,8 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
 
       if (openDelay) {
         timeoutRef = window.setTimeout(() => {
-          if (!openVal) {
+          if (!openVal)
             onOpenChange(true, event, 'hover')
-          }
         }, openDelay)
       }
       else {
@@ -317,11 +313,12 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
   // handles nested floating elements.
   // https://github.com/floating-ui/floating-ui/issues/1722
   watchEffect((onCleanup) => {
-    if (!enabled.value)
+    if (!toValue(enabled))
       return
 
-    if (!open.value || !handleClose?.__options.blockPointerEvents || !isHoverOpen())
+    if (!toValue(open) || !handleClose?.__options.blockPointerEvents || !isHoverOpen())
       return
+
     const floatingEl = elements.floating.value
     const body = getDocument(floatingEl).body
     body.setAttribute(safePolygonIdentifier, '')
@@ -351,7 +348,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
   })
 
   watchEffect(() => {
-    if (!open.value) {
+    if (!toValue(open)) {
       pointerTypeRef = undefined
       cleanupMousemoveHandler()
       clearPointerEvents()
@@ -360,7 +357,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
 
   watchEffect((onCleanup) => {
     // eslint-disable-next-line ts/no-unused-expressions
-    enabled.value ? elements.domReference.value : undefined
+    toValue(enabled) ? elements.domReference.value : undefined
 
     onCleanup(() => {
       cleanupMousemoveHandler()
@@ -379,15 +376,14 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     onPointerenter: setPointerRef,
     onMousemove(event) {
       function handleMouseMove() {
-        if (!blockMouseMoveRef && !open.value) {
+        if (!blockMouseMoveRef && !toValue(open))
           onOpenChange(true, event, 'hover')
-        }
       }
 
       if (mouseOnly && !isMouseLikePointerType(pointerTypeRef))
         return
 
-      if (open.value || restMs === 0)
+      if (toValue(open) || restMs === 0)
         return
 
       clearTimeout(restTimeoutRef)
@@ -408,20 +404,15 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     },
   }
 
-  return () => enabled.value ? { reference: referenceProps, floating: floatingProps } : undefined
+  return () => toValue(enabled) ? { reference: referenceProps, floating: floatingProps } : undefined
 }
 
-export function getDelay(
-  value: UseHoverProps['delay'],
-  prop: 'open' | 'close',
-  pointerType?: PointerEvent['pointerType'],
-) {
+export function getDelay(value: UseHoverProps['delay'], prop: 'open' | 'close', pointerType?: PointerEvent['pointerType']) {
   if (pointerType && !isMouseLikePointerType(pointerType))
     return 0
 
-  if (typeof value === 'function') {
+  if (typeof value === 'function')
     return getDelay(value(), prop, pointerType)
-  }
 
   if (typeof value === 'number')
     return value

@@ -1,4 +1,4 @@
-import { type MaybeRefOrGetter, computed, toValue, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, toValue, watchEffect } from 'vue'
 import {
   getComputedStyle,
   getParentNode,
@@ -107,6 +107,7 @@ export function useDismiss(
   const { open, onOpenChange, elements, dataRef } = context
 
   const {
+    enabled = true,
     escapeKey = true,
     outsidePress = true,
     outsidePressEvent = 'pointerdown',
@@ -117,7 +118,7 @@ export function useDismiss(
     capture,
   } = props
 
-  const enabled = computed(() => toValue(props.enabled ?? true))
+  // const enabled = computed(() => toValue(props.enabled ?? true))
 
   // const tree = useFloatingTree();
   // const tree = null
@@ -129,7 +130,7 @@ export function useDismiss(
   const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture } = normalizeProp(capture)
 
   function closeOnEscapeKeydown(event: KeyboardEvent) {
-    if (!open.value || !enabled.value || !escapeKey || event.key !== 'Escape')
+    if (!toValue(open) || !toValue(enabled) || !escapeKey || event.key !== 'Escape')
       return
 
     // const nodeId = dataRef.floatingContext?.nodeId
@@ -158,11 +159,7 @@ export function useDismiss(
       // }
     }
 
-    onOpenChange(
-      false,
-      event,
-      'escape-key',
-    )
+    onOpenChange(false, event, 'escape-key')
   }
 
   function closeOnEscapeKeydownCapture(event: KeyboardEvent) {
@@ -195,20 +192,23 @@ export function useDismiss(
     if (typeof outsidePress === 'function' && !outsidePress(event))
       return
 
+    if (isEventTargetWithin(event, elements.floating.value) || isEventTargetWithin(event, elements.domReference.value))
+      return
+
     const target = getTarget(event)
     const inertSelector = `[${createAttribute('inert')}]`
-    const markers = getDocument(elements.floating.value).querySelectorAll(
-      inertSelector,
-    )
+    const markers = getDocument(elements.floating.value).querySelectorAll(inertSelector)
 
     let targetRootAncestor = isElement(target) ? target : null
-    while (targetRootAncestor && !isLastTraversableNode(targetRootAncestor)) {
-      const nextParent = getParentNode(targetRootAncestor)
-      if (isLastTraversableNode(nextParent) || !isElement(nextParent)) {
-        break
-      }
+    if (targetRootAncestor && !isLastTraversableNode(targetRootAncestor)) {
+      while (true) {
+        const nextParent = getParentNode(targetRootAncestor)
+        if (isLastTraversableNode(nextParent) || !isElement(nextParent)) {
+          break
+        }
 
-      targetRootAncestor = nextParent
+        targetRootAncestor = nextParent
+      }
     }
 
     // Check if the click occurred on a third-party element injected after the
@@ -221,9 +221,7 @@ export function useDismiss(
       && !contains(target, elements.floating.value)
       // If the target root element contains none of the markers, then the
       // element was injected after the floating element rendered.
-      && Array.from(markers).every(
-        marker => !contains(targetRootAncestor, marker),
-      )
+      && Array.from(markers).every(marker => !contains(targetRootAncestor, marker))
     ) {
       return
     }
@@ -263,13 +261,8 @@ export function useDismiss(
     //   );
     const targetIsInsideChildren = undefined
 
-    if (
-      isEventTargetWithin(event, elements.floating.value)
-      || isEventTargetWithin(event, elements.domReference.value)
-      || targetIsInsideChildren
-    ) {
+    if (targetIsInsideChildren)
       return
-    }
 
     // const children = tree ? getChildren(tree.nodesRef.current, nodeId) : [];
     // if (children.length > 0) {
@@ -301,85 +294,55 @@ export function useDismiss(
     getTarget(event)?.addEventListener(outsidePressEvent, callback)
   }
 
+  function onScroll(event: Event) {
+    onOpenChange(false, event, 'ancestor-scroll')
+  }
+
   watchEffect((onCleanup) => {
-    if (!open.value || !enabled.value) {
+    if (!toValue(open) || !toValue(enabled))
       return
-    }
 
     dataRef.__escapeKeyBubbles = escapeKeyBubbles
     dataRef.__outsidePressBubbles = outsidePressBubbles
 
-    function onScroll(event: Event) {
-      onOpenChange(false, event, 'ancestor-scroll')
-    }
-
     const doc = getDocument(elements.floating.value)
-    if (escapeKey) {
-      doc.addEventListener(
-        'keydown',
-        escapeKeyCapture ? closeOnEscapeKeydownCapture : closeOnEscapeKeydown,
-        escapeKeyCapture,
-      )
-    }
-    if (outsidePress) {
-      doc.addEventListener(
-        outsidePressEvent,
-        outsidePressCapture ? closeOnPressoutsideCapture : closeOnPressOutside,
-        outsidePressCapture,
-      )
-    }
+
+    if (escapeKey)
+      doc.addEventListener('keydown', escapeKeyCapture ? closeOnEscapeKeydownCapture : closeOnEscapeKeydown, escapeKeyCapture)
+
+    if (outsidePress)
+      doc.addEventListener(outsidePressEvent, outsidePressCapture ? closeOnPressoutsideCapture : closeOnPressOutside, outsidePressCapture)
 
     let ancestors: (Element | Window | VisualViewport)[] = []
 
     if (ancestorScroll) {
-      if (isElement(elements.domReference)) {
-        ancestors = getOverflowAncestors(elements.domReference)
-      }
+      if (isElement(elements.domReference.value))
+        ancestors = getOverflowAncestors(elements.domReference.value)
 
-      if (isElement(elements.floating)) {
-        ancestors = ancestors.concat(getOverflowAncestors(elements.floating))
-      }
+      if (isElement(elements.floating.value))
+        ancestors = ancestors.concat(getOverflowAncestors(elements.floating.value))
 
-      if (
-        !isElement(elements.reference.value)
-        && elements.reference.value
-        && elements.reference.value.contextElement
-      ) {
-        ancestors = ancestors.concat(
-          getOverflowAncestors(elements.reference.value.contextElement),
-        )
-      }
+      if (!isElement(elements.reference.value) && elements.reference.value && elements.reference.value.contextElement)
+        ancestors = ancestors.concat(getOverflowAncestors(elements.reference.value.contextElement))
     }
 
     // Ignore the visual viewport for scrolling dismissal (allow pinch-zoom)
-    ancestors = ancestors.filter(
-      ancestor => ancestor !== doc.defaultView?.visualViewport,
-    )
+    ancestors = ancestors.filter(ancestor => ancestor !== doc.defaultView?.visualViewport)
 
-    ancestors.forEach((ancestor) => {
+    for (const ancestor of ancestors) {
       ancestor.addEventListener('scroll', onScroll, { passive: true })
-    })
+    }
 
     onCleanup(() => {
-      if (escapeKey) {
-        doc.removeEventListener(
-          'keydown',
-          escapeKeyCapture ? closeOnEscapeKeydownCapture : closeOnEscapeKeydown,
-          escapeKeyCapture,
-        )
-      }
+      if (escapeKey)
+        doc.removeEventListener('keydown', escapeKeyCapture ? closeOnEscapeKeydownCapture : closeOnEscapeKeydown, escapeKeyCapture)
 
-      if (outsidePress) {
-        doc.removeEventListener(
-          outsidePressEvent,
-          outsidePressCapture ? closeOnPressoutsideCapture : closeOnPressOutside,
-          outsidePressCapture,
-        )
-      }
+      if (outsidePress)
+        doc.removeEventListener(outsidePressEvent, outsidePressCapture ? closeOnPressoutsideCapture : closeOnPressOutside, outsidePressCapture)
 
-      ancestors.forEach((ancestor) => {
+      for (const ancestor of ancestors) {
         ancestor.removeEventListener('scroll', onScroll)
-      })
+      }
     })
   })
 
@@ -394,7 +357,7 @@ export function useDismiss(
 
   const referenceProps: ElementProps['reference'] = {
     onKeydown: closeOnEscapeKeydown,
-    [bubbleHandlerKeys[referencePressEvent]]: (event: Event) => {
+    [bubbleHandlerKeys[referencePressEvent]](event: Event) {
       if (referencePress)
         onOpenChange(false, event, 'reference-press')
     },
@@ -413,18 +376,12 @@ export function useDismiss(
     },
   }
 
-  return () => enabled.value ? { reference: referenceProps, floating: floatingProps } : undefined
+  return () => toValue(enabled) ? { reference: referenceProps, floating: floatingProps } : undefined
 }
 
 export function normalizeProp(normalizable?: boolean | { escapeKey?: boolean, outsidePress?: boolean }) {
   return {
-    escapeKey:
-      typeof normalizable === 'boolean'
-        ? normalizable
-        : normalizable?.escapeKey ?? false,
-    outsidePress:
-      typeof normalizable === 'boolean'
-        ? normalizable
-        : normalizable?.outsidePress ?? true,
+    escapeKey: typeof normalizable === 'boolean' ? normalizable : normalizable?.escapeKey ?? false,
+    outsidePress: typeof normalizable === 'boolean' ? normalizable : normalizable?.outsidePress ?? true,
   }
 }
