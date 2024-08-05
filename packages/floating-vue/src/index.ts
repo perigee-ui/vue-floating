@@ -35,3 +35,11 @@ export {
   type FloatingFocusManagerProps,
   FloatingFocusManager,
 } from './components/FloatingFocusManager/index.ts'
+export {
+  type FloatingListContext,
+  useFloatingList,
+  useFloatingListContet,
+  provideFloatingListContet,
+  type UseListItemProps,
+  useListItem,
+} from './components/FloatingList/index.ts'
