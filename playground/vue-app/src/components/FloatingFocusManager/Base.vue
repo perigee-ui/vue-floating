@@ -52,12 +52,12 @@ const { getReferenceProps, getFloatingProps } = useInteractions([useClick(contex
           confirm
         </button>
         <button
-          class="text-left flex py-1 px-2 focus:bg-blue-500 focus:text-white outline-none rounded"
+          class="text-left flex py-1 px-1 focus:bg-blue-500 focus:text-white outline-none rounded items-center"
           type="button"
           data-testid="three"
           @click="() => open = false"
         >
-          x
+          <span class="i-radix-icons:cross-2 w-1em h-1em" />
         </button>
       </div>
     </FloatingFocusManager>
