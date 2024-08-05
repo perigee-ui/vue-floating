@@ -1,4 +1,4 @@
-import { type MaybeRefOrGetter, type UnwrapRef, computed, toValue, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, type UnwrapRef, toValue, watchEffect } from 'vue'
 import { isElement } from '@floating-ui/utils/dom'
 import { contains, getDocument, isMouseLikePointerType } from '../utils.ts'
 import type { ElementProps, FloatingContext, OpenChangeReason } from '../types'

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, watchEffect } from 'vue'
+import { computed, toValue, watch, watchEffect } from 'vue'
 import { type FocusableElement, tabbable } from 'tabbable'
 import { isHTMLElement } from '@floating-ui/utils/dom'
 // eslint-disable-next-line vue/prefer-import-from-vue
@@ -310,7 +310,7 @@ watchEffect(() => {
     // console.error('props.initialFocus', props.initialFocus)
     // console.error('initialFocusValue', initialFocusValue)
     // console.error('elToFocus', elToFocus)
-    if (!ignoreInitialFocus() && !focusAlreadyInsideFloatingEl && context.open.value) {
+    if (!ignoreInitialFocus() && !focusAlreadyInsideFloatingEl && toValue(context.open)) {
       // console.error('enqueueFocus:4', elToFocus)
       enqueueFocus(elToFocus, {
         preventScroll: elToFocus === floatingFocusNode.value,

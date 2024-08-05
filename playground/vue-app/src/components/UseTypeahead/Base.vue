@@ -2,6 +2,7 @@
 import { shallowRef } from 'vue'
 import { offset } from '@perigee-ui/floating-vue/core'
 import { useClick, useFloating, useInteractions, useTypeahead } from '@perigee-ui/floating-vue'
+import { useRef } from '@perigee-ui/floating-vue/vue'
 
 const open = shallowRef(false)
 
@@ -17,10 +18,10 @@ const { context, floatingStyles, refs: { setFloating, setReference } } = useFloa
 
 const activeIndex = shallowRef<number>()
 
-const items = shallowRef(['one', 'two', 'three'])
+const items = useRef(['one', 'two', 'three'])
 
 const typeahead = useTypeahead(context, {
-  list: items.value,
+  listRef: items,
   activeIndex,
   onMatch(value) {
     activeIndex.value = value
@@ -50,7 +51,7 @@ const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([u
       v-bind="getFloatingProps()"
     >
       <div
-        v-for="(item, index) in items"
+        v-for="(item, index) in items.current"
         :key="item"
         class="text-left flex py-1 px-2 outline-none rounded"
         :class="{

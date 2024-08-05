@@ -8,6 +8,7 @@ import userEvent from '@testing-library/user-event'
 import { useInteractions } from '../hooks/useInteractions.ts'
 import { type UseListNavigationProps, useClick, useDismiss, useFloating, useListNavigation } from '../index.ts'
 import { act } from '../core/__tests__/utils.ts'
+import { type MutableRefObject, useRef } from '../vue/useRef.ts'
 // import { useFloating } from '../hooks/useFloating.ts'
 
 const App = defineComponent({
@@ -21,7 +22,7 @@ const App = defineComponent({
     const open = shallowRef(false)
     const activeIndex = shallowRef<number | undefined>(undefined)
 
-    const listRef: (HTMLElement | undefined)[] = []
+    const listRef = useRef<(HTMLLIElement | undefined)[]>([])
 
     const { refs, context } = useFloating({
       open,
@@ -43,7 +44,7 @@ const App = defineComponent({
           openOnArrowKeyDown: props.list?.openOnArrowKeyDown,
           disabledIndices: props.list?.disabledIndices,
           focusItemOnHover: props.list?.focusItemOnHover,
-          list: listRef,
+          listRef,
           activeIndex,
           onNavigate(index) {
             props.list?.onNavigate?.(index)
@@ -70,10 +71,10 @@ const App = defineComponent({
                   {...getItemProps({
                     ref(node: HTMLLIElement) {
                       if (!node) {
-                        listRef.splice(index, 1)
+                        listRef.current.splice(index, 1)
                       }
                       else {
-                        listRef[index] = node
+                        listRef.current[index] = node
                       }
                     },
                   })}
@@ -148,7 +149,7 @@ it('resets indexRef to -1 upon close', async () => {
       const inputValue = shallowRef('')
       const activeIndex = shallowRef<number | undefined>(undefined)
 
-      const listRef: (HTMLElement | undefined)[] = []
+      const listRef = useRef<(HTMLLIElement | undefined)[]>([])
 
       const { context, refs } = useFloating<HTMLInputElement>({
         open: isOpen,
@@ -162,7 +163,7 @@ it('resets indexRef to -1 upon close', async () => {
         useListNavigation(
           context,
           {
-            list: listRef,
+            listRef,
             activeIndex,
             onNavigate(index) {
               activeIndex.value = index
@@ -222,10 +223,10 @@ it('resets indexRef to -1 upon close', async () => {
                     {...getItemProps({
                       ref(node: any) {
                         if (!node) {
-                          listRef.splice(index, 1)
+                          listRef.current.splice(index, 1)
                         }
                         else {
-                          listRef[index] = node
+                          listRef.current[index] = node
                         }
                       },
                       onClick() {
@@ -594,7 +595,7 @@ it('scheduled list population', async () => {
   const Option = defineComponent({
     props: {
       list: {
-        type: Array as PropType<(HTMLElement | undefined)[]>,
+        type: Object as PropType<MutableRefObject<(HTMLElement | undefined)[]>>,
         required: true,
       },
       active: {
@@ -623,7 +624,7 @@ it('scheduled list population', async () => {
           tabindex={props.active ? 0 : -1}
           ref={(node: any) => {
             if (index.value !== -1) {
-              props.list[index.value] = node
+              props.list.current[index.value] = node
             }
           }}
           {...props.getItemProps()}
@@ -637,7 +638,7 @@ it('scheduled list population', async () => {
       const open = shallowRef(false)
       const activeIndex = shallowRef<number | undefined>(undefined)
 
-      const listRef: (HTMLElement | undefined)[] = []
+      const listRef = useRef<(HTMLLIElement | undefined)[]>([])
 
       const { refs, context } = useFloating({
         open,
@@ -650,7 +651,7 @@ it('scheduled list population', async () => {
         useListNavigation(
           context,
           {
-            list: listRef,
+            listRef,
             activeIndex,
             onNavigate(index) {
               activeIndex.value = index

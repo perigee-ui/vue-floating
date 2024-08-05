@@ -7,13 +7,14 @@ import { useClick, useFloating, useInteractions, useTypeahead } from '../index.t
 import type { UseTypeaheadProps } from '../../src/hooks/useTypeahead'
 import type { ElAttrs } from '../types.ts'
 import { act } from '../core/__tests__/utils.ts'
+import { type MutableRefObject, useRef } from '../vue/useRef.ts'
 // import { Main } from '../visual/components/Menu'
 
 vi.useFakeTimers({ shouldAdvanceTime: true })
 
 function useImpl(props: {
   typeahead?: Pick<UseTypeaheadProps, 'onMatch' | 'onTypingChange'> & {
-    list?: Array<string>
+    list?: MutableRefObject<Array<string>>
     open?: MaybeRef<boolean>
     onOpenChange?: (open: boolean) => void
     addUseClick?: boolean
@@ -32,9 +33,9 @@ function useImpl(props: {
       }
     },
   })
-  const list = props.typeahead?.list ?? ['one', 'two', 'three']
+  const list = props.typeahead?.list ?? useRef(['one', 'two', 'three'])
   const typeahead = useTypeahead(context, {
-    list,
+    listRef: list,
     activeIndex,
     onMatch(index) {
       activeIndex.value = index
@@ -71,7 +72,7 @@ function useImpl(props: {
 const Combobox = defineComponent({
   props: {
     typeahead: {
-      type: Object as PropType<Pick<UseTypeaheadProps, 'onMatch' | 'onTypingChange'> & { list?: Array<string> }>,
+      type: Object as PropType<Pick<UseTypeaheadProps, 'onMatch' | 'onTypingChange'> & { list?: MutableRefObject<Array<string>> }>,
       default: undefined,
     },
   },
@@ -90,7 +91,7 @@ const Combobox = defineComponent({
 const Select = defineComponent({
   props: {
     typeahead: {
-      type: Object as PropType<Pick<UseTypeaheadProps, 'onMatch' | 'onTypingChange'> & { list?: Array<string> }>,
+      type: Object as PropType<Pick<UseTypeaheadProps, 'onMatch' | 'onTypingChange'> & { list?: MutableRefObject<Array<string>> }>,
       default: undefined,
     },
   },
@@ -146,7 +147,7 @@ it('bails out of rapid focus of first letter if the list contains a string that 
     props: {
       typeahead: {
         onMatch: spy,
-        list: ['apple', 'aaron', 'apricot'],
+        list: useRef(['apple', 'aaron', 'apricot']),
       },
     },
   })
@@ -169,7 +170,7 @@ it('starts from the current activeIndex and correctly loops', async () => {
     props: {
       typeahead: {
         onMatch: spy,
-        list: ['Toy Story 2', 'Toy Story 3', 'Toy Story 4'],
+        list: useRef(['Toy Story 2', 'Toy Story 3', 'Toy Story 4']),
       },
     },
   })
@@ -230,11 +231,10 @@ it('capslock characters continue to match', async () => {
   cleanup()
 })
 
-// props: Pick<UseTypeaheadProps, 'onMatch'> & {list: Array<string>},
 const App1 = defineComponent({
   props: {
     typeahead: {
-      type: Object as PropType<Pick<UseTypeaheadProps, 'onMatch'> & { list: Array<string> }>,
+      type: Object as PropType<Pick<UseTypeaheadProps, 'onMatch'> & { list: MutableRefObject<Array<string>> }>,
       required: true,
     },
   },
@@ -253,7 +253,7 @@ const App1 = defineComponent({
         </div>
         {open.value && (
           <div {...getFloatingProps()}>
-            {props.typeahead.list.map((value, i) => (
+            {props.typeahead.list.current.map((value, i) => (
               <div
                 key={value}
                 role="option"
@@ -276,7 +276,7 @@ it('matches when focus is withing reference', async () => {
     props: {
       typeahead: {
         onMatch: spy,
-        list: ['one', 'two', 'three'],
+        list: useRef(['one', 'two', 'three']),
       },
     },
   })
@@ -295,7 +295,7 @@ it('matches when focus is withing floating', async () => {
     props: {
       typeahead: {
         onMatch: spy,
-        list: ['one', 'two', 'three'],
+        list: useRef(['one', 'two', 'three']),
       },
     },
   })
@@ -319,7 +319,7 @@ it('onTypingChange is called when typing starts or stops', async () => {
     props: {
       typeahead: {
         onTypingChange: spy,
-        list: ['one', 'two', 'three'],
+        list: useRef(['one', 'two', 'three']),
       },
     },
   })

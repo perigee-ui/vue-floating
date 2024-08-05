@@ -131,7 +131,7 @@ export function useDelayGroup(
     if (!currentId.value)
       return
 
-    if (!open.value && currentId.value === id) {
+    if (!toValue(open) && currentId.value === id) {
       if (state.timeoutMs) {
         const timeout = window.setTimeout(unset, state.timeoutMs)
         onCleanup(() => {
@@ -145,7 +145,7 @@ export function useDelayGroup(
   })
 
   watchEffect(() => {
-    if (setCurrentId === NOOP || !open.value)
+    if (setCurrentId === NOOP || !toValue(open))
       return
 
     setCurrentId(id)

@@ -2,11 +2,12 @@
 import { shallowRef, watchEffect } from 'vue'
 import { offset } from '@perigee-ui/floating-vue/core'
 import { useClick, useDismiss, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue'
+import { useRef } from '@perigee-ui/floating-vue/vue'
 
 const isOpen = shallowRef(false)
 const activeIndex = shallowRef<number | undefined>(undefined)
 
-const listRef: (HTMLElement | undefined)[] = []
+const listRef = useRef<(HTMLLIElement | undefined)[]>([])
 
 const { refs, context, floatingStyles } = useFloating({
   open: isOpen,
@@ -23,7 +24,7 @@ const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([
   useListNavigation(
     context,
     {
-      list: listRef,
+      listRef,
       activeIndex,
       onNavigate(index) {
         activeIndex.value = index
@@ -66,7 +67,7 @@ const items = ['one', 'two', 'three']
           class="text-left flex py-1 px-2 focus:bg-blue-500 focus:text-white outline-none rounded"
           v-bind="getItemProps({
             ref(node: HTMLLIElement) {
-              listRef[index] = node;
+              listRef.current[index] = node;
             },
           })"
         >

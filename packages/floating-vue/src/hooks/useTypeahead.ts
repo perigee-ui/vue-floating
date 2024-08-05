@@ -1,6 +1,7 @@
-import { type MaybeRefOrGetter, type Ref, computed, toValue, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, type Ref, toValue, watchEffect } from 'vue'
 import type { ElementProps, FloatingRootContext } from '../types.ts'
 import { stopEvent } from '../utils.ts'
+import type { MutableRefObject } from '../vue/useRef.ts'
 
 export interface UseTypeaheadProps {
   /**
@@ -8,7 +9,7 @@ export interface UseTypeaheadProps {
    * elements of the list.
    * @default empty list
    */
-  list: Array<string | undefined>
+  listRef: MutableRefObject<Array<string | undefined>>
   /**
    * The index of the active (focused or highlighted) item in the list.
    * @default undefined
@@ -114,7 +115,7 @@ export function useTypeahead(
       return str ? list.indexOf(str) : -1
     }
 
-    const listContent = props.list
+    const listContent = props.listRef.current
 
     if (stringRef.length > 0 && stringRef[0] !== ' ') {
       if (getMatchingIndex(listContent, listContent, stringRef) === -1) {

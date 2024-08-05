@@ -2,12 +2,13 @@
 import { computed, shallowRef } from 'vue'
 import { useDismiss, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue'
 import { offset } from '@perigee-ui/floating-vue/core'
+import { useRef } from '@perigee-ui/floating-vue/vue'
 
 const isOpen = shallowRef(false)
 const inputValue = shallowRef('')
 const activeIndex = shallowRef<number | undefined>(undefined)
 
-const listRef: (HTMLElement | undefined)[] = []
+const listRef = useRef<(HTMLElement | undefined)[]>([])
 
 const { context, refs, floatingStyles } = useFloating<HTMLInputElement>({
   open: isOpen,
@@ -24,7 +25,7 @@ const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([
   useListNavigation(
     context,
     {
-      list: listRef,
+      listRef,
       activeIndex,
       onNavigate(index) {
         activeIndex.value = index
@@ -101,10 +102,10 @@ const items = computed(() => {
           v-bind="getItemProps({
             ref(node: HTMLLIElement) {
               if (!node) {
-                listRef.splice(index, 1)
+                listRef.current.splice(index, 1)
               }
               else {
-                listRef[index] = node;
+                listRef.current[index] = node;
               }
             },
             onClick() {

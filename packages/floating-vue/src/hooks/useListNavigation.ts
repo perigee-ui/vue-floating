@@ -29,6 +29,7 @@ import {
   isDisabled,
   isIndexOutOfBounds,
 } from '../utils/composite.ts'
+import type { MutableRefObject } from '../vue/useRef.ts'
 
 let isPreventScrollSupported: boolean | undefined
 
@@ -37,7 +38,7 @@ export interface UseListNavigationProps {
    * A ref that holds an array of list items.
    * @default empty list
    */
-  list: Array<HTMLElement | undefined>
+  listRef: MutableRefObject<Array<HTMLElement | undefined>>
   /**
    * The index of the currently active (focused or highlighted) item, which may
    * or may not be selected.
@@ -196,6 +197,7 @@ export function useListNavigation(
     scrollItemIntoView = true,
     itemSizes,
     dense = false,
+    listRef,
   } = props
 
   let _virtualItem = props.virtualItem
@@ -353,7 +355,7 @@ export function useListNavigation(
       // Reset while the floating element was open (e.g. the list changed).
       if (previousMountedRef) {
         indexRef = -1
-        focusItem(props.list, indexRef)
+        focusItem(listRef.current, indexRef)
       }
 
       // Initial sync.
@@ -365,7 +367,7 @@ export function useListNavigation(
       ) {
         let runs = 0
         const waitForListPopulated = () => {
-          if (props.list[0] == null) {
+          if (listRef.current[0] == null) {
             // Avoid letting the browser paint if possible on the first try,
             // otherwise use rAF. Don't try more than twice, since something
             // is wrong otherwise.
@@ -380,8 +382,8 @@ export function useListNavigation(
               = keyRef == null
               || isMainOrientationToEndKey(keyRef, orientation, rtl)
               || nested
-                ? getMinIndex(props.list, props.disabledIndices)
-                : getMaxIndex(props.list, props.disabledIndices)
+                ? getMinIndex(listRef.current, props.disabledIndices)
+                : getMaxIndex(listRef.current, props.disabledIndices)
             keyRef = undefined
             onNavigate?.(indexRef)
           }
@@ -390,9 +392,9 @@ export function useListNavigation(
         waitForListPopulated()
       }
     }
-    else if (!isIndexOutOfBounds(props.list, activeIndex.value)) {
+    else if (!isIndexOutOfBounds(listRef.current, activeIndex.value)) {
       indexRef = activeIndex.value
-      focusItem(props.list, indexRef, forceScrollIntoViewRef)
+      focusItem(listRef.current, indexRef, forceScrollIntoViewRef)
       forceScrollIntoViewRef = false
     }
   })
@@ -465,7 +467,7 @@ export function useListNavigation(
   function syncCurrentTarget(currentTarget: HTMLElement | undefined) {
     if (!toValue(open))
       return
-    const index = props.list.indexOf(currentTarget)
+    const index = listRef.current.indexOf(currentTarget)
     if (index !== -1) {
       onNavigate?.(index)
     }
@@ -486,7 +488,7 @@ export function useListNavigation(
         }
 
         indexRef = -1
-        focusItem(props.list, indexRef)
+        focusItem(listRef.current, indexRef)
         onNavigate?.(undefined)
 
         if (!virtual) {
@@ -519,8 +521,8 @@ export function useListNavigation(
     }
 
     const currentIndex = indexRef
-    const minIndex = getMinIndex(props.list, disabledIndices)
-    const maxIndex = getMaxIndex(props.list, disabledIndices)
+    const minIndex = getMinIndex(listRef.current, disabledIndices)
+    const maxIndex = getMaxIndex(listRef.current, disabledIndices)
 
     if (event.key === 'Home') {
       stopEvent(event)
@@ -539,7 +541,7 @@ export function useListNavigation(
     if (cols > 1) {
       const sizes
         = itemSizes
-        || Array.from({ length: props.list.length }, () => ({
+        || Array.from({ length: listRef.current.length }, () => ({
           width: 1,
           height: 1,
         }))
@@ -547,12 +549,12 @@ export function useListNavigation(
       // as if every item was 1x1, then convert back to real indices.
       const cellMap = buildCellMap(sizes, cols, dense)
       const minGridIndex = cellMap.findIndex(
-        index => index != null && !isDisabled(props.list, index, disabledIndices),
+        index => index != null && !isDisabled(listRef.current, index, disabledIndices),
       )
       // last enabled index
       const maxGridIndex = cellMap.reduce(
         (foundIndex: number, index, cellIndex) =>
-          index != null && !isDisabled(props.list, index, disabledIndices)
+          index != null && !isDisabled(listRef.current, index, disabledIndices)
             ? cellIndex
             : foundIndex,
         -1,
@@ -560,7 +562,7 @@ export function useListNavigation(
       indexRef = cellMap[
         getGridNavigatedIndex(
           cellMap.map(itemIndex =>
-            itemIndex != null ? props.list[itemIndex] : undefined,
+            itemIndex != null ? listRef.current[itemIndex] : undefined,
           ),
           {
             event,
@@ -572,8 +574,8 @@ export function useListNavigation(
             disabledIndices: getCellIndices(
               [
                 ...(disabledIndices
-                || props.list.map((_, index) =>
-                  isDisabled(props.list, index) ? index : undefined,
+                || listRef.current.map((_, index) =>
+                  isDisabled(listRef.current, index) ? index : undefined,
                 )),
                 undefined,
               ],
@@ -631,10 +633,10 @@ export function useListNavigation(
         if (loop) {
           indexRef
             = currentIndex >= maxIndex
-              ? allowEscape && currentIndex !== props.list.length
+              ? allowEscape && currentIndex !== listRef.current.length
                 ? -1
                 : minIndex
-              : findNonDisabledIndex(props.list, {
+              : findNonDisabledIndex(listRef.current, {
                 startingIndex: currentIndex,
                 disabledIndices,
               })
@@ -642,7 +644,7 @@ export function useListNavigation(
         else {
           indexRef = Math.min(
             maxIndex,
-            findNonDisabledIndex(props.list, {
+            findNonDisabledIndex(listRef.current, {
               startingIndex: currentIndex,
               disabledIndices,
             }),
@@ -654,9 +656,9 @@ export function useListNavigation(
           indexRef
             = currentIndex <= minIndex
               ? allowEscape && currentIndex !== -1
-                ? props.list.length
+                ? listRef.current.length
                 : maxIndex
-              : findNonDisabledIndex(props.list, {
+              : findNonDisabledIndex(listRef.current, {
                 startingIndex: currentIndex,
                 decrement: true,
                 disabledIndices,
@@ -665,7 +667,7 @@ export function useListNavigation(
         else {
           indexRef = Math.max(
             minIndex,
-            findNonDisabledIndex(props.list, {
+            findNonDisabledIndex(listRef.current, {
               startingIndex: currentIndex,
               decrement: true,
               disabledIndices,
@@ -674,7 +676,7 @@ export function useListNavigation(
         }
       }
 
-      if (isIndexOutOfBounds(props.list, indexRef)) {
+      if (isIndexOutOfBounds(listRef.current, indexRef)) {
         onNavigate?.(undefined)
       }
       else {
@@ -808,7 +810,7 @@ export function useListNavigation(
             stopEvent(event)
 
             if (isOpen) {
-              indexRef = getMinIndex(props.list, disabledIndices)
+              indexRef = getMinIndex(listRef.current, disabledIndices)
               onNavigate?.(indexRef)
             }
             else {
