@@ -6,7 +6,9 @@ import { act } from '../core/__tests__/utils.ts'
 
 vi.useFakeTimers()
 
-const Tooltip = defineComponent({
+type Comp = ReturnType<typeof defineComponent>
+
+const Tooltip: Comp = ({
   props: {
     label: {
       type: String,
