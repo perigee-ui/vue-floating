@@ -24,7 +24,7 @@ export function useListItem(props: UseListItemProps = {}) {
 
   const componentRef = shallowRef<HTMLElement | undefined>()
 
-  const ref = (node: HTMLElement | undefined) => {
+  function setItem(node: HTMLElement | undefined) {
     componentRef.value = node
 
     const indexVal = index.value
@@ -56,7 +56,7 @@ export function useListItem(props: UseListItemProps = {}) {
   })
 
   return {
-    ref,
+    setItem,
     index() {
       return index.value == null ? -1 : index.value
     },
