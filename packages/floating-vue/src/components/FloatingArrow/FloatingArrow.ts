@@ -4,8 +4,8 @@ import type { CSSProperties } from 'vue'
 export interface FloatingArrowProps {
   isRTL?: boolean
 
-  x: number
-  y: number
+  x?: number
+  y?: number
 
   placement: Placement
   /**
