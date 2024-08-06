@@ -483,9 +483,8 @@ export function useListNavigation(
         syncCurrentTarget((currentTarget ?? undefined) as HTMLElement | undefined)
       },
       onPointerleave({ pointerType }) {
-        if (!isPointerModalityRef || pointerType === 'touch') {
+        if (!isPointerModalityRef || pointerType === 'touch')
           return
-        }
 
         indexRef = -1
         focusItem(listRef.current, indexRef)
