@@ -41,14 +41,15 @@ export function useFloatingList(props: FloatingListProps) {
   }
 
   watchEffect(() => {
-    const mapVal = map.value
-    const nodes = Array.from(mapVal.keys()).sort(sortByDocumentPosition)
+    const newMap = new Map(map.value)
+    const nodes = Array.from(newMap.keys()).sort(sortByDocumentPosition)
 
     nodes.forEach((node, index) => {
-      mapVal.set(node, index)
+      newMap.set(node, index)
     })
 
-    triggerRef(map)
+    if (!areMapsEqual(map.value, newMap))
+      map.value = newMap
   })
 
   provideFloatingListContet({
@@ -60,7 +61,7 @@ export function useFloatingList(props: FloatingListProps) {
   })
 }
 
-export function sortByDocumentPosition(a: Node, b: Node) {
+function sortByDocumentPosition(a: Node, b: Node) {
   const position = a.compareDocumentPosition(b)
 
   if (position & Node.DOCUMENT_POSITION_FOLLOWING || position & Node.DOCUMENT_POSITION_CONTAINED_BY)
@@ -72,7 +73,7 @@ export function sortByDocumentPosition(a: Node, b: Node) {
   return 0
 }
 
-export function areMapsEqual(map1: Map<Node, number | undefined>, map2: Map<Node, number | undefined>) {
+function areMapsEqual(map1: Map<Node, number | undefined>, map2: Map<Node, number | undefined>) {
   if (map1.size !== map2.size)
     return false
 

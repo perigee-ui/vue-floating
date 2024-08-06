@@ -208,7 +208,7 @@ it('registers strings correctly (label)', async () => {
   cleanup()
 })
 
-it.todo('handles re-ordering', async () => {
+it('handles re-ordering', async () => {
   const App = defineComponent({
     props: {
       list: {

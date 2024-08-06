@@ -1,14 +1,9 @@
-import { shallowRef, watch } from 'vue'
+import { onUpdated, shallowRef, triggerRef, watch } from 'vue'
 import { useFloatingListContet } from './FloatingList.ts'
 
 export interface UseListItemProps {
   label?: string | undefined
 }
-
-// : {
-// ref: (node: HTMLElement | null) => void
-// index: number
-// }
 
 /**
  * Used to register a list item and its index (DOM position) in the
@@ -30,12 +25,16 @@ export function useListItem(props: UseListItemProps = {}) {
     const indexVal = index.value
     if (indexVal != null) {
       elementsRef.current[indexVal] = node
-      if (labelsRef?.current) {
+      if (labelsRef) {
         const isLabelDefined = label != null
         labelsRef.current[indexVal] = isLabelDefined ? label : node?.textContent ?? undefined
       }
     }
   }
+
+  onUpdated(() => {
+    triggerRef(componentRef)
+  })
 
   watch(componentRef, (node, __, onCleanup) => {
     if (node) {
