@@ -17,6 +17,7 @@ export {
 export { useClientPoint, type UseClientPointProps } from './hooks/useClientPoint.ts'
 export { useId } from './hooks/useId.ts'
 export { safePolygon, type SafePolygonOptions } from './safePolygon.ts'
+export { inner, useInnerOffset, type InnerProps, type UseInnerOffsetProps } from './inner.ts'
 
 export {
   type FloatingArrowProps,

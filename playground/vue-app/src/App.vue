@@ -11,6 +11,7 @@ const ROUTES = [
   { path: 'use-typeahead' },
   { path: 'use-list-navigation' },
   { path: 'use-transiton' },
+  { path: 'use-inner' },
   // { path: 'tooltip' },
   // { path: 'popover' },
   // { path: 'menu' },

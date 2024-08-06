@@ -1,4 +1,4 @@
-import { computed, shallowRef, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, computed, shallowRef, watchEffect } from 'vue'
 import { isElement } from '@floating-ui/utils/dom'
 import { type ReferenceType, useFloating as usePosition } from '../core/index.ts'
 import type {
@@ -20,7 +20,7 @@ import { useFloatingRootContext } from './useFloatingRootContext.ts'
  */
 export function useFloating<RT extends ReferenceType = ReferenceType>(
   options: UseFloatingOptions,
-  config: UseFloatingCofnig = {},
+  config: MaybeRefOrGetter<UseFloatingCofnig> = {},
 ): UseFloatingReturn<RT> {
   const { nodeId } = options
 
