@@ -37,9 +37,8 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     const shouldUpdate = configValue !== undefined
     configValue = toValue(config)
 
-    if (shouldUpdate) {
+    if (shouldUpdate)
       update()
-    }
   })
 
   const {
