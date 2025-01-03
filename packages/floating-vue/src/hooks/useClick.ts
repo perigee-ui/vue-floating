@@ -71,7 +71,6 @@ export function useClick(
 
   let pointerTypeRef: 'mouse' | 'pen' | 'touch' | undefined
   let didKeyDownRef = false
-  let _key_open: boolean
 
   const referenceProps: ElementProps['reference'] = {
     onPointerdown(event) {
@@ -81,14 +80,12 @@ export function useClick(
       if (eventOption === 'click')
         return
 
-      const pointerType = pointerTypeRef
-
       // Ignore all buttons except for the "main" button.
       // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
       if (event.button !== 0)
         return
 
-      if (isMouseLikePointerType(pointerType, true) && ignoreMouse)
+      if (isMouseLikePointerType(pointerTypeRef, true) && ignoreMouse)
         return
 
       if (toValue(open) && toggle && (dataRef.openEvent && stickIfOpen ? dataRef.openEvent.type === 'mousedown' : true)) {
@@ -101,14 +98,12 @@ export function useClick(
       }
     },
     onClick(event) {
-      const pointerType = pointerTypeRef
-
       if (eventOption === 'mousedown' && pointerTypeRef) {
         pointerTypeRef = undefined
         return
       }
 
-      if (isMouseLikePointerType(pointerType, true) && ignoreMouse)
+      if (isMouseLikePointerType(pointerTypeRef, true) && ignoreMouse)
         return
 
       if (toValue(open) && toggle && (dataRef.openEvent && stickIfOpen ? dataRef.openEvent.type === 'click' : true))
@@ -131,8 +126,7 @@ export function useClick(
       if (event.key !== 'Enter')
         return
 
-      _key_open = toValue(open)
-      if (_key_open && toggle)
+      if (toValue(open) && toggle)
         onOpenChange(false, event, 'click')
       else
         onOpenChange(true, event, 'click')
@@ -146,7 +140,7 @@ export function useClick(
 
       didKeyDownRef = false
 
-      if (_key_open && toggle)
+      if (toValue(open) && toggle)
         onOpenChange(false, event, 'click')
       else
         onOpenChange(true, event, 'click')
