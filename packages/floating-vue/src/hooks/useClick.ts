@@ -24,9 +24,6 @@ export interface UseClickProps {
   /**
    * Whether to ignore the logic for mouse input (for example, if `useHover()`
    * is also being used).
-   * When `useHover()` and `useClick()` are used together, clicking the
-   * reference element after hovering it will keep the floating element open
-   * even once the cursor leaves. This may be not be desirable in some cases.
    * @default false
    */
   ignoreMouse?: boolean
@@ -37,7 +34,20 @@ export interface UseClickProps {
    * @default true
    */
   keyboardHandlers?: boolean
+  /**
+   * If already open from another event such as the `useHover()` Hook,
+   * determines whether to keep the floating element open when clicking the
+   * reference element for the first time.
+   * @default true
+   */
+  stickIfOpen?: boolean
 }
+
+function isButtonTarget(event: KeyboardEvent) {
+  return isHTMLElement(event.target) && event.target.tagName === 'BUTTON'
+}
+
+const isSpaceIgnored = isTypeableElement
 
 export function useClick(
   context: FloatingRootContext,
@@ -56,10 +66,12 @@ export function useClick(
     toggle = true,
     ignoreMouse = false,
     keyboardHandlers = true,
+    stickIfOpen = true,
   } = props
 
   let pointerTypeRef: 'mouse' | 'pen' | 'touch' | undefined
   let didKeyDownRef = false
+  let _key_open: boolean
 
   const referenceProps: ElementProps['reference'] = {
     onPointerdown(event) {
@@ -79,7 +91,7 @@ export function useClick(
       if (isMouseLikePointerType(pointerType, true) && ignoreMouse)
         return
 
-      if (toValue(open) && toggle && (dataRef.openEvent ? dataRef.openEvent.type === 'mousedown' : true)) {
+      if (toValue(open) && toggle && (dataRef.openEvent && stickIfOpen ? dataRef.openEvent.type === 'mousedown' : true)) {
         onOpenChange(false, event, 'click')
       }
       else {
@@ -99,7 +111,7 @@ export function useClick(
       if (isMouseLikePointerType(pointerType, true) && ignoreMouse)
         return
 
-      if (toValue(open) && toggle && (dataRef.openEvent ? dataRef.openEvent.type === 'click' : true))
+      if (toValue(open) && toggle && (dataRef.openEvent && stickIfOpen ? dataRef.openEvent.type === 'click' : true))
         onOpenChange(false, event, 'click')
       else
         onOpenChange(true, event, 'click')
@@ -119,7 +131,8 @@ export function useClick(
       if (event.key !== 'Enter')
         return
 
-      if (toValue(open) && toggle)
+      _key_open = toValue(open)
+      if (_key_open && toggle)
         onOpenChange(false, event, 'click')
       else
         onOpenChange(true, event, 'click')
@@ -133,7 +146,7 @@ export function useClick(
 
       didKeyDownRef = false
 
-      if (toValue(open) && toggle)
+      if (_key_open && toggle)
         onOpenChange(false, event, 'click')
       else
         onOpenChange(true, event, 'click')
@@ -141,12 +154,4 @@ export function useClick(
   }
 
   return () => toValue(enabled) ? { reference: referenceProps } : undefined
-}
-
-function isButtonTarget(event: KeyboardEvent) {
-  return isHTMLElement(event.target) && event.target.tagName === 'BUTTON'
-}
-
-function isSpaceIgnored(element: Element | null | undefined) {
-  return isTypeableElement(element)
 }
