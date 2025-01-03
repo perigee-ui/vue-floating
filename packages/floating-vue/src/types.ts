@@ -250,4 +250,6 @@ export interface UseFloatingOptions<RT extends ReferenceType = ReferenceType> ex
    * Unique node id when using `FloatingTree`.
    */
   nodeId?: string
+
+  config?: MaybeRefOrGetter<UseFloatingCofnig>
 }

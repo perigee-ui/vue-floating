@@ -8,12 +8,10 @@ import type {
 } from './types.ts'
 import { computePosition } from '@floating-ui/dom'
 
-import { NOOP } from '@vue/shared'
 import {
   computed,
   type CSSProperties,
   isRef,
-  type MaybeRefOrGetter,
   onWatcherCleanup,
   shallowRef,
   toValue,
@@ -27,18 +25,15 @@ import { roundByDPR } from './utils/roundByDPR.ts'
 /**
  * Computes the `x` and `y` coordinates that will place the floating element next to a reference element when it is given a certain CSS positioning strategy.
  * @param options The floating options.
- * @param config The floating configuration.
  * @see https://floating-ui.com/docs/vue
  */
-export function useFloating<RT extends ReferenceType = ReferenceType>(
-  options: UseFloatingOptions<RT> = {},
-  config: MaybeRefOrGetter<UseFloatingCofnig> = {},
-): UseFloatingReturn<RT> {
+export function useFloating<RT extends ReferenceType = ReferenceType>(options: UseFloatingOptions<RT> = {}): UseFloatingReturn<RT> {
+  const floatingConfig = options.config || {}
   let configValue: UseFloatingCofnig
 
   watchEffect(() => {
     const shouldUpdate = configValue !== undefined
-    configValue = toValue(config)
+    configValue = toValue(floatingConfig)
 
     if (shouldUpdate)
       update()
@@ -62,10 +57,14 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
   const isPositioned = shallowRef(false)
 
   const referenceRef = useRef<ReferenceType>()
-  const floatingRef = useRef<HTMLElement>()
+  const innerReference = shallowRef<RT>()
+  const getReference = () => toValue(externalReference) || innerReference.value
+  const reference = shallowRef(getReference())
 
-  const reference = externalReference || shallowRef<RT>()
-  const floating = externalFloating || shallowRef<HTMLElement>()
+  const floatingRef = useRef<HTMLElement>()
+  const innerFloating = shallowRef<HTMLElement>()
+  const getFloating = () => externalFloating?.value || innerFloating.value
+  const floating = shallowRef(getFloating())
 
   function update() {
     if (!referenceRef.current || !floatingRef.current)
@@ -104,17 +103,20 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     watch(open, (openVal) => {
       if (openVal === false && isPositioned.value)
         isPositioned.value = false
-    })
+    }, { flush: 'sync' })
   }
 
-  watch([reference, floating], () => {
-    if (reference.value)
-      referenceRef.current = reference.value
+  watch([getReference, getFloating], ([referenceVal, floatingVal]) => {
+    floating.value = floatingVal
+    reference.value = referenceVal
 
-    if (floating.value)
-      floatingRef.current = floating.value
+    if (referenceVal)
+      referenceRef.current = referenceVal
 
-    if (!reference.value || !floating.value)
+    if (floatingVal)
+      floatingRef.current = floatingVal
+
+    if (!referenceVal || !floatingVal)
       return
 
     if (!whileElementsMounted) {
@@ -122,8 +124,8 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
       return
     }
 
-    onWatcherCleanup(whileElementsMounted(reference.value, floating.value, update))
-  })
+    onWatcherCleanup(whileElementsMounted(referenceVal, floatingVal, update))
+  }, { flush: 'sync' })
 
   const floatingStyles = computed<CSSProperties>(() => {
     const initialStyles = {
@@ -132,7 +134,7 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
       top: 0,
     }
 
-    const floatingVal = floating.value
+    const floatingVal = getFloating()
     if (!floatingVal)
       return initialStyles
 
@@ -165,22 +167,18 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     refs: {
       reference: referenceRef,
       floating: floatingRef,
-      setReference: externalReference
-        ? () => console.error('Cannot set reference when it is external.')
-        : (node) => {
-            if (node !== referenceRef.current) {
-              referenceRef.current = node
-              reference.value = node
-            }
-          },
-      setFloating: externalFloating
-        ? () => console.error('Cannot set floating when it is external.')
-        : (node) => {
-            if (node !== floatingRef.current) {
-              floatingRef.current = node
-              floating.value = node
-            }
-          },
+      setReference(node) {
+        if (node !== referenceRef.current) {
+          referenceRef.current = node
+          innerReference.value = node
+        }
+      },
+      setFloating(node) {
+        if (node !== floatingRef.current) {
+          floatingRef.current = node
+          innerFloating.value = node
+        }
+      },
     },
     elements: {
       reference,

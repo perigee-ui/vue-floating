@@ -126,7 +126,7 @@ export type UseFloatingOptions<RT extends ReferenceType = ReferenceType> = Prett
    * Object containing the reference and floating elements.
    */
   elements?: {
-    reference?: Ref<RT | undefined>
+    reference?: MaybeRefOrGetter<RT | undefined>
     floating?: Ref<HTMLElement | undefined>
   }
   /**
@@ -135,4 +135,6 @@ export type UseFloatingOptions<RT extends ReferenceType = ReferenceType> = Prett
    * @default false
    */
   transform?: boolean
+
+  config?: MaybeRefOrGetter<UseFloatingCofnig>
 }>

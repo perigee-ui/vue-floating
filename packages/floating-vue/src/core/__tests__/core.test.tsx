@@ -14,44 +14,46 @@ import {
 } from '../index.ts'
 import { act } from './utils.ts'
 
-describe.only('floating/core', () => {
+describe('floating/core', () => {
   it('middleware is always fresh and does not cause an infinite loop', async () => {
     const InlineMiddleware = defineComponent({
       setup() {
         const arrowRef = shallowRef<Element>()
-        const { refs } = useFloating({}, {
-          placement: 'right',
-          middleware: [
-            offset(),
-            offset(10),
-            offset(() => 5),
-            offset(() => ({ crossAxis: 10 })),
-            offset({ crossAxis: 10, mainAxis: 10 }),
+        const { refs } = useFloating({
+          config: {
+            placement: 'right',
+            middleware: [
+              offset(),
+              offset(10),
+              offset(() => 5),
+              offset(() => ({ crossAxis: 10 })),
+              offset({ crossAxis: 10, mainAxis: 10 }),
 
-            flip({ fallbackPlacements: ['top', 'bottom'] }),
+              flip({ fallbackPlacements: ['top', 'bottom'] }),
 
-            shift(),
-            shift({ crossAxis: true }),
-            shift({ boundary: document.createElement('div') }),
-            shift({ boundary: [document.createElement('div')] }),
-            shift({ limiter: limitShift() }),
-            shift({ limiter: limitShift({ offset: 10 }) }),
-            shift({ limiter: limitShift({ offset: { crossAxis: 10 } }) }),
-            shift({ limiter: limitShift({ offset: () => 5 }) }),
-            shift({ limiter: limitShift({ offset: () => ({ crossAxis: 10 }) }) }),
+              shift(),
+              shift({ crossAxis: true }),
+              shift({ boundary: document.createElement('div') }),
+              shift({ boundary: [document.createElement('div')] }),
+              shift({ limiter: limitShift() }),
+              shift({ limiter: limitShift({ offset: 10 }) }),
+              shift({ limiter: limitShift({ offset: { crossAxis: 10 } }) }),
+              shift({ limiter: limitShift({ offset: () => 5 }) }),
+              shift({ limiter: limitShift({ offset: () => ({ crossAxis: 10 }) }) }),
 
-            arrow({ element: arrowRef }),
+              arrow({ element: arrowRef }),
 
-            hide(),
+              hide(),
 
-            size({
-              apply({ availableHeight, elements }) {
-                Object.assign(elements.floating.style, {
-                  maxHeight: `${availableHeight}px`,
-                })
-              },
-            }),
-          ],
+              size({
+                apply({ availableHeight, elements }) {
+                  Object.assign(elements.floating.style, {
+                    maxHeight: `${availableHeight}px`,
+                  })
+                },
+              }),
+            ],
+          },
         })
 
         return () => (
@@ -105,10 +107,11 @@ describe.only('floating/core', () => {
           middleware.value = value
         }
         const { x, y, refs } = useFloating({
-        }, () => ({
-          placement: 'right',
-          middleware: middleware.value,
-        }))
+          config: () => ({
+            placement: 'right',
+            middleware: middleware.value,
+          }),
+        })
 
         return () => (
           <>

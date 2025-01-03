@@ -1,7 +1,6 @@
 import type { ContextData, FloatingRootContext, OpenChangeReason, ReferenceElement } from '../types'
-import { computed, type MaybeRefOrGetter, type Ref, shallowRef } from 'vue'
+import { computed, type MaybeRefOrGetter, type Ref, shallowRef, useId } from 'vue'
 import { createPubSub } from '../utils/createPubSub.ts'
-import { useId } from './useId.ts'
 
 export interface UseFloatingRootContextOptions {
   open?: MaybeRefOrGetter<boolean>
@@ -18,49 +17,43 @@ export interface UseFloatingRootContextOptions {
 
 export function useFloatingRootContext(options: UseFloatingRootContextOptions): FloatingRootContext {
   const {
-    open = shallowRef(false),
+    open = false,
     onOpenChange: onOpenChangeProp,
-    elements: elementsProp = {},
   } = options
 
   const {
     reference: referenceProp = shallowRef(undefined),
     floating: floatingProp = shallowRef(undefined),
-  } = elementsProp
+  } = options.elements || {}
 
   const floatingId = useId()
-  const dataRef = <ContextData>{}
+  const dataRef: ContextData = {}
   const events = createPubSub()
   // const nested = useFloatingParentNodeId() != null;
   const nested = false
 
+  // when pointer click
   const positionReference = shallowRef<ReferenceElement | undefined>(referenceProp.value)
-
-  const refs = {
-    setPositionReference(node: ReferenceElement | undefined) {
-      positionReference.value = node
-    },
-  }
-
-  function onOpenChange(open: boolean, event?: Event, reason?: OpenChangeReason) {
-    dataRef.openEvent = open ? event : undefined
-    events.emit('openchange', { open, event, reason, nested })
-    onOpenChangeProp?.(open, event, reason)
-  }
-
-  const elements = {
-    reference: computed(() => positionReference.value || referenceProp.value || undefined),
-    floating: floatingProp,
-    domReference: referenceProp,
-  }
 
   return {
     dataRef,
     open,
-    onOpenChange,
-    elements,
+    onOpenChange(open, event, reason) {
+      dataRef.openEvent = open ? event : undefined
+      events.emit('openchange', { open, event, reason, nested })
+      onOpenChangeProp?.(open, event, reason)
+    },
+    elements: {
+      reference: computed(() => positionReference.value || referenceProp.value),
+      floating: floatingProp,
+      domReference: referenceProp,
+    },
     events,
     floatingId,
-    refs,
+    refs: {
+      setPositionReference(node) {
+        positionReference.value = node
+      },
+    },
   }
 }

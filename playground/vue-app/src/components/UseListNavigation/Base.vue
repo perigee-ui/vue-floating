@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { shallowRef, watchEffect } from 'vue'
-import { offset } from '@perigee-ui/floating-vue/core'
 import { useClick, useDismiss, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue'
+import { offset } from '@perigee-ui/floating-vue/core'
 import { useRef } from '@perigee-ui/floating-vue/vue'
+import { shallowRef, watchEffect } from 'vue'
 
 const isOpen = shallowRef(false)
 const activeIndex = shallowRef<number | undefined>(undefined)
@@ -14,9 +14,10 @@ const { refs, context, floatingStyles } = useFloating({
   onOpenChange(val) {
     isOpen.value = val
   },
-}, {
-  placement: 'bottom',
-  middleware: [offset(20)],
+  config: {
+    placement: 'bottom',
+    middleware: [offset(20)],
+  },
 })
 
 const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([

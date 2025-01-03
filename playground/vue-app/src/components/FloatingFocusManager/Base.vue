@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue'
 import { FloatingFocusManager, useClick, useFloating, useInteractions } from '@perigee-ui/floating-vue'
 import { offset } from '@perigee-ui/floating-vue/core'
+import { shallowRef } from 'vue'
 
 const open = shallowRef(false)
 
@@ -10,9 +10,10 @@ const { context, floatingStyles, refs: { setFloating, setReference } } = useFloa
   onOpenChange: (value) => {
     open.value = value
   },
-}, {
-  placement: 'bottom',
-  middleware: [offset(20)],
+  config: {
+    placement: 'bottom',
+    middleware: [offset(20)],
+  },
 })
 
 const { getReferenceProps, getFloatingProps } = useInteractions([useClick(context)])

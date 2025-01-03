@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue'
-import { type Placement, autoUpdate, flip, offset, shift } from '@perigee-ui/floating-vue/core'
 import { useDelayGroup, useDismiss, useFloating, useFocus, useHover, useInteractions, useRole, useTransitionStyles } from '@perigee-ui/floating-vue'
+import { autoUpdate, flip, offset, type Placement, shift } from '@perigee-ui/floating-vue/core'
+import { shallowRef } from 'vue'
 
 type Delay = number | Partial<{ open: number, close: number }>
 
@@ -22,9 +22,10 @@ const { refs, floatingStyles, context } = useFloating({
   onOpenChange(v) {
     open.value = v
   },
-}, {
-  placement: props.placement,
-  middleware: [offset(5), flip(), shift({ padding: 8 })],
+  config: {
+    placement: props.placement,
+    middleware: [offset(5), flip(), shift({ padding: 8 })],
+  },
 })
 
 const delayContext = useDelayGroup(context)

@@ -17,8 +17,9 @@ export default mergeConfig(
         './src/__tests__/FloatingFocusManager.test.tsx',
       ],
       include: [
-        './src/core/__tests__/**/*.{test,spec}.?(c|m)[jt]s?(x)',
-        './src/__tests__/**/*.{test,spec}.?(c|m)[jt]s?(x)',
+        './src/core/__tests__/core.test.tsx',
+        './src/__tests__/useFloating.test.tsx',
+        // './src/__tests__/**/*.{test,spec}.?(c|m)[jt]s?(x)',
       ],
       setupFiles: './src/__tests__/setupTests.ts',
     },

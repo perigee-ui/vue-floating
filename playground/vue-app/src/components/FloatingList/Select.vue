@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue'
 import { useClick, useFloating, useFloatingList, useInteractions, useListNavigation, useTypeahead } from '@perigee-ui/floating-vue'
 import { offset } from '@perigee-ui/floating-vue/core'
 import { useRef } from '@perigee-ui/floating-vue/vue'
+import { shallowRef } from 'vue'
 import { provideSelectContext } from './Select.ts'
 
 const isOpen = shallowRef(false)
@@ -13,9 +13,10 @@ const { refs, context, floatingStyles } = useFloating({
   onOpenChange(v) {
     isOpen.value = v
   },
-}, {
-  placement: 'bottom',
-  middleware: [offset(20)],
+  config: {
+    placement: 'bottom',
+    middleware: [offset(20)],
+  },
 })
 
 const elementsRef = useRef<Array<HTMLElement | undefined>>([])

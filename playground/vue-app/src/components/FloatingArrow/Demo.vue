@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { type ComponentPublicInstance, type StyleValue, computed, shallowRef } from 'vue'
 import { FloatingArrow, useClick, useFloating, useInteractions } from '@perigee-ui/floating-vue'
-import { type Placement, arrow, offset } from '@perigee-ui/floating-vue/core'
+import { arrow, offset, type Placement } from '@perigee-ui/floating-vue/core'
+import { type ComponentPublicInstance, computed, shallowRef, type StyleValue } from 'vue'
 
 const props = withDefaults(defineProps<{
   floatingClass?: string
@@ -22,9 +22,10 @@ const { context, floatingStyles, refs: { setFloating, setReference }, middleware
   onOpenChange: (value) => {
     open.value = value
   },
-}, {
-  placement: props.placement,
-  middleware: [offset(8), arrow({ element: arrowEl })],
+  config: {
+    placement: props.placement,
+    middleware: [offset(8), arrow({ element: arrowEl })],
+  },
 })
 
 const { getReferenceProps, getFloatingProps } = useInteractions([useClick(context)])

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { shallowRef, triggerRef } from 'vue'
 import { inner, useClick, useDismiss, useFloating, useInteractions } from '@perigee-ui/floating-vue'
-import { type UseFloatingCofnig, autoUpdate } from '@perigee-ui/floating-vue/core'
+import { autoUpdate, type UseFloatingCofnig } from '@perigee-ui/floating-vue/core'
 import { useRef } from '@perigee-ui/floating-vue/vue'
+import { shallowRef, triggerRef } from 'vue'
 
 const open = shallowRef(false)
 const index = shallowRef(0)
@@ -16,7 +16,8 @@ const { context, floatingStyles, refs } = useFloating({
   open,
   onOpenChange: v => open.value = v,
   whileElementsMounted: autoUpdate,
-}, config)
+  config,
+})
 
 const list = ['One', 'Two', 'Three']
 
