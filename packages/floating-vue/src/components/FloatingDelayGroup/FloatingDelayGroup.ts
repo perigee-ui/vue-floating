@@ -1,7 +1,7 @@
-import { type Ref, shallowRef, toValue, watch, watchEffect } from 'vue'
-import { createContext } from '../../vue/createContext.ts'
 import type { FloatingRootContext } from '../../types'
+import { type Ref, shallowRef, toValue, watch, watchEffect } from 'vue'
 import { getDelay } from '../../hooks/useHover.ts'
+import { createContext } from '../../vue/createContext.ts'
 
 // eslint-disable-next-line antfu/top-level-function
 const NOOP = () => {}

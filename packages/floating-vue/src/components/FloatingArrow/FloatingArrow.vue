@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { type CSSProperties, computed } from 'vue'
-
-import { useId } from '../../hooks/useId.ts'
 import type { Alignment, Side } from '../../types.ts'
+
 import type { FloatingArrowProps } from './FloatingArrow.ts'
+import { computed, type CSSProperties } from 'vue'
+import { useId } from '../../hooks/useId.ts'
 
 defineOptions({
   name: 'NFloatingArrow',

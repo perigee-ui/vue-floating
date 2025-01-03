@@ -1,6 +1,6 @@
-import { type MaybeRefOrGetter, computed, shallowRef, toValue, watchEffect } from 'vue'
-import { getWindow } from '@floating-ui/utils/dom'
 import type { ContextData, ElementProps, FloatingRootContext } from '../types.ts'
+import { getWindow } from '@floating-ui/utils/dom'
+import { computed, type MaybeRefOrGetter, shallowRef, toValue, watchEffect } from 'vue'
 import { contains, getTarget, isMouseLikePointerType } from '../utils.ts'
 
 export interface UseClientPointProps {

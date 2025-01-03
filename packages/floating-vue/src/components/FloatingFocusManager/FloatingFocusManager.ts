@@ -1,11 +1,11 @@
 // import type { FloatingContext } from '../../types.ts'
 
-import { getNodeName } from '@floating-ui/utils/dom'
-import { isTabbable, tabbable } from 'tabbable'
 import type { CSSProperties } from 'vue'
 import type { FloatingContext } from '../../types.ts'
-import { getTabbableOptions } from '../../utils/tabbable.ts'
 import type { MutableRefObject } from '../../vue/useRef.ts'
+import { getNodeName } from '@floating-ui/utils/dom'
+import { isTabbable, tabbable } from 'tabbable'
+import { getTabbableOptions } from '../../utils/tabbable.ts'
 
 // eslint-disable-next-line ts/consistent-type-definitions
 export type FloatingFocusManagerProps = {

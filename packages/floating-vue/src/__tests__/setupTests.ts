@@ -1,7 +1,7 @@
-import '@testing-library/jest-dom/vitest'
-import { expect, vi } from 'vitest'
 import * as matchers from '@testing-library/jest-dom/matchers'
 import ResizeObserverPolyfill from 'resize-observer-polyfill'
+import { expect, vi } from 'vitest'
+import '@testing-library/jest-dom/vitest'
 
 expect.extend(matchers)
 

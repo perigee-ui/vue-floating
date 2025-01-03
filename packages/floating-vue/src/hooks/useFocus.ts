@@ -1,5 +1,11 @@
+import type {
+  ElementProps,
+  FloatingRootContext,
+  OpenChangeReason,
+} from '../types'
 import { getWindow, isElement, isHTMLElement } from '@floating-ui/utils/dom'
 import { type MaybeRefOrGetter, onScopeDispose, toValue, watchEffect } from 'vue'
+
 import {
   activeElement,
   contains,
@@ -10,12 +16,6 @@ import {
   isTypeableElement,
   isVirtualPointerEvent,
 } from '../utils.ts'
-
-import type {
-  ElementProps,
-  FloatingRootContext,
-  OpenChangeReason,
-} from '../types'
 import { createAttribute } from '../utils/createAttribute.ts'
 
 export interface UseFocusProps {

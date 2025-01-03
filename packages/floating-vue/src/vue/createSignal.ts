@@ -1,5 +1,5 @@
-import { type IfAny, hasChanged } from '@vue/shared'
-import { type Ref, customRef } from 'vue'
+import { hasChanged, type IfAny } from '@vue/shared'
+import { customRef, type Ref } from 'vue'
 
 type Signal<T> = Ref<T> & { rawValue: T }
 

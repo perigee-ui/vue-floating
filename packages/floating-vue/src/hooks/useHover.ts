@@ -1,7 +1,7 @@
-import { type MaybeRefOrGetter, type UnwrapRef, toValue, watchEffect } from 'vue'
-import { isElement } from '@floating-ui/utils/dom'
-import { contains, getDocument, isMouseLikePointerType } from '../utils.ts'
 import type { ElementProps, FloatingContext, OpenChangeReason } from '../types'
+import { isElement } from '@floating-ui/utils/dom'
+import { type MaybeRefOrGetter, toValue, type UnwrapRef, watchEffect } from 'vue'
+import { contains, getDocument, isMouseLikePointerType } from '../utils.ts'
 import { createAttribute } from '../utils/createAttribute.ts'
 
 export interface HandleCloseFn {
@@ -50,8 +50,8 @@ export interface UseHoverProps {
    * @default 0
    */
   delay?: number
-  | { open?: number | (() => number), close?: number | (() => number) }
-  | (() => { open?: number, close?: number } | number)
+    | { open?: number | (() => number), close?: number | (() => number) }
+    | (() => { open?: number, close?: number } | number)
   /**
    * Whether the logic only runs for mouse input, ignoring touch input.
    * Note: due to a bug with Linux Chrome, "pen" inputs are considered "mouse".

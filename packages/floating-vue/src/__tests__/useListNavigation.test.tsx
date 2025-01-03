@@ -1,13 +1,13 @@
+import userEvent from '@testing-library/user-event'
 import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
-import { describe, expect, it, vi } from 'vitest'
 // import userEvent from '@testing-library/user-event'
 // import { expect, it, vi } from 'vitest'
 
-import { type PropType, computed, defineComponent, shallowRef, watchSyncEffect } from 'vue'
-import userEvent from '@testing-library/user-event'
-import { useInteractions } from '../hooks/useInteractions.ts'
-import { type UseListNavigationProps, useClick, useDismiss, useFloating, useListNavigation } from '../index.ts'
+import { describe, expect, it, vi } from 'vitest'
+import { computed, defineComponent, type PropType, shallowRef, watchSyncEffect } from 'vue'
 import { act } from '../core/__tests__/utils.ts'
+import { useInteractions } from '../hooks/useInteractions.ts'
+import { useClick, useDismiss, useFloating, useListNavigation, type UseListNavigationProps } from '../index.ts'
 import { type MutableRefObject, useRef } from '../vue/useRef.ts'
 // import { useFloating } from '../hooks/useFloating.ts'
 

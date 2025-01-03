@@ -1,6 +1,6 @@
+import type { MutableRefObject } from '../../vue/index.ts'
 import { type Ref, shallowRef, triggerRef, watchEffect } from 'vue'
 import { createContext } from '../../vue/createContext.ts'
-import type { MutableRefObject } from '../../vue/index.ts'
 
 export interface FloatingListProps {
   /**

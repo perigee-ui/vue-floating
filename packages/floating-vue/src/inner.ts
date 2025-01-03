@@ -1,8 +1,8 @@
-import { type Derivable, type DetectOverflowOptions, type Middleware, type MiddlewareState, detectOverflow, offset } from '@floating-ui/dom'
-import { type SideObject, evaluate } from '@floating-ui/utils'
-import { type MaybeRefOrGetter, type Ref, toValue, unref, watchEffect } from 'vue'
-import type { MutableRefObject } from './vue'
 import type { ElementProps, FloatingRootContext } from './types'
+import type { MutableRefObject } from './vue'
+import { type Derivable, detectOverflow, type DetectOverflowOptions, type Middleware, type MiddlewareState, offset } from '@floating-ui/dom'
+import { evaluate, type SideObject } from '@floating-ui/utils'
+import { type MaybeRefOrGetter, type Ref, toValue, unref, watchEffect } from 'vue'
 import { getUserAgent } from './utils.ts'
 
 export interface InnerProps extends DetectOverflowOptions {

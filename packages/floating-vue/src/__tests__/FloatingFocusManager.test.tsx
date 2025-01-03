@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest'
-import { type PropType, defineComponent, shallowRef, watchEffect } from 'vue'
-import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
 import userEvent from '@testing-library/user-event'
-import { FloatingFocusManager, type FloatingFocusManagerProps, useClick, useDismiss, useFloating, useInteractions, useRole } from '../index.ts'
+import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
+import { describe, expect, it } from 'vitest'
+import { defineComponent, type PropType, shallowRef, watchEffect } from 'vue'
 import { act } from '../core/__tests__/utils.ts'
+import { FloatingFocusManager, type FloatingFocusManagerProps, useClick, useDismiss, useFloating, useInteractions, useRole } from '../index.ts'
 import { useRef } from '../vue/useRef.ts'
 
 const App = defineComponent({

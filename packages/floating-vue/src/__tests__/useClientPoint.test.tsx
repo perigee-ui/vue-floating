@@ -1,7 +1,7 @@
+import type { Coords } from '../core/index.ts'
 import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
 import { expect, it } from 'vitest'
-import { type PropType, defineComponent, onMounted, ref, watchEffect } from 'vue'
-import type { Coords } from '../core/index.ts'
+import { defineComponent, onMounted, type PropType, ref, watchEffect } from 'vue'
 
 import { useClientPoint, useFloating, useInteractions } from '../../src/index.ts'
 import { act } from '../core/__tests__/utils.ts'

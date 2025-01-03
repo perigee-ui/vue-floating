@@ -1,8 +1,8 @@
 import type { Dimensions } from '@floating-ui/utils'
-import { type Ref, computed, shallowRef, toValue, watch, watchEffect } from 'vue'
-import { isHTMLElement } from '@floating-ui/utils/dom'
 import type { ElementProps, FloatingRootContext } from '../types'
-import { enqueueFocus } from '../utils/enqueueFocus.ts'
+import type { MutableRefObject } from '../vue/useRef.ts'
+import { isHTMLElement } from '@floating-ui/utils/dom'
+import { computed, type Ref, shallowRef, toValue, watch, watchEffect } from 'vue'
 import {
   activeElement,
   contains,
@@ -29,7 +29,7 @@ import {
   isDisabled,
   isIndexOutOfBounds,
 } from '../utils/composite.ts'
-import type { MutableRefObject } from '../vue/useRef.ts'
+import { enqueueFocus } from '../utils/enqueueFocus.ts'
 
 let isPreventScrollSupported: boolean | undefined
 
@@ -363,7 +363,7 @@ export function useListNavigation(
         (!previousOpenRef || !previousMountedRef)
         && focusItemOnOpenRef
         && (keyRef != null
-        || (focusItemOnOpenRef === true && keyRef == null))
+          || (focusItemOnOpenRef === true && keyRef == null))
       ) {
         let runs = 0
         const waitForListPopulated = () => {
@@ -573,9 +573,9 @@ export function useListNavigation(
             disabledIndices: getCellIndices(
               [
                 ...(disabledIndices
-                || listRef.current.map((_, index) =>
-                  isDisabled(listRef.current, index) ? index : undefined,
-                )),
+                  || listRef.current.map((_, index) =>
+                    isDisabled(listRef.current, index) ? index : undefined,
+                  )),
                 undefined,
               ],
               cellMap,
@@ -636,9 +636,9 @@ export function useListNavigation(
                 ? -1
                 : minIndex
               : findNonDisabledIndex(listRef.current, {
-                startingIndex: currentIndex,
-                disabledIndices,
-              })
+                  startingIndex: currentIndex,
+                  disabledIndices,
+                })
         }
         else {
           indexRef = Math.min(
@@ -658,10 +658,10 @@ export function useListNavigation(
                 ? listRef.current.length
                 : maxIndex
               : findNonDisabledIndex(listRef.current, {
-                startingIndex: currentIndex,
-                decrement: true,
-                disabledIndices,
-              })
+                  startingIndex: currentIndex,
+                  decrement: true,
+                  disabledIndices,
+                })
         }
         else {
           indexRef = Math.max(

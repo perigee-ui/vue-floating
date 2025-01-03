@@ -1,9 +1,9 @@
-import { type PropType, defineComponent, ref } from 'vue'
-import { describe, expect, it } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
-import { useClick, useFloating, useHover, useInteractions } from '../index.ts'
 import type { UseClickProps } from '../hooks/useClick.ts'
+import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
+import { describe, expect, it } from 'vitest'
+import { defineComponent, type PropType, ref } from 'vue'
 import { act } from '../core/__tests__/utils.ts'
+import { useClick, useFloating, useHover, useInteractions } from '../index.ts'
 
 const App = defineComponent({
   name: 'App',

@@ -1,7 +1,7 @@
+import type { HandleCloseFn } from './hooks/useHover'
+import type { Rect, Side } from './types'
 import { isElement } from '@floating-ui/utils/dom'
 import { contains, getTarget } from './utils.ts'
-import type { Rect, Side } from './types'
-import type { HandleCloseFn } from './hooks/useHover'
 // import { getChildren } from './utils/getChildren'
 
 type Point = [number, number]

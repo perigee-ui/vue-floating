@@ -1,6 +1,6 @@
+import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
 import { describe, expect, it, vi } from 'vitest'
 import { defineComponent, shallowRef, watchEffect } from 'vue'
-import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
 
 import {
   arrow,

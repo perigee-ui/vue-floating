@@ -1,6 +1,3 @@
-import { type MaybeRefOrGetter, computed, shallowRef, watchEffect } from 'vue'
-import { isElement } from '@floating-ui/utils/dom'
-import { type ReferenceType, useFloating as usePosition } from '../core/index.ts'
 import type {
   ExtendedElements,
   ExtendedRefs,
@@ -10,6 +7,9 @@ import type {
   UseFloatingOptions,
   UseFloatingReturn,
 } from '../types.ts'
+import { isElement } from '@floating-ui/utils/dom'
+import { computed, type MaybeRefOrGetter, shallowRef, watchEffect } from 'vue'
+import { type ReferenceType, useFloating as usePosition } from '../core/index.ts'
 import { useRef } from '../vue/index.ts'
 import { useFloatingRootContext } from './useFloatingRootContext.ts'
 

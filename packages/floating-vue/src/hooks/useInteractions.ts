@@ -1,5 +1,5 @@
-import { isOn } from '@vue/shared'
 import type { ElAttrs, ElementProps } from '../types'
+import { isOn } from '@vue/shared'
 
 const ACTIVE_KEY = 'active'
 const SELECTED_KEY = 'selected'
@@ -32,7 +32,8 @@ function mergeProps(
         return userProps ? propsOrGetProps(userProps) : undefined
 
       return propsOrGetProps
-    }).concat(userProps)
+    })
+    .concat(userProps)
 
   for (const props of mergedPropsList) {
     if (!props)

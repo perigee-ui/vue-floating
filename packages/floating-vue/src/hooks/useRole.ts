@@ -1,7 +1,7 @@
-import { type MaybeRefOrGetter, computed, toValue } from 'vue'
 import type { ElementProps, FloatingRootContext } from '../types.ts'
-import { useId } from './useId.ts'
 import type { ExtendedUserProps } from './useInteractions.ts'
+import { computed, type MaybeRefOrGetter, toValue } from 'vue'
+import { useId } from './useId.ts'
 
 type AriaRole =
   | 'tooltip'

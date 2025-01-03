@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { computed, toValue, watch, watchEffect } from 'vue'
-import { type FocusableElement, tabbable } from 'tabbable'
+import type { OpenChangeReason } from '../../types.ts'
 import { isHTMLElement } from '@floating-ui/utils/dom'
 // eslint-disable-next-line vue/prefer-import-from-vue
 import { isObject } from '@vue/shared'
+import { type FocusableElement, tabbable } from 'tabbable'
+import { computed, toValue, watch, watchEffect } from 'vue'
 import { activeElement, contains, getDocument, getTarget, isTypeableCombobox, isVirtualClick, isVirtualPointerEvent, stopEvent } from '../../utils.ts'
+import { createAttribute } from '../../utils/createAttribute.ts'
+import { enqueueFocus } from '../../utils/enqueueFocus.ts'
 import { markOthers, supportsInert } from '../../utils/markOthers.ts'
 import { getClosestTabbableElement, getTabbableOptions } from '../../utils/tabbable.ts'
-import { enqueueFocus } from '../../utils/enqueueFocus.ts'
-import { createAttribute } from '../../utils/createAttribute.ts'
-import type { OpenChangeReason } from '../../types.ts'
-import { type FloatingFocusManagerProps, HIDDEN_STYLES, ORDER_DEFAULT, addPreviouslyFocusedElement, getPreviouslyFocusedElement } from './FloatingFocusManager.ts'
+import { addPreviouslyFocusedElement, type FloatingFocusManagerProps, getPreviouslyFocusedElement, HIDDEN_STYLES, ORDER_DEFAULT } from './FloatingFocusManager.ts'
 import FocusGuard from './FocusGuard.vue'
 
 const props = withDefaults(defineProps<FloatingFocusManagerProps>(), {

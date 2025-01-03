@@ -5,8 +5,8 @@ import type {
   UseFloatingReturn as UsePositionFloatingReturn,
   UseFloatingOptions as UsePositionOptions,
 } from './core/index.ts'
-import type { MutableRefObject } from './vue/useRef.ts'
 import type { ExtendedUserProps } from './hooks/useInteractions.ts'
+import type { MutableRefObject } from './vue/useRef.ts'
 
 // import type {ExtendedUserProps} from './hooks/useInteractions';
 

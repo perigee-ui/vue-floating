@@ -1,6 +1,6 @@
-import { stopEvent } from '../utils.ts'
-
 import type { Dimensions } from '../types.ts'
+
+import { stopEvent } from '../utils.ts'
 
 export const ARROW_UP = 'ArrowUp'
 export const ARROW_DOWN = 'ArrowDown'
@@ -213,9 +213,9 @@ export function getGridNavigatedIndex(
         nextIndex = event.key === ARROW_LEFT
           ? maxIndex
           : findNonDisabledIndex(elementsRef, {
-            startingIndex: prevIndex - (prevIndex % cols) - 1,
-            disabledIndices,
-          })
+              startingIndex: prevIndex - (prevIndex % cols) - 1,
+              disabledIndices,
+            })
       }
       else {
         nextIndex = prevIndex

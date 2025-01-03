@@ -1,15 +1,3 @@
-import { computePosition } from '@floating-ui/dom'
-import {
-  type CSSProperties,
-  type MaybeRefOrGetter,
-  computed,
-  shallowRef,
-  toValue,
-  watchEffect,
-  watchSyncEffect,
-} from 'vue'
-
-import { useRef } from '../vue/index.ts'
 import type {
   ComputePositionConfig,
   MiddlewareData,
@@ -18,8 +6,20 @@ import type {
   UseFloatingOptions,
   UseFloatingReturn,
 } from './types.ts'
-import { roundByDPR } from './utils/roundByDPR.ts'
+import { computePosition } from '@floating-ui/dom'
+
+import {
+  computed,
+  type CSSProperties,
+  type MaybeRefOrGetter,
+  shallowRef,
+  toValue,
+  watchEffect,
+  watchSyncEffect,
+} from 'vue'
+import { useRef } from '../vue/index.ts'
 import { getDPR } from './utils/getDPR.ts'
+import { roundByDPR } from './utils/roundByDPR.ts'
 
 /**
  * Computes the `x` and `y` coordinates that will place the floating element next to a reference element when it is given a certain CSS positioning strategy.

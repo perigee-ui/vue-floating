@@ -1,9 +1,9 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
-import { describe, expect, it, vi } from 'vitest'
-
-import { type PropType, defineComponent, ref } from 'vue'
-import { useFloating, useHover, useInteractions } from '../../src/index.ts'
 import type { UseHoverProps } from '../../src/hooks/useHover'
+import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
+
+import { describe, expect, it, vi } from 'vitest'
+import { defineComponent, type PropType, ref } from 'vue'
+import { useFloating, useHover, useInteractions } from '../../src/index.ts'
 import { act } from '../core/__tests__/utils.ts'
 
 vi.useFakeTimers()

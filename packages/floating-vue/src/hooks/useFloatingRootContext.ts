@@ -1,5 +1,5 @@
-import { type MaybeRefOrGetter, type Ref, computed, shallowRef } from 'vue'
 import type { ContextData, FloatingRootContext, OpenChangeReason, ReferenceElement } from '../types'
+import { computed, type MaybeRefOrGetter, type Ref, shallowRef } from 'vue'
 import { createPubSub } from '../utils/createPubSub.ts'
 import { useId } from './useId.ts'
 

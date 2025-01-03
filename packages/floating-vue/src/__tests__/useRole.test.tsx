@@ -1,7 +1,9 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
+import type { UseRoleProps } from '../../src/hooks/useRole.ts'
 
-import { type PropType, defineComponent, ref } from 'vue'
+import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
 import { describe, expect, it } from 'vitest'
+import { defineComponent, type PropType, ref } from 'vue'
+
 import {
   useClick,
   useFloating,
@@ -9,8 +11,6 @@ import {
   useInteractions,
   useRole,
 } from '../../src/index.ts'
-
-import type { UseRoleProps } from '../../src/hooks/useRole.ts'
 import { act } from '../core/__tests__/utils.ts'
 
 const App = defineComponent({

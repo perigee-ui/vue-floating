@@ -1,8 +1,8 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
 import { expect, it, vi } from 'vitest'
 import { defineComponent, shallowRef } from 'vue'
-import { useDelayGroup, useFloating, useFloatingDelayGroup, useHover, useInteractions } from '../index.ts'
 import { act } from '../core/__tests__/utils.ts'
+import { useDelayGroup, useFloating, useFloatingDelayGroup, useHover, useInteractions } from '../index.ts'
 
 vi.useFakeTimers()
 
