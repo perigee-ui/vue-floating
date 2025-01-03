@@ -1,5 +1,5 @@
 {
-  "extends": "@teleskop150750/typescript-config/tsconfig.node.json",
+  "extends": "@perigee-ui/typescript-config/tsconfig.node.json",
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
   },
