@@ -163,11 +163,12 @@ export function useDismiss(
   }
 
   function closeOnEscapeKeydownCapture(event: KeyboardEvent) {
+    const target = getTarget(event)
     const callback = () => {
       closeOnEscapeKeydown(event)
-      getTarget(event)?.removeEventListener('keydown', callback)
+      target?.removeEventListener('keydown', callback)
     }
-    getTarget(event)?.addEventListener('keydown', callback)
+    target?.addEventListener('keydown', callback)
   }
 
   function closeOnPressOutside(event: MouseEvent) {
