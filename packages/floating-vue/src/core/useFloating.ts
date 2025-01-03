@@ -8,14 +8,17 @@ import type {
 } from './types.ts'
 import { computePosition } from '@floating-ui/dom'
 
+import { NOOP } from '@vue/shared'
 import {
   computed,
   type CSSProperties,
+  isRef,
   type MaybeRefOrGetter,
+  onWatcherCleanup,
   shallowRef,
   toValue,
+  watch,
   watchEffect,
-  watchSyncEffect,
 } from 'vue'
 import { useRef } from '../vue/index.ts'
 import { getDPR } from './utils/getDPR.ts'
@@ -61,25 +64,8 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
   const referenceRef = useRef<ReferenceType>()
   const floatingRef = useRef<HTMLElement>()
 
-  const _reference = shallowRef<RT>()
-  const _floating = shallowRef<HTMLElement>()
-
-  function setReference(node: RT | undefined) {
-    if (node !== referenceRef.current) {
-      referenceRef.current = node
-      _reference.value = node
-    }
-  }
-
-  function setFloating(node: HTMLElement | undefined) {
-    if (node !== floatingRef.current) {
-      floatingRef.current = node
-      _floating.value = node
-    }
-  }
-
-  const referenceEl = computed(() => externalReference?.value || _reference.value)
-  const floatingEl = computed(() => externalFloating?.value || _floating.value)
+  const reference = externalReference || shallowRef<RT>()
+  const floating = externalFloating || shallowRef<HTMLElement>()
 
   function update() {
     if (!referenceRef.current || !floatingRef.current)
@@ -94,6 +80,8 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     if (configValue.platform)
       config.platform = configValue.platform
 
+    const openVal = toValue(open)
+
     computePosition(referenceRef.current, floatingRef.current, config).then(
       (data) => {
         x.value = data.x
@@ -101,24 +89,32 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
         strategy.value = data.strategy
         placement.value = data.placement
         middlewareData.value = data.middlewareData
-        isPositioned.value = true
+        /**
+         * The floating element's position may be recomputed while it's closed
+         * but still mounted (such as when transitioning out). To ensure
+         * `isPositioned` will be `false` initially on the next open, avoid
+         * setting it to `true` when `open === false` (must be specified).
+         */
+        isPositioned.value = openVal !== false
       },
     )
   }
 
-  watchSyncEffect(() => {
-    if (toValue(open) === false && isPositioned.value)
-      isPositioned.value = false
-  })
+  if (typeof open === 'function' || isRef(open)) {
+    watch(open, (openVal) => {
+      if (openVal === false && isPositioned.value)
+        isPositioned.value = false
+    })
+  }
 
-  watchSyncEffect((onCleanup) => {
-    if (referenceEl.value)
-      referenceRef.current = referenceEl.value
+  watch([reference, floating], () => {
+    if (reference.value)
+      referenceRef.current = reference.value
 
-    if (floatingEl.value)
-      floatingRef.current = floatingEl.value
+    if (floating.value)
+      floatingRef.current = floating.value
 
-    if (!referenceEl.value || !floatingEl.value)
+    if (!reference.value || !floating.value)
       return
 
     if (!whileElementsMounted) {
@@ -126,7 +122,7 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
       return
     }
 
-    onCleanup(whileElementsMounted(referenceEl.value, floatingEl.value, update))
+    onWatcherCleanup(whileElementsMounted(reference.value, floating.value, update))
   })
 
   const floatingStyles = computed<CSSProperties>(() => {
@@ -136,18 +132,18 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
       top: 0,
     }
 
-    const floating = floatingEl.value
-    if (!floating)
+    const floatingVal = floating.value
+    if (!floatingVal)
       return initialStyles
 
-    const xVal = roundByDPR(floating, x.value)
-    const yVal = roundByDPR(floating, y.value)
+    const xVal = roundByDPR(floatingVal, x.value)
+    const yVal = roundByDPR(floatingVal, y.value)
 
     if (transform) {
       return {
         ...initialStyles,
         transform: `translate(${xVal}px, ${yVal}px)`,
-        ...(getDPR(floating) >= 1.5 && { willChange: 'transform' }),
+        ...(getDPR(floatingVal) >= 1.5 && { willChange: 'transform' }),
       }
     }
 
@@ -169,12 +165,26 @@ export function useFloating<RT extends ReferenceType = ReferenceType>(
     refs: {
       reference: referenceRef,
       floating: floatingRef,
-      setReference,
-      setFloating,
+      setReference: externalReference
+        ? () => console.error('Cannot set reference when it is external.')
+        : (node) => {
+            if (node !== referenceRef.current) {
+              referenceRef.current = node
+              reference.value = node
+            }
+          },
+      setFloating: externalFloating
+        ? () => console.error('Cannot set floating when it is external.')
+        : (node) => {
+            if (node !== floatingRef.current) {
+              floatingRef.current = node
+              floating.value = node
+            }
+          },
     },
     elements: {
-      reference: referenceEl,
-      floating: floatingEl,
+      reference,
+      floating,
     },
     update,
   }
