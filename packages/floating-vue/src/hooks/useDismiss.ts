@@ -5,8 +5,9 @@ import {
   isElement,
   isHTMLElement,
   isLastTraversableNode,
+  isWebKit,
 } from '@floating-ui/utils/dom'
-import { type MaybeRefOrGetter, toValue, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, onWatcherCleanup, toValue, watchEffect } from 'vue'
 import { getOverflowAncestors } from '../core/index.ts'
 import {
   contains,
@@ -129,34 +130,33 @@ export function useDismiss(
   const { escapeKey: escapeKeyBubbles, outsidePress: outsidePressBubbles } = normalizeProp(bubbles)
   const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture } = normalizeProp(capture)
 
+  let isComposingRef = false
+
   function closeOnEscapeKeydown(event: KeyboardEvent) {
+    // Wait until IME is settled. Pressing `Escape` while composing should
+    // close the compose menu, but not the floating element.
+    if (isComposingRef) {
+      return
+    }
+
     if (!toValue(open) || !toValue(enabled) || !escapeKey || event.key !== 'Escape')
       return
 
     // const nodeId = dataRef.floatingContext?.nodeId
 
     // const children = tree ? getChildren(tree.nodesRef.current, nodeId) : []
-    // const children: any[] = []
 
     if (!escapeKeyBubbles) {
       event.stopPropagation()
+      const children: any[] = []
 
-      // if (children.length > 0) {
-      //   let shouldDismiss = true
-
-      //   children.forEach((child) => {
-      //     if (
-      //       child.context?.open
-      //       && !child.context.dataRef.current.__escapeKeyBubbles
-      //     ) {
-      //       shouldDismiss = false
-      //     }
-      //   })
-
-      //   if (!shouldDismiss) {
-      //     return
-      //   }
-      // }
+      if (children.length > 0) {
+        for (const child of children) {
+          if (child.context?.open && !child.context.dataRef.current.__escapeKeyBubbles) {
+            return
+          }
+        }
+      }
     }
 
     onOpenChange(false, event, 'escape-key')
@@ -201,14 +201,14 @@ export function useDismiss(
 
     let targetRootAncestor = isElement(target) ? target : null
     if (targetRootAncestor && !isLastTraversableNode(targetRootAncestor)) {
-      while (true) {
+      do {
         const nextParent = getParentNode(targetRootAncestor)
         if (isLastTraversableNode(nextParent) || !isElement(nextParent)) {
           break
         }
 
         targetRootAncestor = nextParent
-      }
+      } while (true)
     }
 
     // Check if the click occurred on a third-party element injected after the
@@ -228,26 +228,35 @@ export function useDismiss(
 
     // Check if the click occurred on the scrollbar
     if (isHTMLElement(target)) {
-      // In Firefox, `target.scrollWidth > target.clientWidth` for inline
-      // elements.
-      const canScrollX = target.clientWidth > 0 && target.scrollWidth > target.clientWidth
-      const canScrollY = target.clientHeight > 0 && target.scrollHeight > target.clientHeight
+      const lastTraversableNode = isLastTraversableNode(target)
+      const style = getComputedStyle(target)
+      const scrollRe = /auto|scroll/
+      const isScrollableX = lastTraversableNode || scrollRe.test(style.overflowX)
+      const isScrollableY = lastTraversableNode || scrollRe.test(style.overflowY)
 
-      let xCond = canScrollY && event.offsetX > target.clientWidth
+      const canScrollX = isScrollableX
+        && target.clientWidth > 0
+        && target.scrollWidth > target.clientWidth
+      const canScrollY = isScrollableY
+        && target.clientHeight > 0
+        && target.scrollHeight > target.clientHeight
 
+      const isRTL = style.direction === 'rtl'
+
+      // Check click position relative to scrollbar.
       // In some browsers it is possible to change the <body> (or window)
       // scrollbar to the left side, but is very rare and is difficult to
       // check for. Plus, for modal dialogs with backdrops, it is more
       // important that the backdrop is checked but not so much the window.
-      if (canScrollY) {
-        const isRTL = getComputedStyle(target).direction === 'rtl'
-
-        if (isRTL) {
-          xCond = event.offsetX <= target.offsetWidth - target.clientWidth
-        }
+      const pressedVerticalScrollbar = canScrollY && (isRTL
+        ? event.offsetX <= target.offsetWidth - target.clientWidth
+        : event.offsetX > target.clientWidth)
+      if (pressedVerticalScrollbar) {
+        return
       }
 
-      if (xCond || (canScrollX && event.offsetY > target.clientHeight)) {
+      const pressedHorizontalScrollbar = canScrollX && event.offsetY > target.clientHeight
+      if (pressedHorizontalScrollbar) {
         return
       }
     }
@@ -260,70 +269,95 @@ export function useDismiss(
     //     isEventTargetWithin(event, node.context?.elements.floating),
     //   );
     const targetIsInsideChildren = undefined
-
-    if (targetIsInsideChildren)
+    if (targetIsInsideChildren) {
       return
+    }
 
-    // const children = tree ? getChildren(tree.nodesRef.current, nodeId) : [];
-    // if (children.length > 0) {
-    //   let shouldDismiss = true;
-
-    //   children.forEach((child) => {
-    //     if (
-    //       child.context?.open &&
-    //       !child.context.dataRef.current.__outsidePressBubbles
-    //     ) {
-    //       shouldDismiss = false;
-    //       return;
-    //     }
-    //   });
-
-    //   if (!shouldDismiss) {
-    //     return;
-    //   }
-    // }
+    const children: any[] = []
+    if (children.length > 0) {
+      for (const child of children) {
+        if (child.context?.open && !child.context.dataRef.current.__outsidePressBubbles) {
+          return
+        }
+      }
+    }
 
     onOpenChange(false, event, 'outside-press')
   }
 
   function closeOnPressoutsideCapture(event: MouseEvent) {
+    const target = getTarget(event)
     const callback = () => {
       closeOnPressOutside(event)
-      getTarget(event)?.removeEventListener(outsidePressEvent, callback)
+      target?.removeEventListener(outsidePressEvent, callback)
     }
-    getTarget(event)?.addEventListener(outsidePressEvent, callback)
+    target?.addEventListener(outsidePressEvent, callback)
   }
 
-  function onScroll(event: Event) {
-    onOpenChange(false, event, 'ancestor-scroll')
-  }
-
-  watchEffect((onCleanup) => {
+  watchEffect(() => {
     if (!toValue(open) || !toValue(enabled))
       return
 
     dataRef.__escapeKeyBubbles = escapeKeyBubbles
     dataRef.__outsidePressBubbles = outsidePressBubbles
 
+    let compositionTimeout = -1
+
+    function onScroll(event: Event) {
+      onOpenChange(false, event, 'ancestor-scroll')
+    }
+
+    function handleCompositionStart() {
+      window.clearTimeout(compositionTimeout)
+      isComposingRef = true
+    }
+
+    function handleCompositionEnd() {
+      // Safari fires `compositionend` before `keydown`, so we need to wait
+      // until the next tick to set `isComposing` to `false`.
+      // https://bugs.webkit.org/show_bug.cgi?id=165004
+      compositionTimeout = window.setTimeout(
+        () => { isComposingRef = false },
+        // 0ms or 1ms don't work in Safari. 5ms appears to consistently work.
+        // Only apply to WebKit for the test to remain 0ms.
+        isWebKit() ? 5 : 0,
+      )
+    }
+
     const doc = getDocument(elements.floating.value)
 
-    if (escapeKey)
-      doc.addEventListener('keydown', escapeKeyCapture ? closeOnEscapeKeydownCapture : closeOnEscapeKeydown, escapeKeyCapture)
+    if (escapeKey) {
+      doc.addEventListener(
+        'keydown',
+        escapeKeyCapture ? closeOnEscapeKeydownCapture : closeOnEscapeKeydown,
+        escapeKeyCapture,
+      )
+      doc.addEventListener('compositionstart', handleCompositionStart)
+      doc.addEventListener('compositionend', handleCompositionEnd)
+    }
 
-    if (outsidePress)
-      doc.addEventListener(outsidePressEvent, outsidePressCapture ? closeOnPressoutsideCapture : closeOnPressOutside, outsidePressCapture)
+    if (outsidePress) {
+      doc.addEventListener(
+        outsidePressEvent,
+        outsidePressCapture ? closeOnPressoutsideCapture : closeOnPressOutside,
+        outsidePressCapture,
+      )
+    }
 
     let ancestors: (Element | Window | VisualViewport)[] = []
 
     if (ancestorScroll) {
-      if (isElement(elements.domReference.value))
-        ancestors = getOverflowAncestors(elements.domReference.value)
+      const domReference = elements.domReference.value
+      if (isElement(domReference))
+        ancestors = getOverflowAncestors(domReference)
 
-      if (isElement(elements.floating.value))
-        ancestors = ancestors.concat(getOverflowAncestors(elements.floating.value))
+      const floating = elements.floating.value
+      if (isElement(floating))
+        ancestors = ancestors.concat(getOverflowAncestors(floating))
 
-      if (!isElement(elements.reference.value) && elements.reference.value && elements.reference.value.contextElement)
-        ancestors = ancestors.concat(getOverflowAncestors(elements.reference.value.contextElement))
+      const reference = elements.reference.value
+      if (!isElement(reference) && reference && reference.contextElement)
+        ancestors = ancestors.concat(getOverflowAncestors(reference.contextElement))
     }
 
     // Ignore the visual viewport for scrolling dismissal (allow pinch-zoom)
@@ -333,12 +367,24 @@ export function useDismiss(
       ancestor.addEventListener('scroll', onScroll, { passive: true })
     }
 
-    onCleanup(() => {
-      if (escapeKey)
-        doc.removeEventListener('keydown', escapeKeyCapture ? closeOnEscapeKeydownCapture : closeOnEscapeKeydown, escapeKeyCapture)
+    onWatcherCleanup(() => {
+      if (escapeKey) {
+        doc.removeEventListener(
+          'keydown',
+          escapeKeyCapture ? closeOnEscapeKeydownCapture : closeOnEscapeKeydown,
+          escapeKeyCapture,
+        )
+        doc.removeEventListener('compositionstart', handleCompositionStart)
+        doc.removeEventListener('compositionend', handleCompositionEnd)
+      }
 
-      if (outsidePress)
-        doc.removeEventListener(outsidePressEvent, outsidePressCapture ? closeOnPressoutsideCapture : closeOnPressOutside, outsidePressCapture)
+      if (outsidePress) {
+        doc.removeEventListener(
+          outsidePressEvent,
+          outsidePressCapture ? closeOnPressoutsideCapture : closeOnPressOutside,
+          outsidePressCapture,
+        )
+      }
 
       for (const ancestor of ancestors) {
         ancestor.removeEventListener('scroll', onScroll)
@@ -357,10 +403,18 @@ export function useDismiss(
 
   const referenceProps: ElementProps['reference'] = {
     onKeydown: closeOnEscapeKeydown,
-    [bubbleHandlerKeys[referencePressEvent]](event: Event) {
-      if (referencePress)
+    ...(referencePress && {
+      [bubbleHandlerKeys[referencePressEvent]]: (
+        event: Event,
+      ) => {
         onOpenChange(false, event, 'reference-press')
-    },
+      },
+      ...(referencePressEvent !== 'click' && {
+        onClick(event) {
+          onOpenChange(false, event, 'reference-press')
+        },
+      }),
+    }),
   }
 
   const floatingProps: ElementProps['floating'] = {
