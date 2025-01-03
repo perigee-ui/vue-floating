@@ -1,6 +1,6 @@
 import type { ContextData, ElementProps, FloatingRootContext } from '../types.ts'
 import { getWindow } from '@floating-ui/utils/dom'
-import { computed, type MaybeRefOrGetter, shallowRef, toValue, watchEffect } from 'vue'
+import { computed, type MaybeRefOrGetter, shallowRef, toValue, watchSyncEffect } from 'vue'
 import { contains, getTarget, isMouseLikePointerType } from '../utils.ts'
 
 export interface UseClientPointProps {
@@ -53,7 +53,6 @@ export function useClientPoint(
   let cleanupListenerRef: (() => void) | undefined
 
   const pointerType = shallowRef<string | undefined>(undefined)
-  const reactive = shallowRef([])
 
   function setReference(x: number | undefined, y: number | undefined) {
     if (initialRef)
@@ -87,7 +86,7 @@ export function useClientPoint(
       // If there's no cleanup, there's no listener, but we want to ensure
       // we add the listener if the cursor landed on the floating element and
       // then back on the reference (i.e. it's interactive).
-      reactive.value = []
+      updateListener()
     }
   }
 
@@ -132,17 +131,13 @@ export function useClientPoint(
     refs.setPositionReference(domReference.value)
   }
 
-  watchEffect((onCleanup) => {
-    // eslint-disable-next-line ts/no-unused-expressions
-    reactive.value
-    const clean = addListener()
+  addListener()
+  function updateListener() {
+    cleanupListenerRef?.()
+    addListener()
+  }
 
-    if (clean) {
-      onCleanup(clean)
-    }
-  })
-
-  watchEffect(() => {
+  watchSyncEffect(() => {
     const enabledValue = toValue(enabled)
     if (enabledValue && !floating.value)
       initialRef = false
