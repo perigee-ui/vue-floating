@@ -1,5 +1,5 @@
 import type { ElementProps, FloatingRootContext } from '../types.ts'
-import type { MutableRefObject } from '../vue/useRef.ts'
+import type { MutableRefObject } from '../vue/index.ts'
 import { type MaybeRefOrGetter, type Ref, toValue, watchEffect } from 'vue'
 import { stopEvent } from '../utils.ts'
 
@@ -72,7 +72,7 @@ export function useTypeahead(
     selectedIndex = undefined,
   } = props
 
-  let timeoutIdRef: NodeJS.Timeout | undefined
+  let timeoutIdRef: ReturnType<typeof setTimeout> | undefined
   let stringRef = ''
   let prevIndexRef: number | undefined = selectedIndex?.value ?? activeIndex?.value ?? -1
   let matchIndexRef: number | undefined

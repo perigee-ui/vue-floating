@@ -1,17 +1,10 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    /* Проекты */
-    "incremental": true,
-    "composite": true,
+    "lib": ["ESNext"],
 
-    /* Генерация */
-    "declaration": true,
-    "declarationMap": true,
-
-    /* Язык и среда */
-    "lib": [
-      "ESNext"
-    ],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
   }
 }

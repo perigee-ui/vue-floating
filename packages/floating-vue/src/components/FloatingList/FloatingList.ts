@@ -1,6 +1,5 @@
-import type { MutableRefObject } from '../../vue/index.ts'
 import { type Ref, shallowRef, triggerRef, watchEffect } from 'vue'
-import { createContext } from '../../vue/createContext.ts'
+import { createContext, type MutableRefObject } from '../../vue/index.ts'
 
 export interface FloatingListProps {
   /**
@@ -25,7 +24,7 @@ export interface FloatingListContext {
 
 export const [provideFloatingListContet, useFloatingListContet] = createContext<FloatingListContext>('FloatingContext')
 
-export function useFloatingList(props: FloatingListProps) {
+export function useFloatingList(props: FloatingListProps): void {
   const { elementsRef, labelsRef } = props
 
   const map = shallowRef<Map<Node, number | undefined>>(new Map())

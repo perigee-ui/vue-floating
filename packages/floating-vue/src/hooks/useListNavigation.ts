@@ -1,6 +1,6 @@
 import type { Dimensions } from '@floating-ui/utils'
 import type { ElementProps, FloatingRootContext } from '../types'
-import type { MutableRefObject } from '../vue/useRef.ts'
+import type { MutableRefObject } from '../vue/index.ts'
 import { isHTMLElement } from '@floating-ui/utils/dom'
 import { computed, type Ref, shallowRef, toValue, watch, watchEffect } from 'vue'
 import {

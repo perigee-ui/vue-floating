@@ -1,7 +1,7 @@
 import type { FloatingRootContext } from '../../types'
 import { type Ref, shallowRef, toValue, watch, watchEffect } from 'vue'
 import { getDelay } from '../../hooks/useHover.ts'
-import { createContext } from '../../vue/createContext.ts'
+import { createContext } from '../../vue/index.ts'
 
 // eslint-disable-next-line antfu/top-level-function
 const NOOP = () => {}
@@ -38,7 +38,7 @@ export interface FloatingDelayGroupProps {
   timeoutMs?: number
 }
 
-export function useFloatingDelayGroup(props: FloatingDelayGroupProps) {
+export function useFloatingDelayGroup(props: FloatingDelayGroupProps): void {
   const { delay, timeoutMs = 0 } = props
 
   const state = {

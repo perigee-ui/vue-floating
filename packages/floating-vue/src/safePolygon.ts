@@ -44,7 +44,7 @@ export interface SafePolygonOptions {
  * floating element once leaving the reference element.
  * @see https://floating-ui.com/docs/useHover#safepolygon
  */
-export function safePolygon(options: SafePolygonOptions = {}) {
+export function safePolygon(options: SafePolygonOptions = {}): HandleCloseFn {
   const {
     buffer = 0.5,
     blockPointerEvents = false,

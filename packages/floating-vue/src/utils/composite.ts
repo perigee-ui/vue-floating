@@ -7,19 +7,19 @@ export const ARROW_DOWN = 'ArrowDown'
 export const ARROW_LEFT = 'ArrowLeft'
 export const ARROW_RIGHT = 'ArrowRight'
 
-export function isDifferentRow(index: number, cols: number, prevRow: number) {
+export function isDifferentRow(index: number, cols: number, prevRow: number): boolean {
   return Math.floor(index / cols) !== prevRow
 }
 
-export function isIndexOutOfBounds(listRef: Array<HTMLElement | undefined>, index: number) {
+export function isIndexOutOfBounds(listRef: Array<HTMLElement | undefined>, index: number): boolean {
   return index < 0 || index >= listRef.length
 }
 
-export function getMinIndex(listRef: Array<HTMLElement | undefined>, disabledIndices: Array<number> | undefined) {
+export function getMinIndex(listRef: Array<HTMLElement | undefined>, disabledIndices: Array<number> | undefined): number {
   return findNonDisabledIndex(listRef, { disabledIndices })
 }
 
-export function getMaxIndex(listRef: Array<HTMLElement | undefined>, disabledIndices: Array<number> | undefined) {
+export function getMaxIndex(listRef: Array<HTMLElement | undefined>, disabledIndices: Array<number> | undefined): number {
   return findNonDisabledIndex(listRef, {
     decrement: true,
     startingIndex: listRef.length,
@@ -76,7 +76,7 @@ export function getGridNavigatedIndex(
     prevIndex: number
     stopEvent?: boolean
   },
-) {
+): number {
   let nextIndex = prevIndex
 
   if (event.key === ARROW_UP) {
@@ -231,7 +231,7 @@ export function buildCellMap(
   sizes: Dimensions[],
   cols: number,
   dense: boolean,
-) {
+): (number | undefined)[] {
   const cellMap: (number | undefined)[] = []
   let startIndex = 0
   sizes.forEach(({ width, height }, index) => {
@@ -276,7 +276,7 @@ export function getCellIndexOfCorner(
   cellMap: (number | undefined)[],
   cols: number,
   corner: 'tl' | 'tr' | 'bl' | 'br',
-) {
+): number {
   if (index === -1)
     return -1
 
@@ -302,11 +302,11 @@ export function getCellIndexOfCorner(
 }
 
 /** Gets all cell indices that correspond to the specified indices */
-export function getCellIndices(indices: (number | undefined)[], cellMap: (number | undefined)[]) {
+export function getCellIndices(indices: (number | undefined)[], cellMap: (number | undefined)[]): number[] {
   return cellMap.flatMap((index, cellIndex) => indices.includes(index) ? [cellIndex] : [])
 }
 
-export function isDisabled(list: Array<HTMLElement | undefined>, index: number, disabledIndices?: Array<number>) {
+export function isDisabled(list: Array<HTMLElement | undefined>, index: number, disabledIndices?: Array<number>): boolean {
   if (disabledIndices)
     return disabledIndices.includes(index)
 

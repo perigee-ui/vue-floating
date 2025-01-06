@@ -8,7 +8,7 @@ interface Options {
 
 let rafId = 0
 
-export function enqueueFocus(el: FocusableElement | null | undefined, options: Options = {}) {
+export function enqueueFocus(el: FocusableElement | null | undefined, options: Options = {}): void {
   const { preventScroll = false, cancelPrevious = true, sync = false } = options
   if (cancelPrevious)
     cancelAnimationFrame(rafId)

@@ -275,8 +275,8 @@ watchEffect((onCleanup) => {
   const insideElements = [
     context.elements.floating.value,
     ...portalNodes,
-    startDismissButtonRef,
-    endDismissButtonRef,
+    startDismissButtonRef!,
+    endDismissButtonRef!,
     props.order.includes('reference') || isUntrappedTypeableCombobox.value
       ? context.elements.domReference.value
       : undefined,

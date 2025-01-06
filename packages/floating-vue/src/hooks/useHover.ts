@@ -407,7 +407,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
   return () => toValue(enabled) ? { reference: referenceProps, floating: floatingProps } : undefined
 }
 
-export function getDelay(value: UseHoverProps['delay'], prop: 'open' | 'close', pointerType?: PointerEvent['pointerType']) {
+export function getDelay(value: UseHoverProps['delay'], prop: 'open' | 'close', pointerType?: PointerEvent['pointerType']): number | (() => number) | undefined {
   if (pointerType && !isMouseLikePointerType(pointerType))
     return 0
 

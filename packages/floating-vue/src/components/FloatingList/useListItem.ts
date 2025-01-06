@@ -10,7 +10,10 @@ export interface UseListItemProps {
  * `FloatingList`.
  * @see https://floating-ui.com/docs/FloatingList#uselistitem
  */
-export function useListItem(props: UseListItemProps = {}) {
+export function useListItem(props: UseListItemProps = {}): {
+  readonly setItem: (node: HTMLElement | undefined) => void
+  readonly index: () => number
+} {
   const { label } = props
 
   const { register, unregister, map, elementsRef, labelsRef } = useFloatingListContet('useListItem')
@@ -19,7 +22,7 @@ export function useListItem(props: UseListItemProps = {}) {
 
   const componentRef = shallowRef<HTMLElement | undefined>()
 
-  function setItem(node: HTMLElement | undefined) {
+  function setItem(node: HTMLElement | undefined): void {
     componentRef.value = node
 
     const indexVal = index.value

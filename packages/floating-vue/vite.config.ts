@@ -2,12 +2,12 @@ import fs from 'node:fs'
 
 import path from 'node:path'
 import process from 'node:process'
-// import { externalizeDeps } from 'vite-plugin-externalize-deps'
 
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import { externalizeDeps } from 'vite-plugin-externalize-deps'
 
 // Функция для рекурсивного поиска всех файлов index.ts в папке src
 function findComponentsEntryPoints(dir: string, baseDir = '') {
@@ -31,8 +31,8 @@ function findComponentsEntryPoints(dir: string, baseDir = '') {
   return entries
 }
 
-const componentsDir = path.resolve(__dirname, 'src')
-const input = findComponentsEntryPoints(componentsDir)
+const srcDir = path.resolve(__dirname, 'src')
+const input = findComponentsEntryPoints(srcDir)
 console.error(input)
 
 // https://vitejs.dev/config/
@@ -41,7 +41,10 @@ export default defineConfig({
     __DEV__: process.env.NODE_ENV !== 'production',
   },
   plugins: [
-    // externalizeDeps(),
+    externalizeDeps({
+      deps: true,
+      peerDeps: true,
+    }),
     vue(),
     vueJsx(),
     dts({
@@ -51,22 +54,33 @@ export default defineConfig({
   build: {
     copyPublicDir: false,
     minify: false,
-    sourcemap: true,
+    sourcemap: false,
     lib: {
-      name: 'radix',
+      name: 'floating',
       formats: ['es'],
       entry: {
-        ...input,
-        index: path.resolve(componentsDir, 'index.ts'),
+        'vue/index': path.resolve(__dirname, 'src/vue/index.ts'),
+        'core/index': path.resolve(__dirname, 'src/core/index.ts'),
+        'index': path.resolve(__dirname, 'src/index.ts'),
       },
     },
-    rollupOptions: {
-      external: ['vue', '@vue/shared'],
-    },
+    // rollupOptions: {
+    //   output: {
+    //     manualChunks: (id) => {
+    //       const chunks = id.match(/[/\\]src[/\\](.*?)[/\\]/)
+    //       return chunks ? chunks[1] : null
+    //     },
+    //     exports: 'named',
+    //     chunkFileNames: '[name].mjs',
+    //     minifyInternalExports: true,
+    //   },
+    //   //   output: {
+    //   //     // dir: 'dist',
+    //   //     format: 'es',
+    //   //     entryFileNames: '[name].js',
+    //   //     preserveModules: true, // Включение режима "файл в файл"
+    //   //     preserveModulesRoot: 'src', // Корневая директория для модулей
+    //   //   },
+    // },
   },
-  // resolve: {
-  //   alias: {
-  //     '~': fileURLToPath(new URL('./src', import.meta.url)),
-  //   },
-  // },
 })

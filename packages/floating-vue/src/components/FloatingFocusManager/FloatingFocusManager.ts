@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from 'vue'
 import type { FloatingContext } from '../../types.ts'
-import type { MutableRefObject } from '../../vue/useRef.ts'
+import type { MutableRefObject } from '../../vue/index.ts'
 import { getNodeName } from '@floating-ui/utils/dom'
 import { isTabbable, tabbable } from 'tabbable'
 import { getTabbableOptions } from '../../utils/tabbable.ts'
@@ -83,14 +83,14 @@ export const ORDER_DEFAULT: Required<FloatingFocusManagerProps>['order'] = ['con
 const LIST_LIMIT = 20
 let previouslyFocusedElements: Element[] = []
 
-export function getPreviouslyFocusedElement() {
+export function getPreviouslyFocusedElement(): Element | undefined {
   return previouslyFocusedElements
     .slice()
     .reverse()
     .find(el => el.isConnected)
 }
 
-export function addPreviouslyFocusedElement(element: Element | null) {
+export function addPreviouslyFocusedElement(element: Element | null): void {
   previouslyFocusedElements = previouslyFocusedElements.filter(
     el => el.isConnected,
   )
@@ -130,7 +130,7 @@ export const HIDDEN_STYLES: CSSProperties = {
 let activeElement: HTMLElement | undefined
 let timeoutId: number | undefined
 
-export function setActiveElementOnTab(event: KeyboardEvent) {
+export function setActiveElementOnTab(event: KeyboardEvent): void {
   if (event.key === 'Tab') {
     activeElement = event.target as typeof activeElement
     clearTimeout(timeoutId)

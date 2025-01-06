@@ -1,9 +1,9 @@
 {
-  "extends": "@perigee-ui/typescript-config/tsconfig.base.json",
-  "references": [
-    {
-      "path": "./packages/floating-vue"
-    }
-  ],
-  "files": []
+  // "extends": "@perigee-ui/typescript-config/tsconfig.options.json",
+  // "references": [
+  //   {
+  //     "path": "./packages/floating-vue"
+  //   }
+  // ],
+  // "files": []
 }

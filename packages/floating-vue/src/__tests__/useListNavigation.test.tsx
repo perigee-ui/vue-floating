@@ -8,7 +8,7 @@ import { computed, defineComponent, type PropType, shallowRef, watchSyncEffect }
 import { act } from '../core/__tests__/utils.ts'
 import { useInteractions } from '../hooks/useInteractions.ts'
 import { useClick, useDismiss, useFloating, useListNavigation, type UseListNavigationProps } from '../index.ts'
-import { type MutableRefObject, useRef } from '../vue/useRef.ts'
+import { type MutableRefObject, useRef } from '../vue/index.ts'
 // import { useFloating } from '../hooks/useFloating.ts'
 
 const App = defineComponent({

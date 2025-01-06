@@ -434,7 +434,10 @@ export function useDismiss(
   return () => toValue(enabled) ? { reference: referenceProps, floating: floatingProps } : undefined
 }
 
-export function normalizeProp(normalizable?: boolean | { escapeKey?: boolean, outsidePress?: boolean }) {
+export function normalizeProp(normalizable?: boolean | { escapeKey?: boolean, outsidePress?: boolean }): {
+  escapeKey: boolean
+  outsidePress: boolean
+} {
   return {
     escapeKey: typeof normalizable === 'boolean' ? normalizable : normalizable?.escapeKey ?? false,
     outsidePress: typeof normalizable === 'boolean' ? normalizable : normalizable?.outsidePress ?? true,

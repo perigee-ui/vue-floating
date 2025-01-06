@@ -1,11 +1,22 @@
 {
   "extends": "./tsconfig.app.json",
+  "include": [
+    "env.d.ts",
+    "src/**/__tests__/*",
+    "vitest-example/*",
+  ],
+  "exclude": [],
   "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.vitest.tsbuildinfo",
-
-    "lib": [],
-
-    "types": ["node", "jsdom", "@vitest/browser/providers/playwright"]
+    "lib": [
+      "ESNext"
+    ],
+    "types": [
+      "node",
+      "jsdom",
+      "@vitest/browser/matchers"
+    ]
   },
-  "exclude": []
 }

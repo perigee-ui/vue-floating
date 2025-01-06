@@ -1,4 +1,5 @@
 {
+  // "extends": "@perigee-ui/typescript-config/tsconfig.options.json",
   "references": [
     {
       "path": "./tsconfig.node.json"

@@ -84,16 +84,20 @@ function mergeProps(
  * another.
  * @see https://floating-ui.com/docs/useInteractions
  */
-export function useInteractions(propsList: Array<Props> = []) {
-  function getReferenceProps(userProps: ElAttrs & Record<string, unknown> = {}) {
+export function useInteractions(propsList: Array<Props> = []): {
+  getReferenceProps: (userProps?: ElAttrs & Record<string, unknown>) => Record<string, unknown>
+  getFloatingProps: (userProps?: ElAttrs & Record<string, unknown>) => Record<string, unknown>
+  getItemProps: (userProps?: ElAttrs & Record<string, unknown>) => Record<string, unknown>
+} {
+  function getReferenceProps(userProps: ElAttrs & Record<string, unknown> = {}): Record<string, unknown> {
     return mergeProps(userProps, propsList, 'reference')
   }
 
-  function getFloatingProps(userProps: ElAttrs & Record<string, unknown> = {}) {
+  function getFloatingProps(userProps: ElAttrs & Record<string, unknown> = {}): Record<string, unknown> {
     return mergeProps(userProps, propsList, 'floating')
   }
 
-  function getItemProps(userProps: ElAttrs & Record<string, unknown> = {}) {
+  function getItemProps(userProps: ElAttrs & Record<string, unknown> = {}): Record<string, unknown> {
     return mergeProps(userProps, propsList, 'item')
   }
 

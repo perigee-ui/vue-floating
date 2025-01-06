@@ -2,8 +2,7 @@
 import type { Alignment, Side } from '../../types.ts'
 
 import type { FloatingArrowProps } from './FloatingArrow.ts'
-import { computed, type CSSProperties } from 'vue'
-import { useId } from '../../hooks/useId.ts'
+import { computed, type CSSProperties, useId } from 'vue'
 
 defineOptions({
   name: 'NFloatingArrow',

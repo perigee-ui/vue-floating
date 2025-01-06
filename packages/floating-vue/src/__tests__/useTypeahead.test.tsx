@@ -7,7 +7,7 @@ import { expect, it, vi } from 'vitest'
 import { computed, defineComponent, type MaybeRef, type PropType, shallowRef, unref } from 'vue'
 import { act } from '../core/__tests__/utils.ts'
 import { useClick, useFloating, useInteractions, useTypeahead } from '../index.ts'
-import { type MutableRefObject, useRef } from '../vue/useRef.ts'
+import { type MutableRefObject, useRef } from '../vue/index.ts'
 // import { Main } from '../visual/components/Menu'
 
 vi.useFakeTimers({ shouldAdvanceTime: true })

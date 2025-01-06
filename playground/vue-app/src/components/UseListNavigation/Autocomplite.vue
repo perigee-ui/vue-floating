@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, shallowRef } from 'vue'
 import { useDismiss, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue'
 import { offset } from '@perigee-ui/floating-vue/core'
 import { useRef } from '@perigee-ui/floating-vue/vue'
+import { computed, shallowRef } from 'vue'
 
 const isOpen = shallowRef(false)
 const inputValue = shallowRef('')
@@ -15,9 +15,10 @@ const { context, refs, floatingStyles } = useFloating<HTMLInputElement>({
   onOpenChange(val) {
     isOpen.value = val
   },
-}, {
-  placement: 'bottom',
-  middleware: [offset(10)],
+  config: {
+    placement: 'bottom',
+    middleware: [offset(10)],
+  },
 })
 
 const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([

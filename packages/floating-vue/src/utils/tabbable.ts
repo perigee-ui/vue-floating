@@ -3,7 +3,10 @@ import { type FocusableElement, tabbable } from 'tabbable'
 import { activeElement, contains, getDocument } from '../utils.ts'
 import { createAttribute } from './createAttribute.ts'
 
-export function getTabbableOptions() {
+export function getTabbableOptions(): {
+  readonly getShadowRoot: true
+  readonly displayCheck: 'full' | 'none'
+} {
   return ({
     getShadowRoot: true,
     displayCheck:
@@ -17,7 +20,7 @@ export function getTabbableOptions() {
   }) as const
 }
 
-export function getTabbableIn(container: HTMLElement, direction: 'next' | 'prev') {
+export function getTabbableIn(container: HTMLElement, direction: 'next' | 'prev'): FocusableElement | undefined {
   const allTabbable = tabbable(container, getTabbableOptions())
 
   if (direction === 'prev')
@@ -29,22 +32,22 @@ export function getTabbableIn(container: HTMLElement, direction: 'next' | 'prev'
   return nextTabbableElements[0]
 }
 
-export function getNextTabbable() {
+export function getNextTabbable(): FocusableElement | undefined {
   return getTabbableIn(document.body, 'next')
 }
 
-export function getPreviousTabbable() {
+export function getPreviousTabbable(): FocusableElement | undefined {
   return getTabbableIn(document.body, 'prev')
 }
 
-export function isOutsideEvent(event: FocusEvent, container?: Element) {
+export function isOutsideEvent(event: FocusEvent, container?: Element): boolean {
   const containerElement = container || (event.currentTarget as Element)
   const relatedTarget = event.relatedTarget as HTMLElement | null
 
   return !relatedTarget || !contains(containerElement, relatedTarget)
 }
 
-export function disableFocusInside(container: HTMLElement) {
+export function disableFocusInside(container: HTMLElement): void {
   const tabbableElements = tabbable(container, getTabbableOptions())
 
   for (const element of tabbableElements) {
@@ -53,7 +56,7 @@ export function disableFocusInside(container: HTMLElement) {
   }
 }
 
-export function enableFocusInside(container: HTMLElement) {
+export function enableFocusInside(container: HTMLElement): void {
   const elements = container.querySelectorAll<HTMLElement>('[data-tabindex]')
 
   for (const element of elements) {
@@ -67,7 +70,7 @@ export function enableFocusInside(container: HTMLElement) {
   }
 }
 
-export function getClosestTabbableElement(tabbableElements: Array<FocusableElement>, element: HTMLElement, floating: HTMLElement) {
+export function getClosestTabbableElement(tabbableElements: Array<FocusableElement>, element: HTMLElement, floating: HTMLElement): FocusableElement | undefined {
   const elementIndex = tabbableElements.indexOf(element)
 
   function traverseTabbableElements(next: boolean) {

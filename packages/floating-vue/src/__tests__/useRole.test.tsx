@@ -2,12 +2,11 @@ import type { UseRoleProps } from '../../src/hooks/useRole.ts'
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
 import { describe, expect, it } from 'vitest'
-import { defineComponent, type PropType, ref } from 'vue'
+import { defineComponent, type PropType, ref, useId } from 'vue'
 
 import {
   useClick,
   useFloating,
-  useId,
   useInteractions,
   useRole,
 } from '../../src/index.ts'

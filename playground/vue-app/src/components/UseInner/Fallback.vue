@@ -42,8 +42,8 @@ const { refs, floatingStyles, context } = useFloating(
     open,
     onOpenChange: v => open.value = v,
     whileElementsMounted: autoUpdate,
+    config,
   },
-  config,
 )
 
 const innerOffset = useInnerOffset(context, {

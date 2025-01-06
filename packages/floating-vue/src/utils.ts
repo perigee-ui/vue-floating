@@ -1,6 +1,6 @@
 import { isHTMLElement, isShadowRoot } from '@floating-ui/utils/dom'
 
-export function activeElement(doc: Document) {
+export function activeElement(doc: Document): Element | null {
   let activeElement = doc.activeElement
 
   while (activeElement?.shadowRoot?.activeElement != null) {
@@ -10,7 +10,7 @@ export function activeElement(doc: Document) {
   return activeElement
 }
 
-export function contains(parent?: Element | null | undefined, child?: Element | null | undefined) {
+export function contains(parent?: Element | null | undefined, child?: Element | null | undefined): boolean {
   if (!parent || !child)
     return false
 
@@ -74,7 +74,7 @@ export function isVirtualClick(event: MouseEvent | PointerEvent): boolean {
   return event.detail === 0 && !(event as PointerEvent).pointerType
 }
 
-export function isVirtualPointerEvent(event: PointerEvent) {
+export function isVirtualPointerEvent(event: PointerEvent): boolean {
   if (isJSDOM())
     return false
 
@@ -99,28 +99,28 @@ export function isVirtualPointerEvent(event: PointerEvent) {
   )
 }
 
-export function isSafari() {
+export function isSafari(): boolean {
   // Chrome DevTools does not complain about navigator.vendor
   return /apple/i.test(navigator.vendor)
 }
 
-export function isAndroid() {
+export function isAndroid(): boolean {
   const re = /android/i
   return re.test(getPlatform()) || re.test(getUserAgent())
 }
 
-export function isMac() {
+export function isMac(): boolean {
   return getPlatform().toLowerCase().startsWith('mac') && !navigator.maxTouchPoints
 }
 
-export function isJSDOM() {
+export function isJSDOM(): boolean {
   return getUserAgent().includes('jsdom/')
 }
 
 export function isMouseLikePointerType(
   pointerType: string | undefined,
   strict?: boolean,
-) {
+): boolean {
   // On some Linux machines with Chromium, mouse inputs return a `pointerType`
   // of "pen": https://github.com/floating-ui/floating-ui/issues/2015
   const values: Array<string | undefined> = ['mouse', 'pen']
@@ -135,11 +135,11 @@ export function isRootElement(element: Element): boolean {
   return element.matches('html,body')
 }
 
-export function getDocument(node: Element | null | undefined) {
+export function getDocument(node: Element | null | undefined): Document {
   return node?.ownerDocument || document
 }
 
-export function isEventTargetWithin(event: Event, node: Node | null | undefined) {
+export function isEventTargetWithin(event: Event, node: Node | null | undefined): boolean {
   if (node == null)
     return false
 
@@ -152,7 +152,7 @@ export function isEventTargetWithin(event: Event, node: Node | null | undefined)
   return e.target != null && node.contains(e.target as Node)
 }
 
-export function getTarget(event: Event) {
+export function getTarget(event: Event): EventTarget | null | undefined {
   if ('composedPath' in event)
     return event.composedPath()[0]
 
@@ -161,7 +161,7 @@ export function getTarget(event: Event) {
   return (event as Event).target
 }
 
-export const TYPEABLE_SELECTOR
+export const TYPEABLE_SELECTOR: string
   = 'input:not([type=\'hidden\']):not([disabled]),'
   + '[contenteditable]:not([contenteditable=\'false\']),textarea:not([disabled])'
 
@@ -169,12 +169,12 @@ export function isTypeableElement(element: unknown): boolean {
   return isHTMLElement(element) && element.matches(TYPEABLE_SELECTOR)
 }
 
-export function stopEvent(event: Event) {
+export function stopEvent(event: Event): void {
   event.preventDefault()
   event.stopPropagation()
 }
 
-export function isTypeableCombobox(element: Element | undefined) {
+export function isTypeableCombobox(element: Element | undefined): boolean {
   if (!element)
     return false
 

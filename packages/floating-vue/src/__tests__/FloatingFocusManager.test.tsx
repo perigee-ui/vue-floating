@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { defineComponent, type PropType, shallowRef, watchEffect } from 'vue'
 import { act } from '../core/__tests__/utils.ts'
 import { FloatingFocusManager, type FloatingFocusManagerProps, useClick, useDismiss, useFloating, useInteractions, useRole } from '../index.ts'
-import { useRef } from '../vue/useRef.ts'
+import { useRef } from '../vue/index.ts'
 
 const App = defineComponent({
   props: {
