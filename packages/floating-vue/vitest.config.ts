@@ -18,12 +18,12 @@ export default mergeConfig(
       // ],
       include: [
         './src/core/__tests__/core.test.tsx',
-        './src/__tests__/useFloating.test.tsx',
-        './src/__tests__/useClick.test.tsx',
-        './src/__tests__/useDismiss.test.tsx',
+        // './src/__tests__/useFloating.test.tsx',
+        // './src/__tests__/useClick.test.tsx',
+        // './src/__tests__/useDismiss.test.tsx',
         // './src/__tests__/**/*.{test,spec}.?(c|m)[jt]s?(x)',
       ],
-      setupFiles: './src/__tests__/setupTests.ts',
+    // setupFiles: './src/__tests__/setupTests.ts',
     },
   }),
 )

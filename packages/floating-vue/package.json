@@ -28,7 +28,7 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "test:unit": "vitest",
-    "test:browser": "vitest",
+    "test:browser": "vitest --workspace=vitest.workspace.ts",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "eslint": "eslint .",
