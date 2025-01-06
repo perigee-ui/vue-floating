@@ -15,7 +15,7 @@ import {
   useFloating,
 } from '../index.ts'
 
-it('renders name', async () => {
+it('middleware is always fresh and does not cause an infinite loop', async () => {
   const InlineMiddleware = defineComponent({
     setup() {
       const arrowRef = shallowRef<Element>()
@@ -546,5 +546,47 @@ it('floatingStyles no transform', async () => {
     position: 'absolute',
     top: '50px',
     left: '25px',
+  })
+})
+
+it('floatingStyles default', async () => {
+  const App = defineComponent({
+    setup() {
+      const { refs, floatingStyles } = useFloating()
+
+      return () => (
+        <>
+          <div
+            data-testid="reference"
+            ref={(el: any) => refs.setReference(el)}
+            style={{
+              width: '50px',
+              height: '50px',
+            }}
+          />
+          <div
+            data-testid="floating"
+            ref={(el: any) => refs.setFloating(el)}
+            style={floatingStyles.value}
+          />
+        </>
+      )
+    },
+  })
+
+  const screen = render(App)
+
+  await expect.element(screen.getByTestId('floating')).toHaveStyle({
+    position: 'absolute',
+    top: '0px',
+    left: '0px',
+    transform: 'matrix(1, 0, 0, 1, 0, 0)',
+  })
+
+  await expect.element(screen.getByTestId('floating')).toHaveStyle({
+    position: 'absolute',
+    top: '0px',
+    left: '0px',
+    transform: 'matrix(1, 0, 0, 1, 25, 50)',
   })
 })
