@@ -16,7 +16,6 @@ import {
   shallowRef,
   toValue,
   watch,
-  watchEffect,
 } from 'vue'
 import { useRef } from '../vue/index.ts'
 import { getDPR } from './utils/getDPR.ts'
@@ -28,16 +27,16 @@ import { roundByDPR } from './utils/roundByDPR.ts'
  * @see https://floating-ui.com/docs/vue
  */
 export function useFloating<RT extends ReferenceType = ReferenceType>(options: UseFloatingOptions<RT> = {}): UseFloatingReturn<RT> {
-  const floatingConfig = options.config || {}
-  let configValue: UseFloatingCofnig
+  let configValue: UseFloatingCofnig = toValue(options.config || {})
 
-  watchEffect(() => {
-    const shouldUpdate = configValue !== undefined
-    configValue = toValue(floatingConfig)
+  const rawConfig = options.config
+  if (rawConfig && (typeof rawConfig === 'function' || isRef(rawConfig))) {
+    watch(rawConfig, (v) => {
+      configValue = v
 
-    if (shouldUpdate)
       update()
-  })
+    })
+  }
 
   const {
     transform = true,
