@@ -2,7 +2,7 @@
 import { inner, useClick, useDismiss, useFloating, useInnerOffset, useInteractions } from '@perigee-ui/floating-vue'
 import { autoUpdate, type UseFloatingCofnig } from '@perigee-ui/floating-vue/core'
 import { useRef } from '@perigee-ui/floating-vue/vue'
-import { computed, shallowRef, toValue, triggerRef } from 'vue'
+import { computed, shallowRef, triggerRef } from 'vue'
 
 const list = [...Array.from({ length: 100 })].map((_, index) => `Item ${index + 1}`)
 

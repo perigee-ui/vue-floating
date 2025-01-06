@@ -1,11 +1,7 @@
 {
-  "extends": "@tsconfig/node20/tsconfig.json",
+  "extends": "@perigee-ui/typescript-config/tsconfig.options.json",
   "compilerOptions": {
-    "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
     "types": ["node"],
     "noEmit": true
   },

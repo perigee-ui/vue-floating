@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useClick, useDismiss, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue'
+import { useDismiss, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue'
 import { offset } from '@perigee-ui/floating-vue/core'
 import { useRef } from '@perigee-ui/floating-vue/vue'
-import { shallowRef, watchEffect } from 'vue'
+import { shallowRef } from 'vue'
 
 const isOpen = shallowRef(false)
 const activeIndex = shallowRef<number | undefined>(undefined)
