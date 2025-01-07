@@ -1,8 +1,7 @@
 import { isElement } from '@floating-ui/utils/dom'
-import { cleanup, fireEvent, render } from '@testing-library/vue'
 import { describe, expect, it } from 'vitest'
+import { render } from 'vitest-browser-vue'
 import { computed, defineComponent, onMounted, shallowRef } from 'vue'
-import { act } from '../core/__tests__/utils.ts'
 import { useFloating } from '../hooks/useFloating.ts'
 
 describe('positionReference', () => {
@@ -40,16 +39,14 @@ describe('positionReference', () => {
       },
     })
 
-    const { getByTestId, rerender } = render(App)
-    await act()
-    expect(getByTestId('reference-text').textContent).toBe('reference')
-    expect(getByTestId('position-reference-text').textContent).toBe('false')
+    const screen = render(App)
+    await expect.element(screen.getByTestId('reference-text')).toHaveTextContent('reference')
+    await expect.element(screen.getByTestId('position-reference-text')).toHaveTextContent('false')
 
-    rerender(<App />)
+    screen.rerender(App)
 
-    expect(getByTestId('reference-text').textContent).toBe('reference')
-    expect(getByTestId('position-reference-text').textContent).toBe('false')
-    cleanup()
+    await expect.element(screen.getByTestId('reference-text')).toHaveTextContent('reference')
+    await expect.element(screen.getByTestId('position-reference-text')).toHaveTextContent('false')
   })
 
   it('handles unstable reference prop', async () => {
@@ -86,17 +83,15 @@ describe('positionReference', () => {
       },
     })
 
-    const { getByTestId, rerender } = render(<App />)
-    await act()
+    const screen = render(App)
 
-    expect(getByTestId('reference-text').textContent).toBe('reference')
-    expect(getByTestId('position-reference-text').textContent).toBe('false')
+    await expect.element(screen.getByTestId('reference-text')).toHaveTextContent('reference')
+    await expect.element(screen.getByTestId('position-reference-text')).toHaveTextContent('false')
 
-    rerender(<App />)
+    screen.rerender(App)
 
-    expect(getByTestId('reference-text').textContent).toBe('reference')
-    expect(getByTestId('position-reference-text').textContent).toBe('false')
-    cleanup()
+    await expect.element(screen.getByTestId('reference-text')).toHaveTextContent('reference')
+    await expect.element(screen.getByTestId('position-reference-text')).toHaveTextContent('false')
   })
 
   it('handles real virtual element', async () => {
@@ -142,17 +137,15 @@ describe('positionReference', () => {
       },
     })
 
-    const { getByTestId, rerender } = render(App)
-    await act()
+    const screen = render(App)
 
-    expect(getByTestId('reference-text').textContent).toBe('reference')
-    expect(getByTestId('position-reference-text').textContent).toBe('218')
+    await expect.element(screen.getByTestId('reference-text')).toHaveTextContent('reference')
+    await expect.element(screen.getByTestId('position-reference-text')).toHaveTextContent('218')
 
-    rerender(<App />)
+    screen.rerender(App)
 
-    expect(getByTestId('reference-text').textContent).toBe('reference')
-    expect(getByTestId('position-reference-text').textContent).toBe('218')
-    cleanup()
+    await expect.element(screen.getByTestId('reference-text')).toHaveTextContent('reference')
+    await expect.element(screen.getByTestId('position-reference-text')).toHaveTextContent('218')
   })
 })
 
@@ -267,33 +260,33 @@ it.todo('onOpenChange is passed an event as second param', async () => {
 })
 
 it.todo('refs.domReference.current is synchronized with external reference', async () => {
-  let isSameNode = false
+  // let isSameNode = false
 
-  const App = defineComponent(() => {
-    const referenceEl = shallowRef<Element>()
-    function setReferenceEl(el: any) {
-      referenceEl.value = el
-    }
-    const { refs } = useFloating<HTMLButtonElement>({
-      elements: {
-        reference: referenceEl,
-      },
-    })
+  // const App = defineComponent(() => {
+  //   const referenceEl = shallowRef<Element>()
+  //   function setReferenceEl(el: any) {
+  //     referenceEl.value = el
+  //   }
+  //   const { refs } = useFloating<HTMLButtonElement>({
+  //     elements: {
+  //       reference: referenceEl,
+  //     },
+  //   })
 
-    return () => (
-      <button
-        ref={setReferenceEl}
-        onClick={(event) => {
-          isSameNode = event.currentTarget === refs.domReference.current
-        }}
-      />
-    )
-  })
+  //   return () => (
+  //     <button
+  //       ref={setReferenceEl}
+  //       onClick={(event) => {
+  //         isSameNode = event.currentTarget === refs.domReference.current
+  //       }}
+  //     />
+  //   )
+  // })
 
-  const { getByRole } = render(<App />)
+  // const { getByRole } = render(<App />)
 
-  fireEvent.click(getByRole('button'))
+  // fireEvent.click(getByRole('button'))
 
-  expect(isSameNode).toBe(true)
-  cleanup()
+  // expect(isSameNode).toBe(true)
+  // cleanup()
 })
