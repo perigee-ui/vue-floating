@@ -189,9 +189,9 @@ describe.todo('`stickIfOpen` prop', async () => {
   })
 
   it('true: `open` state remains `true` after click and mouseleave', async () => {
-    const screen = render(<App stickIfOpen={true} />)
+    // const screen = render(<App stickIfOpen={true} />)
 
-    const button = screen.getByRole('button')
+    // const button = screen.getByRole('button')
 
     // await userEvent.hover(button)
     // await userEvent.click(button)
@@ -204,11 +204,11 @@ describe.todo('`stickIfOpen` prop', async () => {
   })
 
   it('false: `open` state becomes `false` after click and mouseleave', async () => {
-    const screen = render(<App stickIfOpen={false} />)
+    // const screen = render(<App stickIfOpen={false} />)
 
-    const button = screen.getByRole('button')
+    // const button = screen.getByRole('button')
 
-    await userEvent.hover(button)
+    // await userEvent.hover(button)
     // await userEvent.click(button)
     // await act()
     // await userEvent.click(button)
