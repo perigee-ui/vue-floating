@@ -29,7 +29,9 @@ const App = defineComponent({
     const open = ref(props.initialOpen)
     const { refs, context } = useFloating({
       open,
-      onOpenChange: value => (open.value = value),
+      onOpenChange: (value) => {
+        open.value = value
+      },
     })
     const { getReferenceProps, getFloatingProps } = useInteractions([
       useClick(context, props.clickProps),
