@@ -19,7 +19,8 @@
     "types": [
       "node",
       "jsdom",
-      "@vitest/browser/matchers"
+      "@vitest/browser/matchers",
+      "@vitest/browser/providers/playwright"
     ]
   },
 }

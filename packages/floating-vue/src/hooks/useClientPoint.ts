@@ -1,6 +1,6 @@
 import type { ContextData, ElementProps, FloatingRootContext } from '../types.ts'
 import { getWindow } from '@floating-ui/utils/dom'
-import { computed, type MaybeRefOrGetter, shallowRef, toValue, watchSyncEffect } from 'vue'
+import { type MaybeRefOrGetter, toValue, watchEffect } from 'vue'
 import { contains, getTarget, isMouseLikePointerType } from '../utils.ts'
 
 export interface UseClientPointProps {
@@ -21,12 +21,12 @@ export interface UseClientPointProps {
    * An explicitly defined `x` client coordinate.
    * @default undefined
    */
-  x?: MaybeRefOrGetter<number | undefined>
+  x?: MaybeRefOrGetter<number> | undefined
   /**
    * An explicitly defined `y` client coordinate.
    * @default undefined
    */
-  y?: MaybeRefOrGetter<number | undefined>
+  y?: MaybeRefOrGetter<number> | undefined
 }
 
 /**
@@ -44,15 +44,12 @@ export function useClientPoint(
     elements: { floating, domReference },
     refs,
   } = context
-  const { enabled = true, axis = 'both' } = props
-
-  const x = computed(() => toValue(props.x))
-  const y = computed(() => toValue(props.y))
+  const { enabled = true, axis = 'both', x, y } = props
 
   let initialRef = false
   let cleanupListenerRef: (() => void) | undefined
 
-  const pointerType = shallowRef<string | undefined>(undefined)
+  let pointerType: string | undefined
 
   function setReference(x: number | undefined, y: number | undefined) {
     if (initialRef)
@@ -70,15 +67,12 @@ export function useClientPoint(
         y,
         axis,
         dataRef,
-        pointerType: pointerType.value,
+        pointerType,
       }),
     )
   }
 
-  function handleReferenceEnterOrMove(event: MouseEvent) {
-    if (x.value != null || y.value != null)
-      return
-
+  function handleReferenceMauseEnterOrMove(event: MouseEvent) {
     if (!toValue(open)) {
       setReference(event.clientX, event.clientY)
     }
@@ -86,7 +80,7 @@ export function useClientPoint(
       // If there's no cleanup, there's no listener, but we want to ensure
       // we add the listener if the cursor landed on the floating element and
       // then back on the reference (i.e. it's interactive).
-      updateListener()
+      addListener()
     }
   }
 
@@ -94,28 +88,28 @@ export function useClientPoint(
   // mouse even if the floating element is transitioning out. On touch
   // devices, this is undesirable because the floating element will move to
   // the dismissal touch point.
-  const openCheck = () => isMouseLikePointerType(pointerType.value) ? floating.value : toValue(open)
+  const openCheck = () => isMouseLikePointerType(pointerType) ? floating.value : toValue(open)
 
   function addListener() {
     // Explicitly specified `x`/`y` coordinates shouldn't add a listener.
-    if (!toValue(enabled) || x.value != null || y.value != null || !openCheck())
+    if (!toValue(enabled) || !openCheck())
       return
 
-    const win = getWindow(floating.value)
-
-    function handleMouseMove(event: MouseEvent) {
-      const target = getTarget(event) as Element | null
-
-      if (!contains(floating.value, target)) {
-        setReference(event.clientX, event.clientY)
-      }
-      else {
-        win.removeEventListener('mousemove', handleMouseMove)
-        cleanupListenerRef = undefined
-      }
-    }
-
     if (!dataRef.openEvent || isMouseBasedEvent(dataRef.openEvent)) {
+      const win = getWindow(floating.value)
+
+      function handleMouseMove(event: MouseEvent) {
+        const target = getTarget(event) as Element | null
+
+        if (!contains(floating.value, target)) {
+          setReference(event.clientX, event.clientY)
+        }
+        else {
+          win.removeEventListener('mousemove', handleMouseMove)
+          cleanupListenerRef = undefined
+        }
+      }
+
       win.addEventListener('mousemove', handleMouseMove)
 
       const cleanup = () => {
@@ -131,13 +125,7 @@ export function useClientPoint(
     refs.setPositionReference(domReference.value)
   }
 
-  addListener()
-  function updateListener() {
-    cleanupListenerRef?.()
-    addListener()
-  }
-
-  watchSyncEffect(() => {
+  watchEffect(() => {
     const enabledValue = toValue(enabled)
     if (enabledValue && !floating.value)
       initialRef = false
@@ -145,21 +133,34 @@ export function useClientPoint(
     if (!enabledValue && toValue(open))
       initialRef = true
 
-    if (enabledValue && (x.value != null || y.value != null)) {
-      initialRef = false
-      setReference(x.value, y.value)
+    if (enabledValue) {
+      if (x != null || y != null) {
+        initialRef = false
+        setReference(toValue(x), toValue(y))
+      }
+      else {
+        cleanupListenerRef?.()
+        addListener()
+      }
     }
   })
 
   function setPointerTypeRef(Event: PointerEvent) {
-    pointerType.value = Event.pointerType
+    pointerType = Event.pointerType
   }
 
   const referenceProps: ElementProps['reference'] = {
-    onPointerdown: setPointerTypeRef,
     onPointerenter: setPointerTypeRef,
-    onMousemove: handleReferenceEnterOrMove,
-    onMouseenter: handleReferenceEnterOrMove,
+    onPointerdown: setPointerTypeRef,
+
+    ...(x === undefined && y === undefined
+      ? {
+
+          onMouseenter: handleReferenceMauseEnterOrMove,
+          onMousemove: handleReferenceMauseEnterOrMove,
+        }
+      : null
+    ),
   }
 
   return () => toValue(enabled) ? { reference: referenceProps } : undefined

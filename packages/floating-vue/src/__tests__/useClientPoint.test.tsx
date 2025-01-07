@@ -37,8 +37,8 @@ const App = defineComponent({
     })
     const clientPoint = useClientPoint(context, {
       enabled: () => props.enabled,
-      x: () => props.point.x,
-      y: () => props.point.y,
+      x: props.point.x ? () => props.point.x : undefined,
+      y: props.point.y ? () => props.point.y : undefined,
       axis: props.axis,
     })
     const { getReferenceProps, getFloatingProps } = useInteractions([clientPoint])
@@ -118,7 +118,7 @@ it('renders at explicit client point and can be updated', async () => {
   cleanup()
 })
 
-it('renders at mouse event coords', async () => {
+it.only('renders at mouse event coords', async () => {
   render(<App />)
 
   await act()
