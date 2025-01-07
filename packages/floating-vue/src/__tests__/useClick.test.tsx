@@ -230,8 +230,16 @@ describe.todo('`stickIfOpen` prop', async () => {
 })
 
 describe('non-buttons', () => {
+  const clickProps = {
+    keyboardHandlers: true,
+  }
   it('adds Enter keydown', async () => {
-    const screen = render(<App button={false} />)
+    const screen = render(
+      <App
+        button={false}
+        clickProps={clickProps}
+      />,
+    )
 
     const button = screen.getByTestId('reference')
     await userEvent.click(button)
@@ -242,7 +250,12 @@ describe('non-buttons', () => {
   })
 
   it('adds Space keyup', async () => {
-    const screen = render(<App button={false} />)
+    const screen = render(
+      <App
+        button={false}
+        clickProps={clickProps}
+      />,
+    )
 
     const button = screen.getByTestId('reference')
     await userEvent.click(button)
@@ -252,7 +265,12 @@ describe('non-buttons', () => {
   })
 
   it('typeable reference does not receive space key handler', async () => {
-    const screen = render(<App typeable={true} />)
+    const screen = render(
+      <App
+        typeable={true}
+        clickProps={clickProps}
+      />,
+    )
 
     const button = screen.getByTestId('reference')
     await userEvent.click(button)
@@ -263,7 +281,12 @@ describe('non-buttons', () => {
   })
 
   it('typeable reference does receive Enter key handler', async () => {
-    const screen = render(<App typeable={true} />)
+    const screen = render(
+      <App
+        typeable={true}
+        clickProps={clickProps}
+      />,
+    )
 
     const button = screen.getByTestId('reference')
     await userEvent.click(button)
