@@ -3,6 +3,7 @@ import { userEvent } from '@vitest/browser/context'
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-vue'
 import { defineComponent, type PropType, ref } from 'vue'
+import { act } from '../core/__tests__/utils.ts'
 import { useClick, useFloating, useInteractions } from '../index.ts'
 
 const App = defineComponent({
@@ -241,9 +242,7 @@ describe('non-buttons', () => {
       />,
     )
 
-    const button = screen.getByTestId('reference')
-    await userEvent.click(button)
-    await userEvent.click(button)
+    document.querySelector<HTMLElement>('[data-testid="reference"]')?.focus()
     await userEvent.keyboard('{Enter}')
 
     await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
@@ -257,9 +256,7 @@ describe('non-buttons', () => {
       />,
     )
 
-    const button = screen.getByTestId('reference')
-    await userEvent.click(button)
-    await userEvent.click(button)
+    document.querySelector<HTMLElement>('[data-testid="reference"]')?.focus()
     await userEvent.keyboard(' ')
     await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
   })
@@ -272,9 +269,7 @@ describe('non-buttons', () => {
       />,
     )
 
-    const button = screen.getByTestId('reference')
-    await userEvent.click(button)
-    await userEvent.click(button)
+    document.querySelector<HTMLElement>('[data-testid="reference"]')?.focus()
     await userEvent.keyboard(' ')
 
     await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
@@ -288,23 +283,31 @@ describe('non-buttons', () => {
       />,
     )
 
-    const button = screen.getByTestId('reference')
-    await userEvent.click(button)
-    await userEvent.click(button)
+    document.querySelector<HTMLElement>('[data-testid="reference"]')?.focus()
     await userEvent.keyboard('{Enter}')
 
     await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
   })
 })
 
-it.todo('ignores Space keydown on another element then keyup on the button', async () => {
-  const screen = render(App)
+it('ignores Space keydown on another element then keyup on the button', async () => {
+  const screen = render(
+    <App
+      button={false}
+      clickProps={{
+        keyboardHandlers: true,
+      }}
+    />,
+  )
 
-  // const button = screen.getByRole('button')
-  // await fireEvent.keyDown(document.body, { key: ' ' })
-  // await act()
-  // await fireEvent.keyUp(button, { key: ' ' })
-  // await act()
+  const $reference = document.querySelector<HTMLElement>('[data-testid="reference"]')!
+  $reference.focus()
+
+  const keyDownEvent = new KeyboardEvent('keydown', { key: ' ' })
+  document.body.dispatchEvent(keyDownEvent)
+
+  const keyUpEvent = new KeyboardEvent('keyup', { key: ' ' })
+  $reference.dispatchEvent(keyUpEvent)
 
   await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
 })
