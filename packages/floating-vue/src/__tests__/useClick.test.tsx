@@ -44,13 +44,17 @@ const App = defineComponent({
           tabindex={0}
           {...getReferenceProps()}
           data-testid="reference"
-        />
+        >
+          reference
+        </Tag>
         {open.value && (
           <div
             ref={(el: any) => refs.setFloating(el)}
             role="tooltip"
             {...getFloatingProps()}
-          />
+          >
+            tooltip
+          </div>
         )}
       </>
     )
@@ -147,242 +151,175 @@ describe('`toggle` prop', () => {
 })
 
 describe.todo('`stickIfOpen` prop', async () => {
-  // const App = defineComponent({
-  //   props: {
-  //     stickIfOpen: {
-  //       type: Boolean,
-  //       default: undefined,
-  //     },
-  //   },
-  //   setup(props) {
-  //     const open = shallowRef(false)
-  //     const { refs, context } = useFloating({
-  //       open,
-  //       onOpenChange: value => (open.value = value),
-  //     })
-  //     const { getReferenceProps, getFloatingProps } = useInteractions([
-  //       useHover(context),
-  //       useClick(context, { stickIfOpen: props.stickIfOpen }),
-  //     ])
+  const App = defineComponent({
+    props: {
+      stickIfOpen: {
+        type: Boolean,
+        default: undefined,
+      },
+    },
+    setup(props) {
+      const open = shallowRef(false)
+      const { refs, context } = useFloating({
+        open,
+        onOpenChange: (value, event, reason) => {
+          console.error('onOpenChange::', value, event, reason)
+          open.value = value
+        },
+      })
+      const { getReferenceProps, getFloatingProps } = useInteractions([
+        useHover(context),
+        useClick(context, { stickIfOpen: props.stickIfOpen }),
+      ])
 
-  //     return () => (
-  //       <>
-  //         <button
-  //           {...getReferenceProps({ ref: refs.setReference })}
-  //           data-testid="reference"
-  //         />
-  //         {open && (
-  //           <div role="tooltip" {...getFloatingProps({ ref: refs.setFloating })} />
-  //         )}
-  //       </>
-  //     )
-  //   },
-  // })
+      return () => (
+        <>
+          <button
+            {...getReferenceProps({ ref: refs.setReference })}
+            data-testid="reference"
+          >
+            reference
+          </button>
+          {open.value && (
+            <div role="tooltip" {...getFloatingProps({ ref: refs.setFloating })}>tooltip</div>
+          )}
+        </>
+      )
+    },
+  })
 
-  // it('true: `open` state remains `true` after click and mouseleave', async () => {
-  //   render(<App stickIfOpen />)
+  it('true: `open` state remains `true` after click and mouseleave', async () => {
+    const screen = render(<App stickIfOpen={true} />)
 
-  //   const button = screen.getByRole('button')
+    const button = screen.getByRole('button')
 
-  //   await fireEvent.mouseEnter(button)
-  //   await act()
+    // await userEvent.hover(button)
+    // await userEvent.click(button)
 
-  //   await fireEvent.click(button)
-  //   await act()
+    // await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
 
-  //   expect(screen.queryByRole('tooltip')).toBeInTheDocument()
+    // await userEvent.unhover(button)
 
-  //   await fireEvent.mouseLeave(button)
-  //   await act()
+    // await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
+  })
 
-  //   expect(screen.queryByRole('tooltip')).toBeInTheDocument()
+  it('false: `open` state becomes `false` after click and mouseleave', async () => {
+    const screen = render(<App stickIfOpen={false} />)
 
-  //   cleanup()
-  // })
+    const button = screen.getByRole('button')
 
-  // it('false: `open` state becomes `false` after click and mouseleave', async () => {
-  //   render(<App stickIfOpen={false} />)
-  //   await act()
+    await userEvent.hover(button)
+    // await userEvent.click(button)
+    // await act()
+    // await userEvent.click(button)
 
-  //   const button = screen.getByRole('button')
+    // await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
 
-  //   await fireEvent.mouseEnter(button)
-  //   await act()
+    // await userEvent.click(button)
 
-  //   await fireEvent.click(button)
-  //   await act()
+    // await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
 
-  //   expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    // // fireEvent.click(button)
 
-  //   // fireEvent.click(button)
+    // // expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
 
-  //   // expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-
-  //   // fireEvent.click(button)
-
-  //   // expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-
-  //   cleanup()
-  // })
+    // cleanup()
+  })
 })
 
-describe.todo('non-buttons', () => {
-  // it.only('adds Enter keydown', async () => {
-  //   const screen = render(<App button={false} />)
+describe('non-buttons', () => {
+  it('adds Enter keydown', async () => {
+    const screen = render(<App button={false} />)
 
-  //   const button = screen.getByTestId('reference')
-  //   // await userEvent.keyboard('{Enter}')
-  //   await userEvent.tab()
-  //   console.error('document.activeElement', document.activeElement)
+    const button = screen.getByTestId('reference')
+    await userEvent.click(button)
+    await userEvent.click(button)
+    await userEvent.keyboard('{Enter}')
 
-  //   await expect.element(screen.getByRole('tooltip')).toHaveFocus()
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
+  })
 
-  //   // await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
-  //   // cleanup()
-  // })
+  it('adds Space keyup', async () => {
+    const screen = render(<App button={false} />)
 
-  // it('adds Space keyup', async () => {
-  //   render(<App button={false} />)
-  //   await act()
+    const button = screen.getByTestId('reference')
+    await userEvent.click(button)
+    await userEvent.click(button)
+    await userEvent.keyboard(' ')
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
+  })
 
-  //   const button = screen.getByTestId('reference')
-  //   await fireEvent.keyDown(button, { key: ' ' })
-  //   await act()
-  //   await fireEvent.keyUp(button, { key: ' ' })
-  //   await act()
+  it('typeable reference does not receive space key handler', async () => {
+    const screen = render(<App typeable={true} />)
 
-  //   expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-  //   cleanup()
-  // })
+    const button = screen.getByTestId('reference')
+    await userEvent.click(button)
+    await userEvent.click(button)
+    await userEvent.keyboard(' ')
 
-  // it('typeable reference does not receive space key handler', async () => {
-  //   render(<App typeable={true} />)
-  //   await act()
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
+  })
 
-  //   const button = screen.getByTestId('reference')
-  //   await fireEvent.keyDown(button, { key: ' ' })
-  //   await act()
-  //   await fireEvent.keyUp(button, { key: ' ' })
-  //   await act()
+  it('typeable reference does receive Enter key handler', async () => {
+    const screen = render(<App typeable={true} />)
 
-  //   expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-  //   cleanup()
-  // })
+    const button = screen.getByTestId('reference')
+    await userEvent.click(button)
+    await userEvent.click(button)
+    await userEvent.keyboard('{Enter}')
 
-  // it('typeable reference does receive Enter key handler', async () => {
-  //   render(<App typeable={true} />)
-  //   await act()
-
-  //   const button = screen.getByTestId('reference')
-  //   await fireEvent.keyDown(button, { key: 'Enter' })
-  //   await act()
-
-  //   expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-  //   cleanup()
-  // })
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
+  })
 })
 
-// it('ignores Space keydown on another element then keyup on the button', async () => {
-//   render(<App />)
-//   await act()
+it.todo('ignores Space keydown on another element then keyup on the button', async () => {
+  const screen = render(App)
 
-//   const button = screen.getByRole('button')
-//   await fireEvent.keyDown(document.body, { key: ' ' })
-//   await act()
-//   await fireEvent.keyUp(button, { key: ' ' })
-//   await act()
+  // const button = screen.getByRole('button')
+  // await fireEvent.keyDown(document.body, { key: ' ' })
+  // await act()
+  // await fireEvent.keyUp(button, { key: ' ' })
+  // await act()
 
-//   expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-//   cleanup()
-// })
+  await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
+})
 
-// // it('with useHover does not close on mouseleave after click', async () => {
-// //   const App = defineComponent({
-// //     setup() {
-// //       const open = ref(false)
-// //       const { refs, context } = useFloating({
-// //         open,
-// //         onOpenChange: value => (open.value = value),
-// //       })
-// //       const { getReferenceProps, getFloatingProps } = useInteractions([
-// //         useClick(context),
-// //         useHover(context),
-// //       ])
+it('reason string', async () => {
+  const App = defineComponent({
+    setup() {
+      const open = ref(false)
+      const { refs, context } = useFloating({
+        open,
+        onOpenChange(isOpen, _, reason) {
+          open.value = isOpen
+          expect(reason).toBe('click')
+        },
+      })
+      const { getReferenceProps, getFloatingProps } = useInteractions([
+        useClick(context),
+      ])
 
-// //       return () => (
-// //         <>
-// //           <button
-// //             ref={(el: any) => refs.setReference(el)}
-// //             {...getReferenceProps()}
-// //             data-testid="reference"
-// //           />
-// //           {open.value && (
-// //             <div
-// //               ref={(el: any) => refs.setFloating(el)}
-// //               role="tooltip"
-// //               {...getFloatingProps()}
-// //             />
-// //           )}
-// //         </>
-// //       )
-// //     },
-// //   })
+      return () => (
+        <>
+          <button
+            ref={(el: any) => refs.setReference(el)}
+            {...getReferenceProps()}
+            data-testid="reference"
+          />
+          {open.value && (
+            <div
+              ref={(el: any) => refs.setFloating(el)}
+              role="tooltip"
+              {...getFloatingProps()}
+            />
+          )}
+        </>
+      )
+    },
+  })
 
-// //   render(<App />)
-// //   await act()
-
-// //   const button = screen.getByTestId('reference')
-// //   fireEvent.mouseEnter(button)
-// //   await act()
-// //   fireEvent.click(button)
-// //   await act()
-// //   fireEvent.mouseLeave(button)
-// //   await act()
-
-// //   expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-// //   cleanup()
-// // })
-
-// it('reason string', async () => {
-//   const App = defineComponent({
-//     setup() {
-//       const open = ref(false)
-//       const { refs, context } = useFloating({
-//         open,
-//         onOpenChange(isOpen, _, reason) {
-//           open.value = isOpen
-//           expect(reason).toBe('click')
-//         },
-//       })
-//       const { getReferenceProps, getFloatingProps } = useInteractions([
-//         useClick(context),
-//       ])
-
-//       return () => (
-//         <>
-//           <button
-//             ref={(el: any) => refs.setReference(el)}
-//             {...getReferenceProps()}
-//             data-testid="reference"
-//           />
-//           {open.value && (
-//             <div
-//               ref={(el: any) => refs.setFloating(el)}
-//               role="tooltip"
-//               {...getFloatingProps()}
-//             />
-//           )}
-//         </>
-//       )
-//     },
-//   })
-
-//   render(<App />)
-//   await act()
-//   const button = screen.getByRole('button')
-//   fireEvent.click(button)
-//   await act()
-//   fireEvent.click(button)
-//   await act()
-//   cleanup()
-// })
+  const screen = render(App)
+  const button = screen.getByRole('button')
+  await userEvent.click(button)
+  await userEvent.click(button)
+})
