@@ -24,6 +24,8 @@ export interface HandleCloseFn {
   }
 }
 
+type MaybeValOrGetter<T> = T | (() => T)
+
 export interface UseHoverProps {
   /**
    * Whether the Hook is enabled, including all internal Effects and event
@@ -50,7 +52,7 @@ export interface UseHoverProps {
    * @default 0
    */
   delay?: number
-    | { open?: number | (() => number), close?: number | (() => number) }
+    | { open?: MaybeValOrGetter<number>, close?: MaybeValOrGetter<number> }
     | (() => { open?: number, close?: number } | number)
   /**
    * Whether the logic only runs for mouse input, ignoring touch input.
@@ -94,6 +96,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
   let blockMouseMoveRef = true
   let performedPointerEventsMutationRef = false
   let unbindMousemoveRef = () => { }
+  let restTimeoutPendingRef = false
 
   function isHoverOpen() {
     const type = dataRef.openEvent?.type
@@ -111,6 +114,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
         clearTimeout(timeoutRef)
         clearTimeout(restTimeoutRef)
         blockMouseMoveRef = true
+        restTimeoutPendingRef = false
       }
     }
 
@@ -148,7 +152,9 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     if (closeDelay && !handlerRef) {
       clearTimeout(timeoutRef)
       timeoutRef = window.setTimeout(
-        () => onOpenChange(false, event, reason),
+        () => {
+          onOpenChange(false, event, reason)
+        },
         closeDelay,
       )
     }
@@ -217,6 +223,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
 
       const doc = getDocument(elements.floating.value)
       clearTimeout(restTimeoutRef)
+      restTimeoutPendingRef = false
 
       if (handleClose && dataRef.floatingContext) {
         // Prevent clearing `onScrollMouseLeave` timeout.
@@ -319,16 +326,18 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     if (!toValue(open) || !handleClose?.__options.blockPointerEvents || !isHoverOpen())
       return
 
-    const floatingEl = elements.floating.value
-    const body = getDocument(floatingEl).body
-    body.setAttribute(safePolygonIdentifier, '')
-    body.style.pointerEvents = 'none'
     performedPointerEventsMutationRef = true
 
-    if (!isElement(elements.domReference.value) || !floatingEl)
+    const domReference = elements.domReference.value
+    if (!isElement(domReference))
+      return
+    const floatingEl = elements.floating.value
+    if (!floatingEl)
       return
 
-    const ref = elements.domReference.value as unknown as HTMLElement | SVGSVGElement
+    const body = getDocument(floatingEl).body
+    body.setAttribute(safePolygonIdentifier, '')
+    const ref = domReference as unknown as HTMLElement | SVGSVGElement
 
     // const parentFloating = tree?.nodesRef.current.find(
     //   (node) => node.id === parentId,
@@ -338,10 +347,12 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     //   parentFloating.style.pointerEvents = '';
     // }
 
+    body.style.pointerEvents = 'none'
     ref.style.pointerEvents = 'auto'
     floatingEl.style.pointerEvents = 'auto'
 
     onCleanup(() => {
+      body.style.pointerEvents = ''
       ref.style.pointerEvents = ''
       floatingEl.style.pointerEvents = ''
     })
@@ -350,6 +361,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
   watchEffect(() => {
     if (!toValue(open)) {
       pointerTypeRef = undefined
+      restTimeoutPendingRef = false
       cleanupMousemoveHandler()
       clearPointerEvents()
     }
@@ -386,12 +398,23 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
       if (toValue(open) || restMs === 0)
         return
 
+      // Ignore insignificant movements to account for tremors.
+      if (
+        restTimeoutPendingRef
+        && event.movementX ** 2 + event.movementY ** 2 < 2
+      ) {
+        return
+      }
+
       clearTimeout(restTimeoutRef)
 
-      if (pointerTypeRef === 'touch')
+      if (pointerTypeRef === 'touch') {
         handleMouseMove()
-      else
+      }
+      else {
+        restTimeoutPendingRef = true
         restTimeoutRef = window.setTimeout(handleMouseMove, restMs)
+      }
     },
   }
 

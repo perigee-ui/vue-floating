@@ -197,6 +197,17 @@ it('restMs', async () => {
     },
   })
 
+  const button = screen.getByRole('button')
+
+  const originalDispatchEvent = button.dispatchEvent
+  const spy = vi.spyOn(button, 'dispatchEvent').mockImplementation((event) => {
+    Object.defineProperty(event, 'movementX', { value: 10 })
+    Object.defineProperty(event, 'movementY', { value: 10 })
+    return originalDispatchEvent.call(button, event)
+  })
+
+  fireEvent.mouseMove(button)
+
   await fireEvent.mouseMove(screen.getByRole('button'))
 
   await vi.advanceTimersByTime(99)
@@ -209,13 +220,14 @@ it('restMs', async () => {
 
   expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
 
-  await fireEvent.mouseMove(screen.getByRole('button'))
+  fireEvent.mouseMove(button)
 
   await vi.advanceTimersByTime(100)
   await act()
 
   expect(screen.queryByRole('tooltip')).toBeInTheDocument()
 
+  spy.mockRestore()
   cleanup()
 })
 
@@ -258,6 +270,45 @@ it.todo('restMs does not cause floating element to open if mouseOnly is true', a
 
   expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
 
+  cleanup()
+})
+
+it('restMs does not reset timer for minor mouse movement', async () => {
+  render(
+    <App hoverProps={{
+      restMs: 100,
+    }}
+    />,
+  )
+
+  const button = screen.getByRole('button')
+
+  const originalDispatchEvent = button.dispatchEvent
+  const spy = vi.spyOn(button, 'dispatchEvent').mockImplementation((event) => {
+    Object.defineProperty(event, 'movementX', { value: 1 })
+    Object.defineProperty(event, 'movementY', { value: 0 })
+    return originalDispatchEvent.call(button, event)
+  })
+
+  fireEvent.mouseMove(button)
+
+  await act()
+  vi.advanceTimersByTime(99)
+  await act()
+  // await act(async () => {
+  // })
+
+  await fireEvent.mouseMove(button)
+  await act()
+
+  vi.advanceTimersByTime(1)
+  await act()
+  // await act(async () => {
+  // })
+
+  expect(screen.queryByRole('tooltip')).toBeInTheDocument()
+
+  spy.mockRestore()
   cleanup()
 })
 
