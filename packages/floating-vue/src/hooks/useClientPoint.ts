@@ -125,6 +125,9 @@ export function useClientPoint(
     refs.setPositionReference(domReference.value)
   }
 
+  let _oldX: number | undefined
+  let _oldY: number | undefined
+
   watchEffect(() => {
     const enabledValue = toValue(enabled)
     if (enabledValue && !floating.value)
@@ -136,7 +139,13 @@ export function useClientPoint(
     if (enabledValue) {
       if (x != null || y != null) {
         initialRef = false
-        setReference(toValue(x), toValue(y))
+        const newX = toValue(x)
+        const newY = toValue(y)
+        if (_oldX !== newX || _oldY !== newY) {
+          setReference(newX, newY)
+          _oldX = newX
+          _oldY = newY
+        }
       }
       else {
         addListener()
