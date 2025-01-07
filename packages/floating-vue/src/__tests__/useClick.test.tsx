@@ -302,11 +302,11 @@ it('ignores Space keydown on another element then keyup on the button', async ()
   const $reference = document.querySelector<HTMLElement>('[data-testid="reference"]')!
   $reference.focus()
 
-  const keyDownEvent = new KeyboardEvent('keydown', { key: ' ' })
-  document.body.dispatchEvent(keyDownEvent)
+  document.body.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }))
+  await Promise.resolve()
 
-  const keyUpEvent = new KeyboardEvent('keyup', { key: ' ' })
-  $reference.dispatchEvent(keyUpEvent)
+  $reference.dispatchEvent(new KeyboardEvent('keyup', { key: ' ' }))
+  await Promise.resolve()
 
   await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
 })

@@ -1,16 +1,17 @@
 import type { Coords } from '../core/index.ts'
-import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
 import { expect, it } from 'vitest'
-import { defineComponent, onMounted, type PropType, ref, watchEffect } from 'vue'
 
+import { render, type RenderResult } from 'vitest-browser-vue'
+import { defineComponent, type PropType, shallowRef, watchEffect } from 'vue'
 import { useClientPoint, useFloating, useInteractions } from '../../src/index.ts'
 import { act } from '../core/__tests__/utils.ts'
 
-function expectLocation({ x, y }: Coords) {
-  expect(Number(screen.getByTestId('x')?.textContent)).toBe(x)
-  expect(Number(screen.getByTestId('y')?.textContent)).toBe(y)
-  expect(Number(screen.getByTestId('width')?.textContent)).toBe(0)
-  expect(Number(screen.getByTestId('height')?.textContent)).toBe(0)
+async function expectLocation(screen: RenderResult<any>, { x, y }: Coords, axis = 'both') {
+  await expect.element(screen.getByTestId('x')).toHaveTextContent(`${x}`)
+  await expect.element(screen.getByTestId('y')).toHaveTextContent(`${y}`)
+  await expect.element(screen.getByTestId('width')).toHaveTextContent(axis === 'y' ? '100' : '0')
+  await expect.element(screen.getByTestId('height')).toHaveTextContent(axis === 'x' ? '20' : '0')
 }
 
 const App = defineComponent({
@@ -30,10 +31,12 @@ const App = defineComponent({
     },
   },
   setup(props) {
-    const isOpen = ref(false)
+    const isOpen = shallowRef(false)
     const { refs, elements, context } = useFloating({
       open: isOpen,
-      onOpenChange: value => (isOpen.value = value),
+      onOpenChange: (value) => {
+        isOpen.value = value
+      },
     })
     const clientPoint = useClientPoint(context, {
       enabled: () => props.enabled,
@@ -43,17 +46,10 @@ const App = defineComponent({
     })
     const { getReferenceProps, getFloatingProps } = useInteractions([clientPoint])
 
-    const rect = ref({ x: 0, y: 0, width: 0, height: 0 })
-
-    onMounted(() => {
-      rect.value = elements.reference.value?.getBoundingClientRect() || rect.value
-    })
-
-    watchEffect(() => {
-      rect.value = elements.reference.value?.getBoundingClientRect() || rect.value
-    })
+    const rect = shallowRef({ x: 0, y: 0, width: 0, height: 0 })
 
     watchEffect((onClean) => {
+      rect.value = elements.reference.value?.getBoundingClientRect() || rect.value
       elements.domReference.value?.addEventListener('mousemove', update)
       onClean(() => {
         elements.domReference.value?.removeEventListener('mousemove', update)
@@ -71,6 +67,10 @@ const App = defineComponent({
           data-testid="reference"
           ref={(el: any) => refs.setReference(el)}
           {...getReferenceProps()}
+          style={{
+            width: '100px',
+            height: '20px',
+          }}
         >
           Reference
         </div>
@@ -79,279 +79,228 @@ const App = defineComponent({
             data-testid="floating"
             ref={(el: any) => refs.setFloating(el)}
             {...getFloatingProps()}
+            style={{
+              width: '100px',
+              height: '20px',
+            }}
           >
             Floating
           </div>
         )}
         <button onClick={() => (isOpen.value = !isOpen.value)}>button</button>
-        <span foo-testid="x">{props.point?.x}</span>
-        <span foo-testid="y">{props.point?.y}</span>
-        <span data-testid="x">{rect.value.x}</span>
-        <span data-testid="y">{rect.value.y}</span>
-        <span data-testid="width">{rect.value.width}</span>
-        <span data-testid="height">{rect.value.height}</span>
+        <div data-testid="x">
+          x:
+          {rect.value.x}
+        </div>
+        <div data-testid="y">
+          y:
+          {rect.value.y}
+        </div>
+        <div data-testid="width">
+          width:
+          {rect.value.width}
+        </div>
+        <div data-testid="height">
+          height:
+          {rect.value.height}
+        </div>
       </>
     )
   },
 })
 
 it('renders at explicit client point and can be updated', async () => {
-  const { rerender } = render(App, {
+  const screen = render(App, {
     props: {
       point: { x: 0, y: 0 },
     },
   })
-  await act()
 
-  await fireEvent.click(screen.getByRole('button'))
-  await act()
+  await userEvent.click(screen.getByRole('button'))
 
-  expectLocation({ x: 0, y: 0 })
+  await expectLocation(screen, { x: 0, y: 0 })
 
-  await rerender({
+  screen.rerender({
     point: { x: 1000, y: 1000 },
   })
-  await act()
 
-  expectLocation({ x: 1000, y: 1000 })
-
-  cleanup()
+  await expectLocation(screen, { x: 1000, y: 1000 })
 })
 
 it('renders at mouse event coords', async () => {
-  render(<App />)
+  const screen = render(<App />)
 
-  await act()
+  screen.getByTestId('reference').query()?.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 500,
+    clientY: 500,
+  }))
+  await Promise.resolve()
 
-  await fireEvent(
-    screen.getByTestId('reference'),
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 500,
-      clientY: 500,
-    }),
-  )
-  await act()
+  await expectLocation(screen, { x: 500, y: 500 })
 
-  expectLocation({ x: 500, y: 500 })
+  screen.getByTestId('reference').query()?.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 1000,
+    clientY: 1000,
+  }))
+  await Promise.resolve()
 
-  await fireEvent(
-    screen.getByTestId('reference'),
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 1000,
-      clientY: 1000,
-    }),
-  )
-  await act()
-
-  expectLocation({ x: 1000, y: 1000 })
+  await expectLocation(screen, { x: 1000, y: 1000 })
 
   // Window listener isn't registered unless the floating element is open.
-  await fireEvent(
-    window,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 700,
-      clientY: 700,
-    }),
-  )
+  window.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 700,
+    clientY: 700,
+  }))
+  await Promise.resolve()
+
   await act()
 
-  expectLocation({ x: 1000, y: 1000 })
+  await expectLocation(screen, { x: 1000, y: 1000 })
 
-  await fireEvent.click(screen.getByRole('button'))
-  await act()
+  await userEvent.click(screen.getByRole('button'))
 
-  await fireEvent(
-    screen.getByTestId('reference'),
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 700,
-      clientY: 700,
-    }),
-  )
-  await act()
+  screen.getByTestId('reference').query()?.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 700,
+    clientY: 700,
+  }))
+  await Promise.resolve()
 
-  expectLocation({ x: 700, y: 700 })
+  await expectLocation(screen, { x: 700, y: 700 })
 
-  await fireEvent(
-    document.body,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 0,
-      clientY: 0,
-    }),
-  )
-  await act()
+  document.body.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 0,
+    clientY: 0,
+  }))
+  await Promise.resolve()
 
-  expectLocation({ x: 0, y: 0 })
-  cleanup()
+  await expectLocation(screen, { x: 0, y: 0 })
 })
 
 it('ignores mouse events when explicit coords are specified', async () => {
-  render(<App point={{ x: 0, y: 0 }} />)
-  await act()
+  const screen = render(<App point={{ x: 0, y: 0 }} />)
 
-  await fireEvent(
-    screen.getByTestId('reference'),
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 500,
-      clientY: 500,
-    }),
-  )
-  await act()
+  screen.getByTestId('reference').query()?.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 500,
+    clientY: 500,
+  }))
+  await Promise.resolve()
 
-  expectLocation({ x: 0, y: 0 })
-  cleanup()
+  await expectLocation(screen, { x: 0, y: 0 })
 })
 
 it('cleans up window listener when closing or disabling', async () => {
-  const { rerender } = render(App)
-  await act()
+  const screen = render(App)
 
-  await fireEvent.click(screen.getByRole('button'))
-  await act()
+  screen.getByRole('button').query()?.dispatchEvent(new MouseEvent('click', {
+    bubbles: true,
+  }))
+  await Promise.resolve()
 
-  await fireEvent(
-    screen.getByTestId('reference'),
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 500,
-      clientY: 500,
-    }),
-  )
-  await act()
+  screen.getByTestId('reference').query()?.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 500,
+    clientY: 500,
+  }))
+  await Promise.resolve()
 
-  await fireEvent.click(screen.getByRole('button'))
-  await act()
+  screen.getByRole('button').query()?.dispatchEvent(new MouseEvent('click', {
+    bubbles: true,
+  }))
+  await Promise.resolve()
 
-  await fireEvent(
-    document.body,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 0,
-      clientY: 0,
-    }),
-  )
-  await act()
+  document.body.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 0,
+    clientY: 0,
+  }))
+  await Promise.resolve()
 
-  expectLocation({ x: 500, y: 500 })
+  await expectLocation(screen, { x: 500, y: 500 })
 
-  await fireEvent.click(screen.getByRole('button'))
-  await act()
+  screen.getByRole('button').query()?.dispatchEvent(new MouseEvent('click', {
+    bubbles: true,
+  }))
+  await Promise.resolve()
 
-  await fireEvent(
-    document.body,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 500,
-      clientY: 500,
-    }),
-  )
-  await act()
+  document.body.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 400,
+    clientY: 400,
+  }))
+  await Promise.resolve()
+  await expectLocation(screen, { x: 400, y: 400 })
 
-  expectLocation({ x: 500, y: 500 })
-
-  await rerender({
+  screen.rerender({
     enabled: false,
   })
-  await act()
+  await Promise.resolve()
 
-  await fireEvent(
-    document.body,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 0,
-      clientY: 0,
-    }),
-  )
-  await act()
+  document.body.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 0,
+    clientY: 0,
+  }))
+  await Promise.resolve()
 
-  expectLocation({ x: 500, y: 500 })
-  cleanup()
+  await expectLocation(screen, { x: 400, y: 400 })
 })
 
 it('axis x', async () => {
-  render(<App axis="x" />)
-  await act()
+  const screen = render(<App axis="x" />)
 
-  fireEvent.click(screen.getByRole('button'))
-  await act()
+  screen.getByTestId('reference').query()?.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 500,
+    clientY: 500,
+  }))
+  await Promise.resolve()
 
-  await fireEvent(
-    screen.getByTestId('reference'),
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 500,
-      clientY: 500,
-    }),
-  )
-  await act()
-
-  expectLocation({ x: 500, y: 0 })
-  cleanup()
+  await expectLocation(screen, { x: 500, y: 0 })
 })
 
 it('axis y', async () => {
-  render(<App axis="y" />)
-  await act()
+  const screen = render(<App axis="y" />)
 
-  await fireEvent.click(screen.getByRole('button'))
-  await act()
+  screen.getByTestId('reference').query()?.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 500,
+    clientY: 500,
+  }))
+  await Promise.resolve()
 
-  await fireEvent(
-    screen.getByTestId('reference'),
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 500,
-      clientY: 500,
-    }),
-  )
-  await act()
-
-  expectLocation({ x: 0, y: 500 })
-  cleanup()
+  await expectLocation(screen, { x: 0, y: 500 })
 })
 
 it('removes window listener when cursor lands on floating element', async () => {
-  render(<App />)
-  await act()
+  const screen = render(App)
 
-  await fireEvent.click(screen.getByRole('button'))
-  await act()
+  await userEvent.click(screen.getByRole('button'))
 
-  await fireEvent(
-    screen.getByTestId('reference'),
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 500,
-      clientY: 500,
-    }),
-  )
-  await act()
+  screen.getByTestId('reference').query()?.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 500,
+    clientY: 500,
+  }))
+  await Promise.resolve()
 
-  await fireEvent(
-    screen.getByTestId('floating'),
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 500,
-      clientY: 500,
-    }),
-  )
-  await act()
+  screen.getByTestId('floating').query()?.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 500,
+    clientY: 500,
+  }))
+  await Promise.resolve()
 
-  await fireEvent(
-    document.body,
-    new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: 0,
-      clientY: 0,
-    }),
-  )
-  await act()
-
-  expectLocation({ x: 500, y: 500 })
-  cleanup()
+  document.body.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    clientX: 0,
+    clientY: 0,
+  }))
+  await Promise.resolve()
+  await expectLocation(screen, { x: 500, y: 500 })
 })

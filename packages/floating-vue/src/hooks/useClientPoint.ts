@@ -1,6 +1,6 @@
 import type { ContextData, ElementProps, FloatingRootContext } from '../types.ts'
 import { getWindow } from '@floating-ui/utils/dom'
-import { type MaybeRefOrGetter, toValue, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, onWatcherCleanup, toValue, watchEffect } from 'vue'
 import { contains, getTarget, isMouseLikePointerType } from '../utils.ts'
 
 export interface UseClientPointProps {
@@ -139,9 +139,12 @@ export function useClientPoint(
         setReference(toValue(x), toValue(y))
       }
       else {
-        cleanupListenerRef?.()
         addListener()
       }
+    }
+
+    if (cleanupListenerRef) {
+      onWatcherCleanup(cleanupListenerRef)
     }
   })
 
