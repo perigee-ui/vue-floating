@@ -151,42 +151,42 @@ describe('`toggle` prop', () => {
 })
 
 describe.todo('`stickIfOpen` prop', async () => {
-  const App = defineComponent({
-    props: {
-      stickIfOpen: {
-        type: Boolean,
-        default: undefined,
-      },
-    },
-    setup(props) {
-      const open = shallowRef(false)
-      const { refs, context } = useFloating({
-        open,
-        onOpenChange: (value, event, reason) => {
-          console.error('onOpenChange::', value, event, reason)
-          open.value = value
-        },
-      })
-      const { getReferenceProps, getFloatingProps } = useInteractions([
-        useHover(context),
-        useClick(context, { stickIfOpen: props.stickIfOpen }),
-      ])
+  // const App = defineComponent({
+  //   props: {
+  //     stickIfOpen: {
+  //       type: Boolean,
+  //       default: undefined,
+  //     },
+  //   },
+  //   setup(props) {
+  //     const open = shallowRef(false)
+  //     const { refs, context } = useFloating({
+  //       open,
+  //       onOpenChange: (value, event, reason) => {
+  //         console.error('onOpenChange::', value, event, reason)
+  //         open.value = value
+  //       },
+  //     })
+  //     const { getReferenceProps, getFloatingProps } = useInteractions([
+  //       useHover(context),
+  //       useClick(context, { stickIfOpen: props.stickIfOpen }),
+  //     ])
 
-      return () => (
-        <>
-          <button
-            {...getReferenceProps({ ref: refs.setReference })}
-            data-testid="reference"
-          >
-            reference
-          </button>
-          {open.value && (
-            <div role="tooltip" {...getFloatingProps({ ref: refs.setFloating })}>tooltip</div>
-          )}
-        </>
-      )
-    },
-  })
+  //     return () => (
+  //       <>
+  //         <button
+  //           {...getReferenceProps({ ref: refs.setReference })}
+  //           data-testid="reference"
+  //         >
+  //           reference
+  //         </button>
+  //         {open.value && (
+  //           <div role="tooltip" {...getFloatingProps({ ref: refs.setFloating })}>tooltip</div>
+  //         )}
+  //       </>
+  //     )
+  //   },
+  // })
 
   it('true: `open` state remains `true` after click and mouseleave', async () => {
     // const screen = render(<App stickIfOpen={true} />)
