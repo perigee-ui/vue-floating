@@ -273,57 +273,57 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     }
   }
 
-  watchEffect(() => {
-    if (!toValue(enabled))
-      return
+  // watchEffect(() => {
+  //   if (!toValue(enabled))
+  //     return
 
-    const domReference = elements.domReference.value as HTMLElement
-    if (!isElement(domReference))
-      return
+  //   const domReference = elements.domReference.value as HTMLElement
+  //   if (!isElement(domReference))
+  //     return
 
-    const openVal = toValue(open)
+  //   const openVal = toValue(open)
 
-    const floating = elements.floating.value
+  //   const floating = elements.floating.value
 
-    // Ensure the floating element closes after scrolling even if the pointer
-    // did not move.
-    // https://github.com/floating-ui/floating-ui/discussions/1692
-    function onScrollMouseleave(event: MouseEvent) {
-      if (isClickLikeOpenEvent())
-        return
+  //   // Ensure the floating element closes after scrolling even if the pointer
+  //   // did not move.
+  //   // https://github.com/floating-ui/floating-ui/discussions/1692
+  //   function onScrollMouseleave(event: MouseEvent) {
+  //     if (isClickLikeOpenEvent())
+  //       return
 
-      if (!dataRef.floatingContext)
-        return
+  //     if (!dataRef.floatingContext)
+  //       return
 
-      handleClose?.({
-        // tree,
-        x: event.clientX,
-        y: event.clientY,
-        placement: dataRef.floatingContext.placement.value,
-        elements: {
-          domReference,
-          floating,
-        },
-        onClose() {
-          clearPointerEvents()
-          cleanupDocMousemoveHandler()
-          if (!isClickLikeOpenEvent()) {
-            closeWithDelay(event)
-          }
-        },
-      })(event)
-    }
+  //     handleClose?.({
+  //       // tree,
+  //       x: event.clientX,
+  //       y: event.clientY,
+  //       placement: dataRef.floatingContext.placement.value,
+  //       elements: {
+  //         domReference,
+  //         floating,
+  //       },
+  //       onClose() {
+  //         clearPointerEvents()
+  //         cleanupDocMousemoveHandler()
+  //         if (!isClickLikeOpenEvent()) {
+  //           closeWithDelay(event)
+  //         }
+  //       },
+  //     })(event)
+  //   }
 
-    if (openVal)
-      domReference.addEventListener('mouseleave', onScrollMouseleave)
-    floating?.addEventListener('mouseleave', onScrollMouseleave)
+  //   if (openVal)
+  //     domReference.addEventListener('mouseleave', onScrollMouseleave)
+  //   floating?.addEventListener('mouseleave', onScrollMouseleave)
 
-    onWatcherCleanup(() => {
-      if (openVal)
-        domReference.removeEventListener('mouseleave', onScrollMouseleave)
-      floating?.removeEventListener('mouseleave', onScrollMouseleave)
-    })
-  })
+  //   onWatcherCleanup(() => {
+  //     if (openVal)
+  //       domReference.removeEventListener('mouseleave', onScrollMouseleave)
+  //     floating?.removeEventListener('mouseleave', onScrollMouseleave)
+  //   })
+  // })
 
   // Block pointer-events of every element other than the reference and floating
   // while the floating element is open and has a `handleClose` handler. Also
