@@ -193,18 +193,18 @@ export type FloatingContext<RT extends ReferenceType = ReferenceType> = Omit<Use
 //   removeNode: (node: FloatingNodeType) => void
 // }
 
-type CaptureEvents = {
-  [K in keyof Events as `${K}Capture`]: Events[K];
+type CombineModifiers<T extends string, U extends string = T> =
+  T extends any
+    ? T | `${T}${CombineModifiers<Exclude<U, T>>}`
+    : never
+
+type EventModifiers = CombineModifiers<'Capture' | 'Once' | 'Passive'>
+
+type AllEventHandlers = {
+  [K in keyof Events as K | `${K}${EventModifiers}`]: (payload: Events[K]) => void
 }
 
-type EventHandlers<E> = {
-  [K in keyof E]?: E[K] extends (...args: any) => any ? E[K] : (payload: E[K]) => void;
-}
-
-type AllEventsHandlers = EventHandlers<Events & CaptureEvents>
-
-export type ElAttrs = Partial<AllEventsHandlers & AriaAttributes & HTMLAttributes>
-
+export type ElAttrs = Partial<AllEventHandlers & Record<string, unknown>> & AriaAttributes & HTMLAttributes
 export interface ElementProps {
   reference?: ElAttrs
   floating?: ElAttrs

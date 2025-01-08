@@ -18,7 +18,8 @@ function mergeProps(
   propsList: Array<Props>,
   elementKey: 'reference' | 'floating' | 'item',
 ): Record<string, unknown> {
-  const map = new Map<string, Array<(...args: unknown[]) => void>>()
+  // eslint-disable-next-line ts/no-unsafe-function-type
+  const map = new Map<string, Array<Function>>()
   const isItem = elementKey === 'item'
 
   const mergedProps: Record<string, unknown> = elementKey === 'floating' ? { tabIndex: -1 } : {}
