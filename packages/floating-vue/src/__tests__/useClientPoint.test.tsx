@@ -128,7 +128,7 @@ it('renders at explicit client point and can be updated', async () => {
 })
 
 it('renders at mouse event coords', async () => {
-  const screen = render(<App />)
+  const screen = render(App)
 
   screen.getByTestId('reference').query()?.dispatchEvent(new MouseEvent('mousemove', {
     bubbles: true,
@@ -182,7 +182,11 @@ it('renders at mouse event coords', async () => {
 })
 
 it('ignores mouse events when explicit coords are specified', async () => {
-  const screen = render(<App point={{ x: 0, y: 0 }} />)
+  const screen = render(App, {
+    props: {
+      point: { x: 0, y: 0 },
+    },
+  })
 
   screen.getByTestId('reference').query()?.dispatchEvent(new MouseEvent('mousemove', {
     bubbles: true,
@@ -252,7 +256,11 @@ it('cleans up window listener when closing or disabling', async () => {
 })
 
 it('axis x', async () => {
-  const screen = render(<App axis="x" />)
+  const screen = render(App, {
+    props: {
+      axis: 'x',
+    },
+  })
 
   screen.getByTestId('reference').query()?.dispatchEvent(new MouseEvent('mousemove', {
     bubbles: true,
@@ -265,7 +273,11 @@ it('axis x', async () => {
 })
 
 it('axis y', async () => {
-  const screen = render(<App axis="y" />)
+  const screen = render(App, {
+    props: {
+      axis: 'y',
+    },
+  })
 
   screen.getByTestId('reference').query()?.dispatchEvent(new MouseEvent('mousemove', {
     bubbles: true,

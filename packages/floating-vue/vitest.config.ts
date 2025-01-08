@@ -21,10 +21,12 @@ export default mergeConfig(
         './src/__tests__/useFloating.test.tsx',
         './src/__tests__/useClick.test.tsx',
         './src/__tests__/useClientPoint.test.tsx',
+        './src/__tests__/useHover.test.tsx',
+
         // './src/__tests__/useDismiss.test.tsx',
         // './src/__tests__/**/*.{test,spec}.?(c|m)[jt]s?(x)',
       ],
-    // setupFiles: './src/__tests__/setupTests.ts',
+      // setupFiles: './src/__tests__/setupTests.ts',
     },
   }),
 )

@@ -1,12 +1,16 @@
-import type { UseHoverProps } from '../../src/hooks/useHover'
-import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { render } from 'vitest-browser-vue'
+import { defineComponent, type PropType, shallowRef } from 'vue'
+import { useFloating, useHover, type UseHoverProps, useInteractions } from '../index.ts'
 
-import { describe, expect, it, vi } from 'vitest'
-import { defineComponent, type PropType, ref } from 'vue'
-import { useFloating, useHover, useInteractions } from '../../src/index.ts'
-import { act } from '../core/__tests__/utils.ts'
+beforeEach(() => {
+  vi.useFakeTimers()
+})
 
-vi.useFakeTimers()
+afterEach(() => {
+  vi.useRealTimers()
+})
 
 const App = defineComponent({
   props: {
@@ -20,7 +24,7 @@ const App = defineComponent({
     },
   },
   setup(props) {
-    const open = ref(false)
+    const open = shallowRef(false)
     const { refs, context } = useFloating({
       open,
       onOpenChange(value) {
@@ -34,36 +38,34 @@ const App = defineComponent({
     return () => (
       <>
         {props.showReference && (
-          <button ref={(el: any) => refs.setReference(el)} {...getReferenceProps()} />
+          <button type="button" ref={(el: any) => refs.setReference(el)} {...getReferenceProps()}>button</button>
         )}
-        {open.value && <div role="tooltip" ref={(el: any) => refs.setFloating(el)} {...getFloatingProps()} />}
+        {open.value && <div role="tooltip" ref={(el: any) => refs.setFloating(el)} {...getFloatingProps()}>tooltip</div>}
       </>
     )
   },
 })
 
 it('opens on mouseenter', async () => {
-  render(<App />)
+  const screen = render(App)
 
-  await fireEvent.mouseEnter(screen.getByRole('button'))
+  await userEvent.hover(screen.getByRole('button'))
 
-  expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-  cleanup()
+  await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
 })
 
 it('closes on mouseleave', async () => {
-  render(<App />)
+  const screen = render(App)
 
-  await fireEvent.mouseEnter(screen.getByRole('button'))
-  await fireEvent.mouseLeave(screen.getByRole('button'))
-  expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+  await userEvent.hover(screen.getByRole('button'))
+  await userEvent.unhover(screen.getByRole('button'))
 
-  cleanup()
+  await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
 })
 
 describe('delay', () => {
   it('symmetric number', async () => {
-    render(App, {
+    const screen = render(App, {
       props: {
         hoverProps: {
           delay: 1000,
@@ -71,23 +73,16 @@ describe('delay', () => {
       },
     })
 
-    await fireEvent.mouseEnter(screen.getByRole('button'))
+    await userEvent.hover(screen.getByRole('button'))
+    vi.advanceTimersByTime(999)
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
 
-    await vi.advanceTimersByTime(999)
-    await act()
-
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-
-    await vi.advanceTimersByTime(1)
-    await act()
-
-    expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-
-    cleanup()
+    vi.advanceTimersByTime(1)
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
   })
 
   it('open', async () => {
-    render(App, {
+    const screen = render(App, {
       props: {
         hoverProps: {
           delay: {
@@ -97,23 +92,19 @@ describe('delay', () => {
       },
     })
 
-    await fireEvent.mouseEnter(screen.getByRole('button'))
+    await userEvent.hover(screen.getByRole('button'))
 
-    await vi.advanceTimersByTime(499)
-    await act()
+    vi.advanceTimersByTime(499)
 
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
 
-    await vi.advanceTimersByTime(1)
-    await act()
+    vi.advanceTimersByTime(1)
 
-    expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-
-    cleanup()
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
   })
 
   it('close', async () => {
-    render(App, {
+    const screen = render(App, {
       props: {
         hoverProps: {
           delay: {
@@ -123,24 +114,20 @@ describe('delay', () => {
       },
     })
 
-    await fireEvent.mouseEnter(screen.getByRole('button'))
-    await fireEvent.mouseLeave(screen.getByRole('button'))
+    await userEvent.hover(screen.getByRole('button'))
+    await userEvent.unhover(screen.getByRole('button'))
 
-    await vi.advanceTimersByTime(499)
-    await act()
+    vi.advanceTimersByTime(499)
 
-    expect(screen.queryByRole('tooltip')).toBeInTheDocument()
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
 
-    await vi.advanceTimersByTime(1)
-    await act()
+    vi.advanceTimersByTime(1)
 
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-
-    cleanup()
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
   })
 
   it('open with close 0', async () => {
-    render(App, {
+    const screen = render(App, {
       props: {
         hoverProps: {
           delay: {
@@ -150,23 +137,19 @@ describe('delay', () => {
       },
     })
 
-    await fireEvent.mouseEnter(screen.getByRole('button'))
+    await userEvent.hover(screen.getByRole('button'))
 
-    await vi.advanceTimersByTime(499)
-    await act()
+    vi.advanceTimersByTime(499)
 
-    await fireEvent.mouseLeave(screen.getByRole('button'))
+    await userEvent.unhover(screen.getByRole('button'))
 
-    await vi.advanceTimersByTime(1)
-    await act()
+    vi.advanceTimersByTime(1)
 
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-
-    cleanup()
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
   })
 
   it('restMs + nullish open delay should respect restMs', async () => {
-    render(App, {
+    const screen = render(App, {
       props: {
         hoverProps: {
           delay: {
@@ -177,19 +160,16 @@ describe('delay', () => {
       },
     })
 
-    await fireEvent.mouseEnter(screen.getByRole('button'))
+    await userEvent.hover(screen.getByRole('button'))
 
-    await vi.advanceTimersByTime(99)
-    await act()
+    vi.advanceTimersByTime(99)
 
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-
-    cleanup()
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
   })
 })
 
 it('restMs', async () => {
-  render(App, {
+  const screen = render(App, {
     props: {
       hoverProps: {
         restMs: 100,
@@ -197,7 +177,7 @@ it('restMs', async () => {
     },
   })
 
-  const button = screen.getByRole('button')
+  const button = screen.getByRole('button').query()!
 
   const originalDispatchEvent = button.dispatchEvent
   const spy = vi.spyOn(button, 'dispatchEvent').mockImplementation((event) => {
@@ -206,54 +186,76 @@ it('restMs', async () => {
     return originalDispatchEvent.call(button, event)
   })
 
-  fireEvent.mouseMove(button)
+  button.dispatchEvent(new MouseEvent('mouseenter', {
+    bubbles: true,
+    cancelable: true,
+  }))
+  await Promise.resolve()
+  button.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    cancelable: true,
+  }))
+  await Promise.resolve()
 
-  await fireEvent.mouseMove(screen.getByRole('button'))
+  vi.advanceTimersByTime(99)
 
-  await vi.advanceTimersByTime(99)
-  await act()
+  button.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    cancelable: true,
+  }))
+  await Promise.resolve()
 
-  await fireEvent.mouseMove(screen.getByRole('button'))
+  vi.advanceTimersByTime(1)
 
-  await vi.advanceTimersByTime(1)
-  await act()
+  await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
 
-  expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+  button.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    cancelable: true,
+  }))
+  await Promise.resolve()
 
-  fireEvent.mouseMove(button)
+  vi.advanceTimersByTime(100)
 
-  await vi.advanceTimersByTime(100)
-  await act()
-
-  expect(screen.queryByRole('tooltip')).toBeInTheDocument()
+  await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
 
   spy.mockRestore()
-  cleanup()
 })
 
-// TODO: test touch input, testing-library and jsdom errors
-it.todo('restMs is always 0 for touch input', async () => {
-  render(App, {
+it('restMs is always 0 for touch input', async () => {
+  const screen = render(App, {
     props: {
       hoverProps: {
-        restMs: 100,
+        restMs: 1000,
       },
     },
   })
-  await act()
 
-  await fireEvent.pointerDown(screen.getByRole('button'), { pointerType: 'touch' })
-  await act()
-  await fireEvent.mouseMove(screen.getByRole('button'))
-  await act()
+  const button = screen.getByRole('button').query()!
 
-  expect(screen.queryByRole('tooltip')).toBeInTheDocument()
+  button.dispatchEvent(new PointerEvent('pointerdown', {
+    bubbles: true,
+    cancelable: true,
+    pointerType: 'touch',
+  }))
+  await Promise.resolve()
 
-  cleanup()
+  button.dispatchEvent(new MouseEvent('mouseenter', {
+    bubbles: true,
+    cancelable: true,
+  }))
+  await Promise.resolve()
+  button.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    cancelable: true,
+  }))
+  await Promise.resolve()
+
+  await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
 })
 
-it.todo('restMs does not cause floating element to open if mouseOnly is true', async () => {
-  render(App, {
+it('restMs does not cause floating element to open if mouseOnly is true', async () => {
+  const screen = render(App, {
     props: {
       hoverProps: {
         restMs: 100,
@@ -261,27 +263,40 @@ it.todo('restMs does not cause floating element to open if mouseOnly is true', a
       },
     },
   })
-  await act()
 
-  await fireEvent.pointerDown(screen.getByRole('button'), { pointerType: 'touch' })
-  await act()
-  await fireEvent.mouseMove(screen.getByRole('button'))
-  await act()
+  const button = screen.getByRole('button').query()!
 
-  expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+  button.dispatchEvent(new PointerEvent('pointerdown', {
+    bubbles: true,
+    cancelable: true,
+    pointerType: 'touch',
+  }))
+  await Promise.resolve()
 
-  cleanup()
+  button.dispatchEvent(new MouseEvent('mouseenter', {
+    bubbles: true,
+    cancelable: true,
+  }))
+  await Promise.resolve()
+  button.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    cancelable: true,
+  }))
+  await Promise.resolve()
+
+  await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
 })
 
 it('restMs does not reset timer for minor mouse movement', async () => {
-  render(
-    <App hoverProps={{
-      restMs: 100,
-    }}
-    />,
-  )
+  const screen = render(App, {
+    props: {
+      hoverProps: {
+        restMs: 100,
+      },
+    },
+  })
 
-  const button = screen.getByRole('button')
+  const button = screen.getByRole('button').query()!
 
   const originalDispatchEvent = button.dispatchEvent
   const spy = vi.spyOn(button, 'dispatchEvent').mockImplementation((event) => {
@@ -290,80 +305,75 @@ it('restMs does not reset timer for minor mouse movement', async () => {
     return originalDispatchEvent.call(button, event)
   })
 
-  fireEvent.mouseMove(button)
+  button.dispatchEvent(new MouseEvent('mouseenter', {
+    bubbles: true,
+    cancelable: true,
+  }))
+  await Promise.resolve()
+  button.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    cancelable: true,
+  }))
+  await Promise.resolve()
 
-  await act()
   vi.advanceTimersByTime(99)
-  await act()
-  // await act(async () => {
-  // })
 
-  await fireEvent.mouseMove(button)
-  await act()
-
+  button.dispatchEvent(new MouseEvent('mousemove', {
+    bubbles: true,
+    cancelable: true,
+  }))
+  await Promise.resolve()
   vi.advanceTimersByTime(1)
-  await act()
-  // await act(async () => {
-  // })
 
-  expect(screen.queryByRole('tooltip')).toBeInTheDocument()
+  await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
 
   spy.mockRestore()
-  cleanup()
 })
 
 it('mouseleave on the floating element closes it (mouse)', async () => {
-  render(<App />)
-  await act()
+  const screen = render(App)
 
-  await fireEvent.mouseEnter(screen.getByRole('button'))
-  await act()
+  await userEvent.hover(screen.getByRole('button'))
 
-  await fireEvent(
-    screen.getByRole('button'),
-    new MouseEvent('mouseleave', {
-      relatedTarget: screen.getByRole('tooltip'),
-    }),
-  )
-  await act()
+  const tooltip = screen.getByRole('button').query()!
 
-  expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+  tooltip.dispatchEvent(new MouseEvent('mouseleave', {
+    bubbles: true,
+    cancelable: true,
+  }))
+  await Promise.resolve()
 
-  cleanup()
+  await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
 })
 
 it('does not show after delay if domReference changes', async () => {
-  const { rerender } = render(App, {
+  const screen = render(App, {
     props: {
       hoverProps: {
         delay: 1000,
       },
+      showReference: true,
     },
   })
-  await act()
 
-  await fireEvent.mouseEnter(screen.getByRole('button'))
-  await act()
+  await userEvent.hover(screen.getByRole('button'))
 
-  await vi.advanceTimersByTime(1)
-  await act()
+  vi.advanceTimersByTime(1)
 
-  await rerender({
+  screen.rerender({
     showReference: false,
   })
+  await Promise.resolve()
 
-  await vi.advanceTimersByTime(999)
-  await act()
+  vi.advanceTimersByTime(999)
 
-  expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-
-  cleanup()
+  await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
 })
 
 it('reason string', async () => {
   const App = defineComponent({
     setup() {
-      const open = ref(false)
+      const open = shallowRef(false)
       const { refs, context } = useFloating({
         open,
         onOpenChange(value, _, reason) {
@@ -383,13 +393,8 @@ it('reason string', async () => {
     },
   })
 
-  render(<App />)
-  await act()
+  const screen = render(App)
   const button = screen.getByRole('button')
-  await fireEvent.mouseEnter(button)
-  await act()
-  await fireEvent.mouseLeave(button)
-  await act()
-
-  cleanup()
+  await userEvent.hover(button)
+  await userEvent.unhover(button)
 })

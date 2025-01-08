@@ -92,7 +92,11 @@ describe('default', () => {
 
 describe('mousedown `event` prop', () => {
   it('changes `open` state to `true` after click', async () => {
-    const screen = render(<App clickProps={{ event: 'mousedown' }} />)
+    const screen = render(App, {
+      props: {
+        clickProps: { event: 'mousedown' },
+      },
+    })
     const button = screen.getByRole('button')
 
     await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
@@ -103,7 +107,11 @@ describe('mousedown `event` prop', () => {
   })
 
   it('changes `open` state to `false` after two clicks', async () => {
-    const screen = render(<App clickProps={{ event: 'mousedown' }} />)
+    const screen = render(App, {
+      props: {
+        clickProps: { event: 'mousedown' },
+      },
+    })
     const button = screen.getByRole('button')
 
     await userEvent.click(button)
@@ -115,7 +123,11 @@ describe('mousedown `event` prop', () => {
 
 describe('`toggle` prop', () => {
   it('changes `open` state to `true` after click', async () => {
-    const screen = render(<App clickProps={{ toggle: false }} />)
+    const screen = render(App, {
+      props: {
+        clickProps: { toggle: false },
+      },
+    })
     const button = screen.getByRole('button')
 
     await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
@@ -126,7 +138,11 @@ describe('`toggle` prop', () => {
   })
 
   it('`open` state remains `true` after two clicks', async () => {
-    const screen = render(<App clickProps={{ toggle: false }} />)
+    const screen = render(App, {
+      props: {
+        clickProps: { toggle: false },
+      },
+    })
     const button = screen.getByRole('button')
 
     await userEvent.click(button)
@@ -136,7 +152,11 @@ describe('`toggle` prop', () => {
   })
 
   it('`open` state remains `true` after two clicks with `mousedown`', async () => {
-    const screen = render(<App clickProps={{ toggle: false, event: 'mousedown' }} />)
+    const screen = render(App, {
+      props: {
+        clickProps: { toggle: false, event: 'mousedown' },
+      },
+    })
     const button = screen.getByRole('button')
 
     await userEvent.click(button)
@@ -146,7 +166,11 @@ describe('`toggle` prop', () => {
   })
 
   it('`open` state becomes `false` after clicking when initially open', async () => {
-    const screen = render(<App initialOpen={true} />)
+    const screen = render(App, {
+      props: {
+        initialOpen: true,
+      },
+    })
     const button = screen.getByRole('button')
 
     await userEvent.click(button)
