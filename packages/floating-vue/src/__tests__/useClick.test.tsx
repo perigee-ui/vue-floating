@@ -3,7 +3,8 @@ import { userEvent } from '@vitest/browser/context'
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-vue'
 import { defineComponent, type PropType, shallowRef } from 'vue'
-import { useClick, useFloating, useInteractions } from '../index.ts'
+import { act } from '../core/__tests__/utils.ts'
+import { useClick, useFloating, useHover, useInteractions } from '../index.ts'
 
 const clickProps = {
   keyboardHandlers: true,
@@ -179,80 +180,80 @@ describe('`toggle` prop', () => {
   })
 })
 
-describe.todo('`stickIfOpen` prop', async () => {
-  // const App = defineComponent({
-  //   props: {
-  //     stickIfOpen: {
-  //       type: Boolean,
-  //       default: undefined,
-  //     },
-  //   },
-  //   setup(props) {
-  //     const open = shallowRef(false)
-  //     const { refs, context } = useFloating({
-  //       open,
-  //       onOpenChange: (value, event, reason) => {
-  //         console.error('onOpenChange::', value, event, reason)
-  //         open.value = value
-  //       },
-  //     })
-  //     const { getReferenceProps, getFloatingProps } = useInteractions([
-  //       useHover(context),
-  //       useClick(context, { stickIfOpen: props.stickIfOpen }),
-  //     ])
+describe('`stickIfOpen` prop', async () => {
+  const App = defineComponent({
+    props: {
+      stickIfOpen: {
+        type: Boolean,
+        default: undefined,
+      },
+    },
+    setup(props) {
+      const open = shallowRef(false)
+      const { refs, context } = useFloating({
+        open,
+        onOpenChange: (value, event, reason) => {
+          console.error(value, reason)
+          open.value = value
+        },
+      })
+      const { getReferenceProps, getFloatingProps } = useInteractions([
+        useHover(context),
+        useClick(context, { stickIfOpen: props.stickIfOpen }),
+      ])
 
-  //     return () => (
-  //       <>
-  //         <button
-  //           {...getReferenceProps({ ref: refs.setReference })}
-  //           data-testid="reference"
-  //         >
-  //           reference
-  //         </button>
-  //         {open.value && (
-  //           <div role="tooltip" {...getFloatingProps({ ref: refs.setFloating })}>tooltip</div>
-  //         )}
-  //       </>
-  //     )
-  //   },
-  // })
+      return () => (
+        <>
+          <button
+            {...getReferenceProps({ ref: refs.setReference })}
+            data-testid="reference"
+          >
+            reference
+          </button>
+          {open.value && (
+            <div role="tooltip" {...getFloatingProps({ ref: refs.setFloating })}>tooltip</div>
+          )}
+        </>
+      )
+    },
+  })
 
   it('true: `open` state remains `true` after click and mouseleave', async () => {
-    // const screen = render(<App stickIfOpen={true} />)
+    const screen = render(<App stickIfOpen={true} />)
 
-    // const button = screen.getByRole('button')
+    const button = screen.getByRole('button')
+    const $button = button.query()! as HTMLElement
 
-    // await userEvent.hover(button)
-    // await userEvent.click(button)
+    await userEvent.hover(button)
 
-    // await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
+    $button.click()
+    await Promise.resolve()
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
 
-    // await userEvent.unhover(button)
+    await userEvent.unhover(button)
 
-    // await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
   })
 
   it('false: `open` state becomes `false` after click and mouseleave', async () => {
-    // const screen = render(<App stickIfOpen={false} />)
+    const screen = render(<App stickIfOpen={false} />)
 
-    // const button = screen.getByRole('button')
+    const button = screen.getByRole('button')
+    const $button = button.query()! as HTMLElement
 
-    // await userEvent.hover(button)
-    // await userEvent.click(button)
-    // await act()
-    // await userEvent.click(button)
+    await userEvent.hover(button)
 
-    // await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
+    $button.click()
+    await Promise.resolve()
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
 
-    // await userEvent.click(button)
+    $button.click()
+    await Promise.resolve()
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
 
-    // await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
-
-    // // fireEvent.click(button)
-
-    // // expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-
-    // cleanup()
+    $button.click()
+    await Promise.resolve()
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
   })
 })
 
