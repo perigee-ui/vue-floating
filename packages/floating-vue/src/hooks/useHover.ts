@@ -201,6 +201,8 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
 
     const openVal = toValue(open)
 
+    const floating = elements.floating.value
+
     function onMouseenter(event: MouseEvent) {
       if (timeoutRef)
         window.clearTimeout(timeoutRef)
@@ -280,65 +282,51 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
       }
     }
 
-    let clearScroll: (() => void) | undefined
+    // Ensure the floating element closes after scrolling even if the pointer
+    // did not move.
+    // https://github.com/floating-ui/floating-ui/discussions/1692
+    function onScrollMouseleave(event: MouseEvent) {
+      if (isClickLikeOpenEvent())
+        return
 
-    if (openVal) {
-      const floatingVal = elements.floating.value
+      if (!dataRef.floatingContext)
+        return
 
-      // Ensure the floating element closes after scrolling even if the pointer
-      // did not move.
-      // https://github.com/floating-ui/floating-ui/discussions/1692
-      function onScrollMouseleave(event: MouseEvent) {
-        if (isClickLikeOpenEvent())
-          return
-
-        if (!dataRef.floatingContext)
-          return
-
-        handleClose?.({
+      handleClose?.({
         // tree,
-          x: event.clientX,
-          y: event.clientY,
-          placement: dataRef.floatingContext.placement.value,
-          elements: {
-            domReference,
-            floating: floatingVal,
-          },
-          onClose() {
-            clearPointerEvents()
-            cleanupDocMousemoveHandler()
-            if (!isClickLikeOpenEvent()) {
-              closeWithDelay(event)
-            }
-          },
-        })(event)
-      }
-
-      domReference.addEventListener('mouseleave', onScrollMouseleave)
-      floatingVal?.addEventListener('mouseleave', onScrollMouseleave)
-
-      clearScroll = () => {
-        domReference.removeEventListener('mouseleave', onScrollMouseleave)
-        floatingVal?.removeEventListener('mouseleave', onScrollMouseleave)
-      }
+        x: event.clientX,
+        y: event.clientY,
+        placement: dataRef.floatingContext.placement.value,
+        elements: {
+          domReference,
+          floating,
+        },
+        onClose() {
+          clearPointerEvents()
+          cleanupDocMousemoveHandler()
+          if (!isClickLikeOpenEvent()) {
+            closeWithDelay(event)
+          }
+        },
+      })(event)
     }
 
+    if (openVal)
+      domReference.addEventListener('mouseleave', onScrollMouseleave)
+    floating?.addEventListener('mouseleave', onScrollMouseleave)
     if (move)
       domReference.addEventListener('mousemove', onMouseenter, { once: true })
     domReference.addEventListener('mouseenter', onMouseenter)
-    if (open)
-      domReference.addEventListener('mouseleave', onMouseleave)
+    domReference.addEventListener('mouseleave', onMouseleave)
 
     onWatcherCleanup(() => {
-      if (clearScroll) {
-        clearScroll()
-        clearScroll = undefined
-      }
+      if (openVal)
+        domReference.removeEventListener('mouseleave', onScrollMouseleave)
+      floating?.removeEventListener('mouseleave', onScrollMouseleave)
       if (move)
         domReference.removeEventListener('mousemove', onMouseenter)
       domReference.removeEventListener('mouseenter', onMouseenter)
-      if (open)
-        domReference.removeEventListener('mouseleave', onMouseleave)
+      domReference.removeEventListener('mouseleave', onMouseleave)
     })
   })
 
