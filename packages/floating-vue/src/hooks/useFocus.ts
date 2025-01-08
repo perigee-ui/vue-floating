@@ -4,7 +4,7 @@ import type {
   OpenChangeReason,
 } from '../types'
 import { getWindow, isElement, isHTMLElement } from '@floating-ui/utils/dom'
-import { type MaybeRefOrGetter, onScopeDispose, toValue, watchEffect } from 'vue'
+import { type MaybeRefOrGetter, onScopeDispose, onWatcherCleanup, toValue, watchEffect } from 'vue'
 
 import {
   activeElement,
@@ -82,7 +82,7 @@ export function useFocus(
     })
   })
 
-  watchEffect((onCleanup) => {
+  watchEffect(() => {
     if (!toValue(enabled))
       return
 
@@ -93,13 +93,14 @@ export function useFocus(
 
     events.on('openchange', onOpenChange)
 
-    onCleanup(() => {
+    onWatcherCleanup(() => {
       events.off('openchange', onOpenChange)
     })
   })
 
   onScopeDispose(() => {
-    clearTimeout(timeoutRef)
+    if (timeoutRef)
+      window.clearTimeout(timeoutRef)
   })
 
   const referenceProps: ElementProps['reference'] = {

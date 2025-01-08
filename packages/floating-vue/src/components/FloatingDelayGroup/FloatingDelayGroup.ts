@@ -112,7 +112,7 @@ export function useDelayGroup(
     setState({
       delay: {
         open: 1,
-        close: toValue(getDelay(state.initialDelay, 'close')),
+        close: getDelay(state.initialDelay, 'close'),
       },
     })
 

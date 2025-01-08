@@ -91,11 +91,15 @@ export function safePolygon(options: SafePolygonOptions = {}): HandleCloseFn {
   }) => {
     return function onMouseMove(event: MouseEvent) {
       function close() {
-        clearTimeout(timeoutId)
+        if (timeoutId) {
+          window.clearTimeout(timeoutId)
+          timeoutId = 0
+        }
         onClose()
       }
 
-      clearTimeout(timeoutId)
+      if (timeoutId)
+        window.clearTimeout(timeoutId)
 
       if (
         !elements.domReference

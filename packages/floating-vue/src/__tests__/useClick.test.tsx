@@ -2,8 +2,12 @@ import type { UseClickProps } from '../hooks/useClick.ts'
 import { userEvent } from '@vitest/browser/context'
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-vue'
-import { defineComponent, type PropType, ref } from 'vue'
+import { defineComponent, type PropType, shallowRef } from 'vue'
 import { useClick, useFloating, useInteractions } from '../index.ts'
+
+const clickProps = {
+  keyboardHandlers: true,
+}
 
 const App = defineComponent({
   name: 'App',
@@ -26,7 +30,7 @@ const App = defineComponent({
     },
   },
   setup(props) {
-    const open = ref(props.initialOpen)
+    const open = shallowRef(props.initialOpen)
     const { refs, context } = useFloating({
       open,
       onOpenChange: (value) => {
@@ -103,10 +107,9 @@ describe('mousedown `event` prop', () => {
     const button = screen.getByRole('button')
 
     await userEvent.click(button)
-
     await userEvent.click(button)
 
-    // await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
   })
 })
 
@@ -230,9 +233,6 @@ describe.todo('`stickIfOpen` prop', async () => {
 })
 
 describe('non-buttons', () => {
-  const clickProps = {
-    keyboardHandlers: true,
-  }
   it('adds Enter keydown', async () => {
     const screen = render(
       <App
@@ -293,9 +293,7 @@ it('ignores Space keydown on another element then keyup on the button', async ()
   const screen = render(
     <App
       button={false}
-      clickProps={{
-        keyboardHandlers: true,
-      }}
+      clickProps={clickProps}
     />,
   )
 
@@ -314,7 +312,7 @@ it('ignores Space keydown on another element then keyup on the button', async ()
 it('reason string', async () => {
   const App = defineComponent({
     setup() {
-      const open = ref(false)
+      const open = shallowRef(false)
       const { refs, context } = useFloating({
         open,
         onOpenChange(isOpen, _, reason) {
