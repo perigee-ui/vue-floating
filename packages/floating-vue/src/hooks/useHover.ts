@@ -1,5 +1,6 @@
 import type { ElementProps, FloatingContext, OpenChangeReason } from '../types'
 import { isElement } from '@floating-ui/utils/dom'
+import { NOOP } from '@vue/shared'
 import { type MaybeRefOrGetter, onWatcherCleanup, toValue, type UnwrapRef, watchEffect, watchSyncEffect } from 'vue'
 import { contains, getDocument, isMouseLikePointerType } from '../utils.ts'
 import { createAttribute } from '../utils/createAttribute.ts'
@@ -96,7 +97,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
   let restTimeoutRef = 0
   let blockMouseMoveRef = true
   let performedPointerEventsMutationRef = false
-  let unbindMousemoveRef = () => { }
+  let unbindMousemoveRef = NOOP
   let restTimeoutPendingRef = false
 
   function isHoverOpen() {
@@ -346,7 +347,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
   // handles nested floating elements.
   // https://github.com/floating-ui/floating-ui/issues/1722
   if (handleClose && handleClose.__options.blockPointerEvents) {
-    watchEffect(() => {
+    watchSyncEffect(() => {
       if (!toValue(enabled))
         return
 
@@ -354,14 +355,14 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
         return
       performedPointerEventsMutationRef = true
 
+      const floating = elements.floating.value
+      if (!floating)
+        return
       const domReference = elements.domReference.value as HTMLElement | SVGSVGElement
       if (!isElement(domReference))
         return
-      const floatingEl = elements.floating.value
-      if (!floatingEl)
-        return
 
-      const body = getDocument(floatingEl).body
+      const body = getDocument(floating).body
       body.setAttribute(safePolygonIdentifier, '')
 
       // const parentFloating = tree?.nodesRef.current.find(
@@ -374,12 +375,12 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
 
       body.style.pointerEvents = 'none'
       domReference.style.pointerEvents = 'auto'
-      floatingEl.style.pointerEvents = 'auto'
+      floating.style.pointerEvents = 'auto'
 
       onWatcherCleanup(() => {
         body.style.pointerEvents = ''
         domReference.style.pointerEvents = ''
-        floatingEl.style.pointerEvents = ''
+        floating.style.pointerEvents = ''
       })
     })
   }
