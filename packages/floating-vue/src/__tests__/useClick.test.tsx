@@ -3,7 +3,6 @@ import { userEvent } from '@vitest/browser/context'
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-vue'
 import { defineComponent, type PropType, shallowRef } from 'vue'
-import { act } from '../core/__tests__/utils.ts'
 import { useClick, useFloating, useHover, useInteractions } from '../index.ts'
 
 const clickProps = {
