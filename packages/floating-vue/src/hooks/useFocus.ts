@@ -150,6 +150,8 @@ export function useFocus(
         return
 
       // Wait for the window blur listener to fire.
+      if (timeoutRef)
+        window.clearTimeout(timeoutRef)
       timeoutRef = window.setTimeout(() => {
         timeoutRef = 0
         const domReference = elements.domReference.value
