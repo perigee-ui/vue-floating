@@ -302,14 +302,15 @@ export function useDismiss(
     dataRef.__escapeKeyBubbles = escapeKeyBubbles
     dataRef.__outsidePressBubbles = outsidePressBubbles
 
-    let compositionTimeout = -1
+    let compositionTimeout = 0
 
     function onScroll(event: Event) {
       onOpenChange(false, event, 'ancestor-scroll')
     }
 
     function handleCompositionStart() {
-      window.clearTimeout(compositionTimeout)
+      if (compositionTimeout)
+        window.clearTimeout(compositionTimeout)
       isComposingRef = true
     }
 
@@ -318,7 +319,10 @@ export function useDismiss(
       // until the next tick to set `isComposing` to `false`.
       // https://bugs.webkit.org/show_bug.cgi?id=165004
       compositionTimeout = window.setTimeout(
-        () => { isComposingRef = false },
+        () => {
+          isComposingRef = false
+          compositionTimeout = 0
+        },
         // 0ms or 1ms don't work in Safari. 5ms appears to consistently work.
         // Only apply to WebKit for the test to remain 0ms.
         isWebKit() ? 5 : 0,
@@ -390,6 +394,9 @@ export function useDismiss(
       for (const ancestor of ancestors) {
         ancestor.removeEventListener('scroll', onScroll)
       }
+
+      if (compositionTimeout)
+        window.clearTimeout(compositionTimeout)
     })
   })
 
