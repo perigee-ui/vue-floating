@@ -105,7 +105,7 @@ export function useDismiss(
   context: FloatingRootContext,
   props: UseDismissProps = {},
 ): () => ElementProps | undefined {
-  const { open, onOpenChange, elements, dataRef } = context
+  const { open, onOpenChange, elements: { domReference, floating, reference }, dataRef } = context
 
   const {
     enabled = true,
@@ -193,12 +193,12 @@ export function useDismiss(
     if (typeof outsidePress === 'function' && !outsidePress(event))
       return
 
-    if (isEventTargetWithin(event, elements.floating.value) || isEventTargetWithin(event, elements.domReference.value))
+    if (isEventTargetWithin(event, floating.value) || isEventTargetWithin(event, domReference.value))
       return
 
     const target = getTarget(event)
     const inertSelector = `[${createAttribute('inert')}]`
-    const markers = getDocument(elements.floating.value).querySelectorAll(inertSelector)
+    const markers = getDocument(floating.value).querySelectorAll(inertSelector)
 
     let targetRootAncestor = isElement(target) ? target : null
     if (targetRootAncestor && !isLastTraversableNode(targetRootAncestor)) {
@@ -219,7 +219,7 @@ export function useDismiss(
       && isElement(target)
       && !isRootElement(target)
       // Clicked on a direct ancestor (e.g. FloatingOverlay).
-      && !contains(target, elements.floating.value)
+      && !contains(target, floating.value)
       // If the target root element contains none of the markers, then the
       // element was injected after the floating element rendered.
       && Array.from(markers).every(marker => !contains(targetRootAncestor, marker))
@@ -325,7 +325,7 @@ export function useDismiss(
       )
     }
 
-    const doc = getDocument(elements.floating.value)
+    const doc = getDocument(floating.value)
 
     if (escapeKey) {
       doc.addEventListener(
@@ -348,17 +348,17 @@ export function useDismiss(
     let ancestors: (Element | Window | VisualViewport)[] = []
 
     if (ancestorScroll) {
-      const domReference = elements.domReference.value
-      if (isElement(domReference))
-        ancestors = getOverflowAncestors(domReference)
+      const domReferenceVal = domReference.value
+      if (isElement(domReferenceVal))
+        ancestors = getOverflowAncestors(domReferenceVal)
 
-      const floating = elements.floating.value
-      if (isElement(floating))
-        ancestors = ancestors.concat(getOverflowAncestors(floating))
+      const floatingVal = floating.value
+      if (isElement(floatingVal))
+        ancestors = ancestors.concat(getOverflowAncestors(floatingVal))
 
-      const reference = elements.reference.value
-      if (!isElement(reference) && reference && reference.contextElement)
-        ancestors = ancestors.concat(getOverflowAncestors(reference.contextElement))
+      const referenceVal = reference.value
+      if (!isElement(referenceVal) && referenceVal && referenceVal.contextElement)
+        ancestors = ancestors.concat(getOverflowAncestors(referenceVal.contextElement))
     }
 
     // Ignore the visual viewport for scrolling dismissal (allow pinch-zoom)
@@ -393,7 +393,7 @@ export function useDismiss(
     })
   })
 
-  // TODO::ad
+  // TODO::ads
   // watch(
   //   [outsidePress, outsidePressEvent],
   //   () => {

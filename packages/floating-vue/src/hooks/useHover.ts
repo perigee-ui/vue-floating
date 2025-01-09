@@ -77,7 +77,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     dataRef,
     onOpenChange,
     events,
-    elements,
+    elements: { domReference, floating },
   } = context
   const {
     enabled = true,
@@ -145,7 +145,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
         }
       }
 
-      const html = getDocument(elements.floating.value).documentElement
+      const html = getDocument(floating.value).documentElement
       html.addEventListener('mouseleave', onLeave)
 
       onWatcherCleanup(() => {
@@ -180,7 +180,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     if (!performedPointerEventsMutationRef)
       return
 
-    const body = getDocument(elements.floating.value).body
+    const body = getDocument(floating.value).body
     body.style.pointerEvents = ''
     body.removeAttribute(safePolygonIdentifier)
     performedPointerEventsMutationRef = false
@@ -222,8 +222,8 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
 
     unbindMousemoveRef()
 
-    const floating = elements.floating.value
-    const doc = getDocument(floating)
+    const floatingVal = floating.value
+    const doc = getDocument(floatingVal)
     if (restTimeoutRef)
       window.clearTimeout(restTimeoutRef)
     restTimeoutPendingRef = false
@@ -241,7 +241,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
         placement: dataRef.floatingContext.placement.value,
         elements: {
           domReference: event.currentTarget as HTMLElement,
-          floating,
+          floating: floatingVal,
         },
         onClose() {
           clearPointerEvents()
@@ -266,7 +266,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
     // pointer, a short close delay is an alternative, so it should work
     // consistently.
     const shouldClose = pointerTypeRef === 'touch'
-      ? !contains(floating, event.relatedTarget as Element | null)
+      ? !contains(floatingVal, event.relatedTarget as Element | null)
       : true
     if (shouldClose) {
       closeWithDelay(event)
@@ -338,14 +338,14 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
         return
       performedPointerEventsMutationRef = true
 
-      const floating = elements.floating.value
-      if (!floating)
+      const floatingVal = floating.value
+      if (!floatingVal)
         return
-      const domReference = elements.domReference.value as HTMLElement | SVGSVGElement
-      if (!isElement(domReference))
+      const domReferenceVal = domReference.value as HTMLElement | SVGSVGElement
+      if (!isElement(domReferenceVal))
         return
 
-      const body = getDocument(floating).body
+      const body = getDocument(floatingVal).body
       body.setAttribute(safePolygonIdentifier, '')
 
       // const parentFloating = tree?.nodesRef.current.find(
@@ -357,13 +357,13 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
       // }
 
       body.style.pointerEvents = 'none'
-      domReference.style.pointerEvents = 'auto'
-      floating.style.pointerEvents = 'auto'
+      domReferenceVal.style.pointerEvents = 'auto'
+      floatingVal.style.pointerEvents = 'auto'
 
       onWatcherCleanup(() => {
         body.style.pointerEvents = ''
-        domReference.style.pointerEvents = ''
-        floating.style.pointerEvents = ''
+        domReferenceVal.style.pointerEvents = ''
+        floatingVal.style.pointerEvents = ''
       })
     })
   }
@@ -379,7 +379,7 @@ export function useHover(context: FloatingContext, props: UseHoverProps = {}): (
 
   watchEffect(() => {
     // eslint-disable-next-line ts/no-unused-expressions
-    toValue(enabled) ? elements.domReference.value : undefined
+    toValue(enabled) ? domReference.value : undefined
 
     onWatcherCleanup(() => {
       cleanupDocMousemoveHandler()

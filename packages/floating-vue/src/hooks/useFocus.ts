@@ -44,7 +44,7 @@ export function useFocus(
   context: FloatingRootContext,
   props: UseFocusProps = {},
 ): () => ElementProps | undefined {
-  const { open, onOpenChange, events, dataRef, elements } = context
+  const { open, onOpenChange, events, dataRef, elements: { domReference } } = context
   const { enabled = true, visibleOnly = true } = props
 
   let blockFocusRef = false
@@ -55,12 +55,12 @@ export function useFocus(
   // floating element was not open, the focus should be blocked when they
   // return to the tab/window.
   function onBlur() {
-    const domReference = elements.domReference.value
+    const domReferenceVal = domReference.value
 
     if (
       !toValue(open)
-      && isHTMLElement(domReference)
-      && domReference === activeElement(getDocument(domReference))
+      && isHTMLElement(domReferenceVal)
+      && domReferenceVal === activeElement(getDocument(domReferenceVal))
     ) {
       blockFocusRef = true
     }
@@ -79,7 +79,7 @@ export function useFocus(
     if (!toValue(enabled))
       return
 
-    const win = getWindow(elements.domReference.value)
+    const win = getWindow(domReference.value)
 
     win.addEventListener('blur', onBlur)
     win.addEventListener('keydown', onKeyDown, true)
@@ -154,11 +154,11 @@ export function useFocus(
         window.clearTimeout(timeoutRef)
       timeoutRef = window.setTimeout(() => {
         timeoutRef = 0
-        const domReference = elements.domReference.value
-        const activeEl = activeElement(domReference ? domReference.ownerDocument : document)
+        const domReferenceVal = domReference.value
+        const activeEl = activeElement(domReferenceVal ? domReferenceVal.ownerDocument : document)
 
         // Focus left the page, keep it open.
-        if (!relatedTarget && activeEl === domReference)
+        if (!relatedTarget && activeEl === domReferenceVal)
           return
 
         // When focusing the reference element (e.g. regular click), then
@@ -169,7 +169,7 @@ export function useFocus(
         // and not the element that actually has received focus if it is located
         // inside a shadow root.
         if (
-          contains(domReference, activeEl)
+          contains(domReferenceVal, activeEl)
           || contains(dataRef.floatingContext?.refs.floating.current, activeEl)
         ) {
           return
