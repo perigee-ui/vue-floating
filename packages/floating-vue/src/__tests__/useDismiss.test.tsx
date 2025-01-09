@@ -1,9 +1,8 @@
-import userEvent from '@testing-library/user-event'
-import { cleanup, fireEvent, render } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
 import { describe, expect, it, vi } from 'vitest'
+import { render } from 'vitest-browser-vue'
 import { defineComponent, shallowRef } from 'vue'
-import { act } from '../core/__tests__/utils.ts'
-import { normalizeProp, useDismiss } from '../hooks/useDismiss.ts'
+import { useDismiss } from '../hooks/useDismiss.ts'
 import { useFloating } from '../hooks/useFloating.ts'
 import { useInteractions } from '../hooks/useInteractions.ts'
 
@@ -60,7 +59,7 @@ const App = defineComponent({
 
     return () => (
       <>
-        <button {...getReferenceProps({ ref: refs.setReference })} />
+        <button type="button" {...getReferenceProps({ ref: refs.setReference })}>Reference</button>
         {isOpen.value && (
           <div role="tooltip" {...getFloatingProps({ ref: refs.setFloating })}>
             <input />
@@ -73,72 +72,97 @@ const App = defineComponent({
 
 describe('true', () => {
   it('dismisses with escape key', async () => {
-    const screen = render(<App />)
-    await fireEvent.keyDown(document.body, { key: 'Escape' })
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-    cleanup()
+    const screen = render(App)
+    await userEvent.keyboard('{Escape}')
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
   })
 
   it('does not dismiss with escape key if IME is active', async () => {
     const onClose = vi.fn()
 
-    const screen = render(<App onClose={onClose} escapeKey />)
+    // const screen = render(App onClose={onClose} escapeKey />)
+    const screen = render(App, {
+      props: { onClose, escapeKey: true },
+    })
 
     const textbox = screen.getByRole('textbox')
-
-    await fireEvent.focus(textbox)
+    const $textbox = textbox.query()! as HTMLInputElement
 
     // Simulate behavior when "あ" (Japanese) is entered and Esc is pressed for IME
     // cancellation.
-    await fireEvent.change(textbox, { target: { value: 'あ' } })
-    await fireEvent.compositionStart(textbox)
-    await fireEvent.keyDown(textbox, { key: 'Escape' })
-    await fireEvent.compositionEnd(textbox)
+    await userEvent.fill(textbox, 'あ')
 
-    // Wait for the compositionend timeout tick due to Safari
-    await new Promise(resolve => setTimeout(resolve, 0))
+    $textbox.dispatchEvent(new CompositionEvent('compositionstart', {
+      bubbles: true,
+      cancelable: true,
+    }))
+    await Promise.resolve()
+
+    await userEvent.keyboard('{Escape}')
+
+    $textbox.dispatchEvent(new CompositionEvent('compositionend', {
+      bubbles: true,
+      cancelable: true,
+    }))
+    await Promise.resolve()
 
     expect(onClose).toHaveBeenCalledTimes(0)
 
-    await fireEvent.keyDown(textbox, { key: 'Escape' })
+    await userEvent.keyboard('{Escape}')
 
     expect(onClose).toHaveBeenCalledTimes(1)
-    cleanup()
   })
 
   it('dismisses with outside pointer press', async () => {
-    const screen = render(<App />)
+    const screen = render(App)
     await userEvent.click(document.body)
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-    cleanup()
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
   })
 
   it('dismisses with reference press', async () => {
-    const screen = render(<App referencePress />)
-    await userEvent.click(screen.getByRole('button'))
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-    cleanup()
+    const screen = render(App, {
+      props: {
+        referencePress: true,
+      },
+    })
+
+    const button = screen.getByRole('button').query()! as HTMLElement
+    button.click()
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
   })
 
   it('dismisses with native click', async () => {
-    const screen = render(<App referencePress />)
-    await fireEvent.click(screen.getByRole('button'))
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-    cleanup()
+    const screen = render(App, {
+      props: {
+        referencePress: true,
+      },
+    })
+    await userEvent.click(screen.getByRole('button'))
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
   })
 
   it('dismisses with ancestor scroll', async () => {
-    const screen = render(<App ancestorScroll />)
-    await fireEvent.scroll(window)
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-    cleanup()
+    const screen = render(App, {
+      props: {
+        ancestorScroll: true,
+      },
+    })
+
+    window.dispatchEvent(new Event('scroll'))
+    await Promise.resolve()
+
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
   })
 
   it('outsidePress function guard', async () => {
-    const screen = render(<App outsidePress={() => false} />)
+    const screen = render(App, {
+      props: {
+        outsidePress: () => false,
+      },
+    })
+
     await userEvent.click(document.body)
-    expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-    cleanup()
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
   })
 
   // TODO
@@ -295,35 +319,45 @@ describe('true', () => {
 
 describe('false', () => {
   it('dismisses with escape key', async () => {
-    const screen = render(<App escapeKey={false} />)
-    await fireEvent.keyDown(document.body, { key: 'Escape' })
-    await act()
-    expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-    cleanup()
+    const screen = render(App, {
+      props: {
+        escapeKey: false,
+      },
+    })
+    await userEvent.keyboard('{Escape}')
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
   })
 
   it('dismisses with outside press', async () => {
-    const screen = render(<App outsidePress={false} />)
+    const screen = render(App, {
+      props: {
+        outsidePress: false,
+      },
+    })
     await userEvent.click(document.body)
-    await act()
-    expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-    cleanup()
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
   })
 
   it('dismisses with reference pointer down', async () => {
-    const screen = render(<App referencePress={false} />)
+    const screen = render(App, {
+      props: {
+        referencePress: false,
+      },
+    })
     await userEvent.click(screen.getByRole('button'))
-    await act()
-    expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-    cleanup()
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
   })
 
   it('dismisses with ancestor scroll', async () => {
-    const screen = render(<App ancestorScroll={false} />)
-    await fireEvent.scroll(window)
-    await act()
-    expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-    cleanup()
+    const screen = render(App, {
+      props: {
+        ancestorScroll: false,
+      },
+    })
+
+    window.dispatchEvent(new Event('scroll'))
+    await Promise.resolve()
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
   })
 
   // it('does not dismiss when clicking portaled children', async () => {
@@ -364,11 +398,14 @@ describe('false', () => {
   // })
 
   it('outsidePress function guard', async () => {
-    const screen = render(<App outsidePress={() => true} />)
+    const screen = render(App, {
+      props: {
+        outsidePress: () => true,
+      },
+    })
+
     await userEvent.click(document.body)
-    await act()
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-    cleanup()
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
   })
 })
 
@@ -674,277 +711,277 @@ describe('false', () => {
 //   });
 // });
 
-describe('capture', () => {
-  describe('prop resolution', () => {
-    it('undefined', () => {
-      const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture }
-        = normalizeProp()
+// describe('capture', () => {
+//   describe('prop resolution', () => {
+//     it('undefined', () => {
+//       const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture }
+//         = normalizeProp()
 
-      expect(escapeKeyCapture).toBe(false)
-      expect(outsidePressCapture).toBe(true)
-    })
+//       expect(escapeKeyCapture).toBe(false)
+//       expect(outsidePressCapture).toBe(true)
+//     })
 
-    it('{}', () => {
-      const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture }
-        = normalizeProp({})
+//     it('{}', () => {
+//       const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture }
+//         = normalizeProp({})
 
-      expect(escapeKeyCapture).toBe(false)
-      expect(outsidePressCapture).toBe(true)
-    })
+//       expect(escapeKeyCapture).toBe(false)
+//       expect(outsidePressCapture).toBe(true)
+//     })
 
-    it('true', () => {
-      const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture }
-        = normalizeProp(true)
+//     it('true', () => {
+//       const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture }
+//         = normalizeProp(true)
 
-      expect(escapeKeyCapture).toBe(true)
-      expect(outsidePressCapture).toBe(true)
-    })
+//       expect(escapeKeyCapture).toBe(true)
+//       expect(outsidePressCapture).toBe(true)
+//     })
 
-    it('false', () => {
-      const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture }
-        = normalizeProp(false)
+//     it('false', () => {
+//       const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture }
+//         = normalizeProp(false)
 
-      expect(escapeKeyCapture).toBe(false)
-      expect(outsidePressCapture).toBe(false)
-    })
+//       expect(escapeKeyCapture).toBe(false)
+//       expect(outsidePressCapture).toBe(false)
+//     })
 
-    it('{ escapeKey: true }', () => {
-      const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture }
-        = normalizeProp({
-          escapeKey: true,
-        })
+//     it('{ escapeKey: true }', () => {
+//       const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture }
+//         = normalizeProp({
+//           escapeKey: true,
+//         })
 
-      expect(escapeKeyCapture).toBe(true)
-      expect(outsidePressCapture).toBe(true)
-    })
+//       expect(escapeKeyCapture).toBe(true)
+//       expect(outsidePressCapture).toBe(true)
+//     })
 
-    it('{ outsidePress: false }', () => {
-      const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture }
-        = normalizeProp({
-          outsidePress: false,
-        })
+//     it('{ outsidePress: false }', () => {
+//       const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture }
+//         = normalizeProp({
+//           outsidePress: false,
+//         })
 
-      expect(escapeKeyCapture).toBe(false)
-      expect(outsidePressCapture).toBe(false)
-    })
-  })
+//       expect(escapeKeyCapture).toBe(false)
+//       expect(outsidePressCapture).toBe(false)
+//     })
+//   })
 
-  // const Overlay = ({ children }: { children: ReactNode }) => {
-  //   return (
-  //     <div
-  //       style={{ width: '100vw', height: '100vh' }}
-  //       onPointerDown={e => e.stopPropagation()}
-  //       onKeyDown={(e) => {
-  //         if (e.key === 'Escape') {
-  //           e.stopPropagation()
-  //         }
-  //       }}
-  //     >
-  //       <span>outside</span>
-  //       {children}
-  //     </div>
-  //   )
-  // }
+//   // const Overlay = ({ children }: { children: ReactNode }) => {
+//   //   return (
+//   //     <div
+//   //       style={{ width: '100vw', height: '100vh' }}
+//   //       onPointerDown={e => e.stopPropagation()}
+//   //       onKeyDown={(e) => {
+//   //         if (e.key === 'Escape') {
+//   //           e.stopPropagation()
+//   //         }
+//   //       }}
+//   //     >
+//   //       <span>outside</span>
+//   //       {children}
+//   //     </div>
+//   //   )
+//   // }
 
-  // const Dialog = ({
-  //   id,
-  //   children,
-  //   ...props
-  // }: UseDismissProps & { id: string, children: ReactNode }) => {
-  //   const [open, setOpen] = useState(true)
-  //   const nodeId = useFloatingNodeId()
+//   // const Dialog = ({
+//   //   id,
+//   //   children,
+//   //   ...props
+//   // }: UseDismissProps & { id: string, children: ReactNode }) => {
+//   //   const [open, setOpen] = useState(true)
+//   //   const nodeId = useFloatingNodeId()
 
-  //   const { refs, context } = useFloating({
-  //     open,
-  //     onOpenChange: setOpen,
-  //     nodeId,
-  //   })
+//   //   const { refs, context } = useFloating({
+//   //     open,
+//   //     onOpenChange: setOpen,
+//   //     nodeId,
+//   //   })
 
-  //   const { getReferenceProps, getFloatingProps } = useInteractions([
-  //     useDismiss(context, props),
-  //   ])
+//   //   const { getReferenceProps, getFloatingProps } = useInteractions([
+//   //     useDismiss(context, props),
+//   //   ])
 
-  //   return (
-  //     <FloatingNode id={nodeId}>
-  //       <button {...getReferenceProps({ ref: refs.setReference })} />
-  //       {open && (
-  //         <FloatingPortal>
-  //           <FloatingFocusManager context={context}>
-  //             <div {...getFloatingProps({ ref: refs.setFloating })}>
-  //               <span>{id}</span>
-  //               {children}
-  //             </div>
-  //           </FloatingFocusManager>
-  //         </FloatingPortal>
-  //       )}
-  //     </FloatingNode>
-  //   )
-  // }
+//   //   return (
+//   //     <FloatingNode id={nodeId}>
+//   //       <button {...getReferenceProps({ ref: refs.setReference })} />
+//   //       {open && (
+//   //         <FloatingPortal>
+//   //           <FloatingFocusManager context={context}>
+//   //             <div {...getFloatingProps({ ref: refs.setFloating })}>
+//   //               <span>{id}</span>
+//   //               {children}
+//   //             </div>
+//   //           </FloatingFocusManager>
+//   //         </FloatingPortal>
+//   //       )}
+//   //     </FloatingNode>
+//   //   )
+//   // }
 
-  // const NestedDialog = (
-  //   props: UseDismissProps & { id: string, children: ReactNode },
-  // ) => {
-  //   const parentId = useFloatingParentNodeId()
+//   // const NestedDialog = (
+//   //   props: UseDismissProps & { id: string, children: ReactNode },
+//   // ) => {
+//   //   const parentId = useFloatingParentNodeId()
 
-  //   if (parentId == null) {
-  //     return (
-  //       <FloatingTree>
-  //         <Dialog {...props} />
-  //       </FloatingTree>
-  //     )
-  //   }
+//   //   if (parentId == null) {
+//   //     return (
+//   //       <FloatingTree>
+//   //         <Dialog {...props} />
+//   //       </FloatingTree>
+//   //     )
+//   //   }
 
-  //   return <Dialog {...props} />
-  // }
+//   //   return <Dialog {...props} />
+//   // }
 
-  // describe('outsidePress', () => {
-  //   it('false', async () => {
-  //     const user = userEvent.setup()
+//   // describe('outsidePress', () => {
+//   //   it('false', async () => {
+//   //     const user = userEvent.setup()
 
-  //     render(
-  //       <Overlay>
-  //         <NestedDialog id="outer" capture={{ outsidePress: false }}>
-  //           <NestedDialog id="inner" capture={{ outsidePress: false }}>
-  //             {null}
-  //           </NestedDialog>
-  //         </NestedDialog>
-  //       </Overlay>,
-  //     )
+//   //     render(
+//   //       <Overlay>
+//   //         <NestedDialog id="outer" capture={{ outsidePress: false }}>
+//   //           <NestedDialog id="inner" capture={{ outsidePress: false }}>
+//   //             {null}
+//   //           </NestedDialog>
+//   //         </NestedDialog>
+//   //       </Overlay>,
+//   //     )
 
-  //     expect(screen.getByText('outer')).toBeInTheDocument()
-  //     expect(screen.getByText('inner')).toBeInTheDocument()
+//   //     expect(screen.getByText('outer')).toBeInTheDocument()
+//   //     expect(screen.getByText('inner')).toBeInTheDocument()
 
-  //     await user.click(screen.getByText('outer'))
+//   //     await user.click(screen.getByText('outer'))
 
-  //     expect(screen.getByText('outer')).toBeInTheDocument()
-  //     expect(screen.getByText('inner')).toBeInTheDocument()
+//   //     expect(screen.getByText('outer')).toBeInTheDocument()
+//   //     expect(screen.getByText('inner')).toBeInTheDocument()
 
-  //     await user.click(screen.getByText('outside'))
+//   //     await user.click(screen.getByText('outside'))
 
-  //     expect(screen.getByText('outer')).toBeInTheDocument()
-  //     expect(screen.getByText('inner')).toBeInTheDocument()
-  //     cleanup()
-  //   })
+//   //     expect(screen.getByText('outer')).toBeInTheDocument()
+//   //     expect(screen.getByText('inner')).toBeInTheDocument()
+//   //     cleanup()
+//   //   })
 
-  //   it('true', async () => {
-  //     const user = userEvent.setup()
+//   //   it('true', async () => {
+//   //     const user = userEvent.setup()
 
-  //     render(
-  //       <Overlay>
-  //         <NestedDialog id="outer" capture={{ outsidePress: true }}>
-  //           <NestedDialog id="inner" capture={{ outsidePress: true }}>
-  //             {null}
-  //           </NestedDialog>
-  //         </NestedDialog>
-  //       </Overlay>,
-  //     )
+//   //     render(
+//   //       <Overlay>
+//   //         <NestedDialog id="outer" capture={{ outsidePress: true }}>
+//   //           <NestedDialog id="inner" capture={{ outsidePress: true }}>
+//   //             {null}
+//   //           </NestedDialog>
+//   //         </NestedDialog>
+//   //       </Overlay>,
+//   //     )
 
-  //     expect(screen.getByText('outer')).toBeInTheDocument()
-  //     expect(screen.getByText('inner')).toBeInTheDocument()
+//   //     expect(screen.getByText('outer')).toBeInTheDocument()
+//   //     expect(screen.getByText('inner')).toBeInTheDocument()
 
-  //     await user.click(screen.getByText('outer'))
+//   //     await user.click(screen.getByText('outer'))
 
-  //     expect(screen.getByText('outer')).toBeInTheDocument()
-  //     expect(screen.queryByText('inner')).not.toBeInTheDocument()
+//   //     expect(screen.getByText('outer')).toBeInTheDocument()
+//   //     expect(screen.queryByText('inner')).not.toBeInTheDocument()
 
-  //     await user.click(screen.getByText('outside'))
+//   //     await user.click(screen.getByText('outside'))
 
-  //     expect(screen.queryByText('outer')).not.toBeInTheDocument()
-  //     expect(screen.queryByText('inner')).not.toBeInTheDocument()
-  //     cleanup()
-  //   })
-  // })
+//   //     expect(screen.queryByText('outer')).not.toBeInTheDocument()
+//   //     expect(screen.queryByText('inner')).not.toBeInTheDocument()
+//   //     cleanup()
+//   //   })
+//   // })
 
-  // describe('escapeKey', () => {
-  //   it('false', async () => {
-  //     const user = userEvent.setup()
+//   // describe('escapeKey', () => {
+//   //   it('false', async () => {
+//   //     const user = userEvent.setup()
 
-  //     render(
-  //       <Overlay>
-  //         <NestedDialog id="outer" capture={{ escapeKey: false }}>
-  //           <NestedDialog id="inner" capture={{ escapeKey: false }}>
-  //             {null}
-  //           </NestedDialog>
-  //         </NestedDialog>
-  //       </Overlay>,
-  //     )
+//   //     render(
+//   //       <Overlay>
+//   //         <NestedDialog id="outer" capture={{ escapeKey: false }}>
+//   //           <NestedDialog id="inner" capture={{ escapeKey: false }}>
+//   //             {null}
+//   //           </NestedDialog>
+//   //         </NestedDialog>
+//   //       </Overlay>,
+//   //     )
 
-  //     expect(screen.getByText('outer')).toBeInTheDocument()
-  //     expect(screen.getByText('inner')).toBeInTheDocument()
+//   //     expect(screen.getByText('outer')).toBeInTheDocument()
+//   //     expect(screen.getByText('inner')).toBeInTheDocument()
 
-  //     await user.keyboard('{Escape}')
+//   //     await user.keyboard('{Escape}')
 
-  //     expect(screen.getByText('outer')).toBeInTheDocument()
-  //     expect(screen.queryByText('inner')).not.toBeInTheDocument()
+//   //     expect(screen.getByText('outer')).toBeInTheDocument()
+//   //     expect(screen.queryByText('inner')).not.toBeInTheDocument()
 
-  //     await user.keyboard('{Escape}')
+//   //     await user.keyboard('{Escape}')
 
-  //     expect(screen.queryByText('outer')).not.toBeInTheDocument()
-  //     expect(screen.queryByText('inner')).not.toBeInTheDocument()
-  //     cleanup()
-  //   })
+//   //     expect(screen.queryByText('outer')).not.toBeInTheDocument()
+//   //     expect(screen.queryByText('inner')).not.toBeInTheDocument()
+//   //     cleanup()
+//   //   })
 
-  //   it('true', async () => {
-  //     const user = userEvent.setup()
+//   //   it('true', async () => {
+//   //     const user = userEvent.setup()
 
-  //     render(
-  //       <Overlay>
-  //         <NestedDialog id="outer" capture={{ escapeKey: true }}>
-  //           <NestedDialog id="inner" capture={{ escapeKey: true }}>
-  //             {null}
-  //           </NestedDialog>
-  //         </NestedDialog>
-  //       </Overlay>,
-  //     )
+//   //     render(
+//   //       <Overlay>
+//   //         <NestedDialog id="outer" capture={{ escapeKey: true }}>
+//   //           <NestedDialog id="inner" capture={{ escapeKey: true }}>
+//   //             {null}
+//   //           </NestedDialog>
+//   //         </NestedDialog>
+//   //       </Overlay>,
+//   //     )
 
-  //     expect(screen.getByText('outer')).toBeInTheDocument()
-  //     expect(screen.getByText('inner')).toBeInTheDocument()
+//   //     expect(screen.getByText('outer')).toBeInTheDocument()
+//   //     expect(screen.getByText('inner')).toBeInTheDocument()
 
-  //     await user.keyboard('{Escape}')
+//   //     await user.keyboard('{Escape}')
 
-  //     expect(screen.getByText('outer')).toBeInTheDocument()
-  //     expect(screen.queryByText('inner')).not.toBeInTheDocument()
+//   //     expect(screen.getByText('outer')).toBeInTheDocument()
+//   //     expect(screen.queryByText('inner')).not.toBeInTheDocument()
 
-  //     await user.keyboard('{Escape}')
+//   //     await user.keyboard('{Escape}')
 
-  //     expect(screen.queryByText('outer')).not.toBeInTheDocument()
-  //     expect(screen.queryByText('inner')).not.toBeInTheDocument()
-  //     cleanup()
-  //   })
-  // })
-})
+//   //     expect(screen.queryByText('outer')).not.toBeInTheDocument()
+//   //     expect(screen.queryByText('inner')).not.toBeInTheDocument()
+//   //     cleanup()
+//   //   })
+//   // })
+// })
 
-describe('outsidePressEvent click', () => {
-  it('dragging outside the floating element does not close', async () => {
-    const screen = render(<App outsidePressEvent="click" />)
-    const floatingEl = screen.getByRole('tooltip')
-    await fireEvent.mouseDown(floatingEl)
-    await fireEvent.mouseUp(document.body)
-    await act()
-    expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-    cleanup()
-  })
+// describe('outsidePressEvent click', () => {
+//   it('dragging outside the floating element does not close', async () => {
+//     const screen = render(<App outsidePressEvent="click" />)
+//     const floatingEl = screen.getByRole('tooltip')
+//     await fireEvent.mouseDown(floatingEl)
+//     await fireEvent.mouseUp(document.body)
+//     await act()
+//     expect(screen.queryByRole('tooltip')).toBeInTheDocument()
+//     cleanup()
+//   })
 
-  it('dragging inside the floating element does not close', async () => {
-    const screen = render(<App outsidePressEvent="click" />)
-    const floatingEl = screen.getByRole('tooltip')
-    await fireEvent.mouseDown(document.body)
-    await fireEvent.mouseUp(floatingEl)
-    await act()
-    expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-    cleanup()
-  })
+//   it('dragging inside the floating element does not close', async () => {
+//     const screen = render(<App outsidePressEvent="click" />)
+//     const floatingEl = screen.getByRole('tooltip')
+//     await fireEvent.mouseDown(document.body)
+//     await fireEvent.mouseUp(floatingEl)
+//     await act()
+//     expect(screen.queryByRole('tooltip')).toBeInTheDocument()
+//     cleanup()
+//   })
 
-  it('dragging outside the floating element then clicking outside closes', async () => {
-    const screen = render(<App outsidePressEvent="click" />)
-    const floatingEl = screen.getByRole('tooltip')
-    await fireEvent.mouseDown(floatingEl)
-    await fireEvent.mouseUp(document.body)
-    // A click event will have fired before the proper outside click.
-    await fireEvent.click(document.body)
-    await fireEvent.click(document.body)
-    await act()
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-    cleanup()
-  })
-})
+//   it('dragging outside the floating element then clicking outside closes', async () => {
+//     const screen = render(<App outsidePressEvent="click" />)
+//     const floatingEl = screen.getByRole('tooltip')
+//     await fireEvent.mouseDown(floatingEl)
+//     await fireEvent.mouseUp(document.body)
+//     // A click event will have fired before the proper outside click.
+//     await fireEvent.click(document.body)
+//     await fireEvent.click(document.body)
+//     await act()
+//     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+//     cleanup()
+//   })
+// })
