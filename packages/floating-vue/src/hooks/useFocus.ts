@@ -33,6 +33,8 @@ export interface UseFocusProps {
   visibleOnly?: boolean
 }
 
+const isSafariMac = window === undefined ? true : isSafari() && isMac()
+
 /**
  * Opens the floating element while the reference element has focus, like CSS
  * `:focus`.
@@ -49,52 +51,46 @@ export function useFocus(
   let timeoutRef: number
   let keyboardModalityRef = true
 
-  watchEffect((onCleanup) => {
-    if (!toValue(enabled))
-      return
+  // If the reference was focused and the user left the tab/window, and the
+  // floating element was not open, the focus should be blocked when they
+  // return to the tab/window.
+  function onBlur() {
+    const domReference = elements.domReference.value
 
-    const win = getWindow(elements.domReference.value)
-
-    // If the reference was focused and the user left the tab/window, and the
-    // floating element was not open, the focus should be blocked when they
-    // return to the tab/window.
-    function onBlur() {
-      if (
-        !toValue(open)
-        && isHTMLElement(elements.domReference.value)
-        && elements.domReference.value
-        === activeElement(getDocument(elements.domReference.value))
-      ) {
-        blockFocusRef = true
-      }
+    if (
+      !toValue(open)
+      && isHTMLElement(domReference)
+      && domReference === activeElement(getDocument(domReference))
+    ) {
+      blockFocusRef = true
     }
+  }
 
-    function onKeyDown() {
-      keyboardModalityRef = true
-    }
+  function onKeyDown() {
+    keyboardModalityRef = true
+  }
 
-    win.addEventListener('blur', onBlur)
-    win.addEventListener('keydown', onKeyDown, true)
-
-    onCleanup(() => {
-      win.removeEventListener('blur', onBlur)
-      win.removeEventListener('keydown', onKeyDown, true)
-    })
-  })
+  function onFloatingOpenChange({ reason }: { reason: OpenChangeReason }) {
+    if (reason === 'reference-press' || reason === 'escape-key')
+      blockFocusRef = true
+  }
 
   watchEffect(() => {
     if (!toValue(enabled))
       return
 
-    function onOpenChange({ reason }: { reason: OpenChangeReason }) {
-      if (reason === 'reference-press' || reason === 'escape-key')
-        blockFocusRef = true
-    }
+    const win = getWindow(elements.domReference.value)
 
-    events.on('openchange', onOpenChange)
+    win.addEventListener('blur', onBlur)
+    win.addEventListener('keydown', onKeyDown, true)
+
+    events.on('openchange', onFloatingOpenChange)
 
     onWatcherCleanup(() => {
-      events.off('openchange', onOpenChange)
+      win.removeEventListener('blur', onBlur)
+      win.removeEventListener('keydown', onKeyDown, true)
+
+      events.off('openchange', onFloatingOpenChange)
     })
   })
 
@@ -123,10 +119,13 @@ export function useFocus(
           // Mac Safari unreliably matches `:focus-visible` on the reference
           // if focus was outside the page initially - use the fallback
           // instead.
-          if (isSafari() && isMac())
-            throw new Error('isMac')
-          if (!target.matches(':focus-visible'))
+          if (isSafariMac) {
+            if (!keyboardModalityRef && !isTypeableElement(target))
+              return
+          }
+          else if (!target.matches(':focus-visible')) {
             return
+          }
         }
         catch {
           // Old browsers will throw an error when using `:focus-visible`.
@@ -140,20 +139,24 @@ export function useFocus(
     onBlur(event) {
       blockFocusRef = false
       const relatedTarget = event.relatedTarget
-      const nativeEvent = event
 
       // Hit the non-modal focus management portal guard. Focus will be
       // moved into the floating element immediately after.
-      const movedToFocusGuard = isElement(relatedTarget)
+      const movedToFocusGuard = relatedTarget && isElement(relatedTarget)
         && relatedTarget.hasAttribute(createAttribute('focus-guard'))
         && relatedTarget.getAttribute('data-type') === 'outside'
 
+      if (movedToFocusGuard)
+        return
+
       // Wait for the window blur listener to fire.
       timeoutRef = window.setTimeout(() => {
-        const activeEl = activeElement(elements.domReference.value ? elements.domReference.value.ownerDocument : document)
+        timeoutRef = 0
+        const domReference = elements.domReference.value
+        const activeEl = activeElement(domReference ? domReference.ownerDocument : document)
 
         // Focus left the page, keep it open.
-        if (!relatedTarget && activeEl === elements.domReference.value)
+        if (!relatedTarget && activeEl === domReference)
           return
 
         // When focusing the reference element (e.g. regular click), then
@@ -164,14 +167,13 @@ export function useFocus(
         // and not the element that actually has received focus if it is located
         // inside a shadow root.
         if (
-          contains(dataRef.floatingContext?.refs.floating.current, activeEl)
-          || contains(elements.domReference.value, activeEl)
-          || movedToFocusGuard
+          contains(domReference, activeEl)
+          || contains(dataRef.floatingContext?.refs.floating.current, activeEl)
         ) {
           return
         }
 
-        onOpenChange(false, nativeEvent, 'focus')
+        onOpenChange(false, event, 'focus')
       })
     },
   }
