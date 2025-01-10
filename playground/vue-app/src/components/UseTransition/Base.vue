@@ -7,7 +7,7 @@ const open = shallowRef(false)
 
 const { context, floatingStyles, refs: { setFloating, setReference } } = useFloating({
   open,
-  onOpenChange: (value) => {
+  onOpenChange(value) {
     open.value = value
   },
   whileElementsMounted: autoUpdate,

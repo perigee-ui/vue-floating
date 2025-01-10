@@ -19,7 +19,7 @@ const arrowEl = shallowRef<HTMLElement>()
 
 const { context, floatingStyles, refs: { setFloating, setReference }, middlewareData } = useFloating({
   open,
-  onOpenChange: (value) => {
+  onOpenChange(value) {
     open.value = value
   },
   config: {

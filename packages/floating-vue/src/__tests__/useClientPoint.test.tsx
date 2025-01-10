@@ -34,7 +34,7 @@ const App = defineComponent({
     const isOpen = shallowRef(false)
     const { refs, elements, context } = useFloating({
       open: isOpen,
-      onOpenChange: (value) => {
+      onOpenChange(value) {
         isOpen.value = value
       },
     })

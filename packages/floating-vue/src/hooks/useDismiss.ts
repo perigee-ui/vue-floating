@@ -142,7 +142,7 @@ export function useDismiss(
       return
     }
 
-    if (!toValue(open) || !toValue(enabled) || !escapeKey || event.key !== 'Escape')
+    if (event.key !== 'Escape' || !toValue(open))
       return
 
     // const nodeId = dataRef.floatingContext?.nodeId
@@ -415,9 +415,11 @@ export function useDismiss(
   // )
 
   const referenceProps: ElementProps['reference'] = {
-    onKeydown: closeOnEscapeKeydown,
+    ...(escapeKey && {
+      onKeydown: closeOnEscapeKeydown,
+    }),
     ...(referencePress && {
-      [bubbleHandlerKeys[referencePressEvent]]: (event: Event) => {
+      [bubbleHandlerKeys[referencePressEvent]](event: Event) {
         onOpenChange(false, event, 'reference-press')
       },
       ...(referencePressEvent !== 'click' && {
@@ -429,14 +431,16 @@ export function useDismiss(
   }
 
   const floatingProps: ElementProps['floating'] = {
-    onKeydown: closeOnEscapeKeydown,
+    ...(escapeKey && {
+      onKeydown: closeOnEscapeKeydown,
+    }),
     onMousedown() {
       endedOrStartedInsideRef = true
     },
     onMouseup() {
       endedOrStartedInsideRef = true
     },
-    [captureHandlerKeys[outsidePressEvent]]: () => {
+    [captureHandlerKeys[outsidePressEvent]]() {
       insideReactTreeRef = true
     },
   }

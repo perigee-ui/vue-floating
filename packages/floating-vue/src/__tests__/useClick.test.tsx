@@ -33,7 +33,7 @@ const App = defineComponent({
     const open = shallowRef(props.initialOpen)
     const { refs, context } = useFloating({
       open,
-      onOpenChange: (value) => {
+      onOpenChange(value) {
         open.value = value
       },
     })
@@ -191,8 +191,7 @@ describe('`stickIfOpen` prop', async () => {
       const open = shallowRef(false)
       const { refs, context } = useFloating({
         open,
-        onOpenChange: (value, event, reason) => {
-          console.error(value, reason)
+        onOpenChange(value) {
           open.value = value
         },
       })

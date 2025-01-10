@@ -14,7 +14,9 @@ const config = shallowRef<UseFloatingCofnig>({
 
 const { context, floatingStyles, refs } = useFloating({
   open,
-  onOpenChange: v => open.value = v,
+  onOpenChange(value) {
+    open.value = value
+  },
   whileElementsMounted: autoUpdate,
   config,
 })
