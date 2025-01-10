@@ -136,7 +136,6 @@ export function useDismiss(
   let isComposingRef = false
 
   function closeOnEscapeKeydown(event: KeyboardEvent) {
-    console.error('closeOnEscapeKeydown::', event.target, event.currentTarget)
     // Wait until IME is settled. Pressing `Escape` while composing should
     // close the compose menu, but not the floating element.
     if (isComposingRef) {
@@ -168,11 +167,13 @@ export function useDismiss(
 
   function closeOnEscapeKeydownCapture(event: KeyboardEvent) {
     const target = getTarget(event)
+    if (!target)
+      return
     const callback = () => {
       closeOnEscapeKeydown(event)
-      target?.removeEventListener('keydown', callback)
+      target.removeEventListener('keydown', callback)
     }
-    target?.addEventListener('keydown', callback)
+    target.addEventListener('keydown', callback)
   }
 
   function closeOnPressOutside(event: MouseEvent) {
@@ -188,10 +189,10 @@ export function useDismiss(
     const endedOrStartedInside = endedOrStartedInsideRef
     endedOrStartedInsideRef = false
 
-    if (outsidePressEvent === 'click' && endedOrStartedInside)
+    if (insideReactTree)
       return
 
-    if (insideReactTree)
+    if (outsidePressEvent === 'click' && endedOrStartedInside)
       return
 
     if (typeof outsidePress === 'function' && !outsidePress(event))
@@ -292,11 +293,13 @@ export function useDismiss(
 
   function closeOnPressoutsideCapture(event: MouseEvent) {
     const target = getTarget(event)
+    if (!target)
+      return
     const callback = () => {
       closeOnPressOutside(event)
-      target?.removeEventListener(outsidePressEvent, callback)
+      target.removeEventListener(outsidePressEvent, callback)
     }
-    target?.addEventListener(outsidePressEvent, callback)
+    target.addEventListener(outsidePressEvent, callback)
   }
 
   watchEffect(() => {
