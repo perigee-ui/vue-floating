@@ -130,6 +130,9 @@ export function useDismiss(
   const { escapeKey: escapeKeyBubbles, outsidePress: outsidePressBubbles } = normalizeProp(bubbles)
   const { escapeKey: escapeKeyCapture, outsidePress: outsidePressCapture } = normalizeProp(capture)
 
+  dataRef.__escapeKeyBubbles = escapeKeyBubbles
+  dataRef.__outsidePressBubbles = outsidePressBubbles
+
   let isComposingRef = false
 
   function closeOnEscapeKeydown(event: KeyboardEvent) {
@@ -298,9 +301,6 @@ export function useDismiss(
   watchEffect(() => {
     if (!toValue(enabled) || !toValue(open))
       return
-
-    dataRef.__escapeKeyBubbles = escapeKeyBubbles
-    dataRef.__outsidePressBubbles = outsidePressBubbles
 
     let compositionTimeout = 0
 
