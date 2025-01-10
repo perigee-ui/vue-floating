@@ -165,14 +165,11 @@ export function useClientPoint(
     onPointerenter: setPointerTypeRef,
     onPointerdown: setPointerTypeRef,
 
-    ...(x === undefined && y === undefined
-      ? {
+    ...(x === undefined && y === undefined && {
 
-          onMouseenter: handleReferenceMauseEnterOrMove,
-          onMousemove: handleReferenceMauseEnterOrMove,
-        }
-      : null
-    ),
+      onMouseenter: handleReferenceMauseEnterOrMove,
+      onMousemove: handleReferenceMauseEnterOrMove,
+    }),
   }
 
   return () => toValue(enabled) ? { reference: referenceProps } : undefined

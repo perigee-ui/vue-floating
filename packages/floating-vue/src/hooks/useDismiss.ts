@@ -105,7 +105,7 @@ export function useDismiss(
   context: FloatingRootContext,
   props: UseDismissProps = {},
 ): () => ElementProps | undefined {
-  const { open, onOpenChange, elements: { domReference, floating, reference }, dataRef } = context
+  const { open, onOpenChange, elements: { domReference, floating }, dataRef } = context
 
   const {
     enabled = true,
@@ -296,7 +296,7 @@ export function useDismiss(
   }
 
   watchEffect(() => {
-    if (!toValue(open) || !toValue(enabled))
+    if (!toValue(enabled) || !toValue(open))
       return
 
     dataRef.__escapeKeyBubbles = escapeKeyBubbles
@@ -349,27 +349,30 @@ export function useDismiss(
       )
     }
 
-    let ancestors: (Element | Window | VisualViewport)[] = []
+    const ancestors: (Element | Window | VisualViewport)[] = []
 
     if (ancestorScroll) {
+      // Ignore the visual viewport for scrolling dismissal (allow pinch-zoom)
+      const visualViewport = doc.defaultView?.visualViewport
+
+      const passive = { passive: true }
       const domReferenceVal = domReference.value
-      if (isElement(domReferenceVal))
-        ancestors = getOverflowAncestors(domReferenceVal)
+      if (isElement(domReferenceVal)) {
+        for (const ancestor of getOverflowAncestors(domReferenceVal)) {
+          if (ancestor !== visualViewport) {
+            ancestor.addEventListener('scroll', onScroll, passive)
+            ancestors.push(ancestor)
+          }
+        }
+      }
+      // TODO::inspect this
+      // const floatingVal = floating.value
+      // if (isElement(floatingVal))
+      //   ancestors = ancestors.concat(getOverflowAncestors(floatingVal))
 
-      const floatingVal = floating.value
-      if (isElement(floatingVal))
-        ancestors = ancestors.concat(getOverflowAncestors(floatingVal))
-
-      const referenceVal = reference.value
-      if (!isElement(referenceVal) && referenceVal && referenceVal.contextElement)
-        ancestors = ancestors.concat(getOverflowAncestors(referenceVal.contextElement))
-    }
-
-    // Ignore the visual viewport for scrolling dismissal (allow pinch-zoom)
-    ancestors = ancestors.filter(ancestor => ancestor !== doc.defaultView?.visualViewport)
-
-    for (const ancestor of ancestors) {
-      ancestor.addEventListener('scroll', onScroll, { passive: true })
+      // const referenceVal = reference.value
+      // if (!isElement(referenceVal) && referenceVal && referenceVal.contextElement)
+      //   ancestors = ancestors.concat(getOverflowAncestors(referenceVal.contextElement))
     }
 
     onWatcherCleanup(() => {
@@ -391,8 +394,10 @@ export function useDismiss(
         )
       }
 
-      for (const ancestor of ancestors) {
-        ancestor.removeEventListener('scroll', onScroll)
+      if (ancestorScroll) {
+        for (const ancestor of ancestors) {
+          ancestor.removeEventListener('scroll', onScroll)
+        }
       }
 
       if (compositionTimeout)

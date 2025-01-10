@@ -74,78 +74,72 @@ export function useClick(
     onPointerdown(event) {
       pointerTypeRef = event.pointerType as 'mouse' | 'pen' | 'touch'
     },
-    ...(eventOption === 'mousedown'
-      ? {
-          onMousedown(event) {
-            // Ignore all buttons except for the "main" button.
-            // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
-            if (event.button !== 0)
-              return
+    ...(eventOption === 'mousedown' && {
+      onMousedown(event) {
+        // Ignore all buttons except for the "main" button.
+        // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
+        if (event.button !== 0)
+          return
 
-            if (ignoreMouse && pointerTypeRef && isMouseLikePointerType(pointerTypeRef, true))
-              return
+        if (ignoreMouse && pointerTypeRef && isMouseLikePointerType(pointerTypeRef, true))
+          return
 
-            if (toggle && toValue(open) && (stickIfOpen && dataRef.openEvent ? dataRef.openEvent.type === 'mousedown' : true)) {
-              onOpenChange(false, event, 'click')
-            }
-            else {
-              // Prevent stealing focus from the floating element
-              event.preventDefault()
-              onOpenChange(true, event, 'click')
-            }
-          },
+        if (toggle && toValue(open) && (stickIfOpen && dataRef.openEvent ? dataRef.openEvent.type === 'mousedown' : true)) {
+          onOpenChange(false, event, 'click')
         }
-      : null),
-    ...(eventOption === 'click'
-      ? {
-          onClick(event) {
-            if (ignoreMouse && pointerTypeRef && isMouseLikePointerType(pointerTypeRef, true))
-              return
-
-            if (toggle && toValue(open) && (stickIfOpen && dataRef.openEvent ? dataRef.openEvent.type === 'click' : true))
-              onOpenChange(false, event, 'click')
-            else
-              onOpenChange(true, event, 'click')
-          },
+        else {
+          // Prevent stealing focus from the floating element
+          event.preventDefault()
+          onOpenChange(true, event, 'click')
         }
-      : null),
-    ...(keyboardHandlers
-      ? {
-          onKeydown(event) {
-            pointerTypeRef = undefined
-            didKeyDownRef = false
+      },
+    }),
+    ...(eventOption === 'click' && {
+      onClick(event) {
+        if (ignoreMouse && pointerTypeRef && isMouseLikePointerType(pointerTypeRef, true))
+          return
 
-            if (event.defaultPrevented || isButtonTarget(event))
-              return
+        if (toggle && toValue(open) && (stickIfOpen && dataRef.openEvent ? dataRef.openEvent.type === 'click' : true))
+          onOpenChange(false, event, 'click')
+        else
+          onOpenChange(true, event, 'click')
+      },
+    }),
+    ...(keyboardHandlers && {
+      onKeydown(event) {
+        pointerTypeRef = undefined
+        didKeyDownRef = false
 
-            if (event.key === ' ' && !isTypeableElement(domReference.value)) {
-              // Prevent scrolling
-              event.preventDefault()
-              didKeyDownRef = true
-            }
+        if (event.defaultPrevented || isButtonTarget(event))
+          return
 
-            if (event.key !== 'Enter')
-              return
-
-            if (toggle && toValue(open))
-              onOpenChange(false, event, 'click')
-            else
-              onOpenChange(true, event, 'click')
-          },
-          onKeyup(event) {
-            if (event.defaultPrevented || isButtonTarget(event) || isTypeableElement(domReference.value))
-              return
-
-            if (!didKeyDownRef)
-              return
-
-            if (toggle && toValue(open))
-              onOpenChange(false, event, 'click')
-            else
-              onOpenChange(true, event, 'click')
-          },
+        if (event.key === ' ' && !isTypeableElement(domReference.value)) {
+          // Prevent scrolling
+          event.preventDefault()
+          didKeyDownRef = true
         }
-      : null),
+
+        if (event.key !== 'Enter')
+          return
+
+        if (toggle && toValue(open))
+          onOpenChange(false, event, 'click')
+        else
+          onOpenChange(true, event, 'click')
+      },
+      onKeyup(event) {
+        if (event.defaultPrevented || isButtonTarget(event) || isTypeableElement(domReference.value))
+          return
+
+        if (!didKeyDownRef)
+          return
+
+        if (toggle && toValue(open))
+          onOpenChange(false, event, 'click')
+        else
+          onOpenChange(true, event, 'click')
+      },
+    }),
 
   }
 
