@@ -417,9 +417,7 @@ export function useDismiss(
   const referenceProps: ElementProps['reference'] = {
     onKeydown: closeOnEscapeKeydown,
     ...(referencePress && {
-      [bubbleHandlerKeys[referencePressEvent]]: (
-        event: Event,
-      ) => {
+      [bubbleHandlerKeys[referencePressEvent]]: (event: Event) => {
         onOpenChange(false, event, 'reference-press')
       },
       ...(referencePressEvent !== 'click' && {
