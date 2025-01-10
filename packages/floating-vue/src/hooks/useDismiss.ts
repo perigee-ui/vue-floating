@@ -136,6 +136,7 @@ export function useDismiss(
   let isComposingRef = false
 
   function closeOnEscapeKeydown(event: KeyboardEvent) {
+    console.error('closeOnEscapeKeydown::', event.target, event.currentTarget)
     // Wait until IME is settled. Pressing `Escape` while composing should
     // close the compose menu, but not the floating element.
     if (isComposingRef) {

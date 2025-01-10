@@ -4,6 +4,7 @@ import { render } from 'vitest-browser-vue'
 import { defineComponent, shallowRef } from 'vue'
 import { normalizeProp, useDismiss } from '../hooks/useDismiss.ts'
 import { useFloating } from '../hooks/useFloating.ts'
+import { useFocus } from '../hooks/useFocus.ts'
 import { useInteractions } from '../hooks/useInteractions.ts'
 
 const App = defineComponent({
@@ -574,140 +575,152 @@ describe('false', () => {
 //     });
 //   });
 
-//   describe('escapeKey', () => {
-//     test('without FloatingTree', async () => {
-//       function App() {
-//         const [popoverOpen, setPopoverOpen] = useState(true);
-//         const [tooltipOpen, setTooltipOpen] = useState(false);
+describe('escapeKey', () => {
+  it('without FloatingTree', async () => {
+    const App = defineComponent({
+      setup() {
+        const popoverOpen = shallowRef(true)
+        const tooltipOpen = shallowRef(false)
 
-//         const popover = useFloating({
-//           open: popoverOpen,
-//           onOpenChange: setPopoverOpen,
-//         });
-//         const tooltip = useFloating({
-//           open: tooltipOpen,
-//           onOpenChange: setTooltipOpen,
-//         });
+        const popover = useFloating({
+          open: popoverOpen,
+          onOpenChange(value) {
+            popoverOpen.value = value
+          },
+        })
+        const tooltip = useFloating({
+          open: tooltipOpen,
+          onOpenChange(value) {
+            tooltipOpen.value = value
+          },
+        })
 
-//         const popoverInteractions = useInteractions([
-//           useDismiss(popover.context),
-//         ]);
-//         const tooltipInteractions = useInteractions([
-//           useFocus(tooltip.context, {visibleOnly: false}),
-//           useDismiss(tooltip.context),
-//         ]);
+        const popoverInteractions = useInteractions([
+          useDismiss(popover.context),
+        ])
+        const tooltipInteractions = useInteractions([
+          useFocus(tooltip.context, { visibleOnly: false }),
+          useDismiss(tooltip.context),
+        ])
 
-//         return (
-//           <>
-//             <button
-//               ref={popover.refs.setReference}
-//               {...popoverInteractions.getReferenceProps()}
-//             />
-//             {popoverOpen && (
-//               <div
-//                 role="dialog"
-//                 ref={popover.refs.setFloating}
-//                 {...popoverInteractions.getFloatingProps()}
-//               >
-//                 <button
-//                   data-testid="focus-button"
-//                   ref={tooltip.refs.setReference}
-//                   {...tooltipInteractions.getReferenceProps()}
-//                 />
-//               </div>
-//             )}
-//             {tooltipOpen && (
-//               <div
-//                 role="tooltip"
-//                 ref={tooltip.refs.setFloating}
-//                 {...tooltipInteractions.getFloatingProps()}
-//               />
-//             )}
-//           </>
-//         );
-//       }
+        return () => (
+          <>
+            <button
+              ref={popover.refs.setReference as any}
+              {...popoverInteractions.getReferenceProps()}
+            >
+              button
+            </button>
+            {popoverOpen.value && (
+              <div
+                role="dialog"
+                ref={popover.refs.setFloating as any}
+                {...popoverInteractions.getFloatingProps()}
+              >
+                <button
+                  data-testid="focus-button"
+                  ref={tooltip.refs.setReference as any}
+                  {...tooltipInteractions.getReferenceProps()}
+                >
+                  button
+                </button>
+              </div>
+            )}
+            {tooltipOpen.value && (
+              <div
+                role="tooltip"
+                ref={tooltip.refs.setFloating as any}
+                {...tooltipInteractions.getFloatingProps()}
+              >
+                tooltip
+              </div>
+            )}
+          </>
+        )
+      },
+    })
 
-//       render(<App />);
+    const screen = render(App)
 
-//       act(() => screen.getByTestId('focus-button').focus());
+    const $focusButton = screen.getByTestId('focus-button').query()! as HTMLElement
+    $focusButton.focus()
+    await Promise.resolve()
 
-//       expect(screen.queryByRole('tooltip')).toBeInTheDocument();
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
 
-//       await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('{Escape}')
 
-//       expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
-//       expect(screen.queryByRole('dialog')).toBeInTheDocument();
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
+    await expect.element(screen.getByRole('dialog')).toBeInTheDocument()
+  })
 
-//       cleanup();
-//     });
+  //     test('true', async () => {
+  //       render(
+  //         <NestedDialog testId="outer" bubbles>
+  //           <NestedDialog testId="inner" bubbles>
+  //             <button>test button</button>
+  //           </NestedDialog>
+  //         </NestedDialog>,
+  //       );
 
-//     test('true', async () => {
-//       render(
-//         <NestedDialog testId="outer" bubbles>
-//           <NestedDialog testId="inner" bubbles>
-//             <button>test button</button>
-//           </NestedDialog>
-//         </NestedDialog>,
-//       );
+  //       expect(screen.queryByTestId('outer')).toBeInTheDocument();
+  //       expect(screen.queryByTestId('inner')).toBeInTheDocument();
 
-//       expect(screen.queryByTestId('outer')).toBeInTheDocument();
-//       expect(screen.queryByTestId('inner')).toBeInTheDocument();
+  //       await userEvent.keyboard('{Escape}');
 
-//       await userEvent.keyboard('{Escape}');
+  //       expect(screen.queryByTestId('outer')).not.toBeInTheDocument();
+  //       expect(screen.queryByTestId('inner')).not.toBeInTheDocument();
+  //       cleanup();
+  //     });
+  //     test('false', async () => {
+  //       render(
+  //         <NestedDialog testId="outer" bubbles={{escapeKey: false}}>
+  //           <NestedDialog testId="inner" bubbles={{escapeKey: false}}>
+  //             <button>test button</button>
+  //           </NestedDialog>
+  //         </NestedDialog>,
+  //       );
 
-//       expect(screen.queryByTestId('outer')).not.toBeInTheDocument();
-//       expect(screen.queryByTestId('inner')).not.toBeInTheDocument();
-//       cleanup();
-//     });
-//     test('false', async () => {
-//       render(
-//         <NestedDialog testId="outer" bubbles={{escapeKey: false}}>
-//           <NestedDialog testId="inner" bubbles={{escapeKey: false}}>
-//             <button>test button</button>
-//           </NestedDialog>
-//         </NestedDialog>,
-//       );
+  //       expect(screen.queryByTestId('outer')).toBeInTheDocument();
+  //       expect(screen.queryByTestId('inner')).toBeInTheDocument();
 
-//       expect(screen.queryByTestId('outer')).toBeInTheDocument();
-//       expect(screen.queryByTestId('inner')).toBeInTheDocument();
+  //       await userEvent.keyboard('{Escape}');
 
-//       await userEvent.keyboard('{Escape}');
+  //       expect(screen.queryByTestId('outer')).toBeInTheDocument();
+  //       expect(screen.queryByTestId('inner')).not.toBeInTheDocument();
 
-//       expect(screen.queryByTestId('outer')).toBeInTheDocument();
-//       expect(screen.queryByTestId('inner')).not.toBeInTheDocument();
+  //       await userEvent.keyboard('{Escape}');
 
-//       await userEvent.keyboard('{Escape}');
+  //       expect(screen.queryByTestId('outer')).not.toBeInTheDocument();
+  //       expect(screen.queryByTestId('inner')).not.toBeInTheDocument();
+  //       cleanup();
+  //     });
 
-//       expect(screen.queryByTestId('outer')).not.toBeInTheDocument();
-//       expect(screen.queryByTestId('inner')).not.toBeInTheDocument();
-//       cleanup();
-//     });
+  //     test('mixed', async () => {
+  //       render(
+  //         <NestedDialog testId="outer" bubbles={{escapeKey: true}}>
+  //           <NestedDialog testId="inner" bubbles={{escapeKey: false}}>
+  //             <button>test button</button>
+  //           </NestedDialog>
+  //         </NestedDialog>,
+  //       );
 
-//     test('mixed', async () => {
-//       render(
-//         <NestedDialog testId="outer" bubbles={{escapeKey: true}}>
-//           <NestedDialog testId="inner" bubbles={{escapeKey: false}}>
-//             <button>test button</button>
-//           </NestedDialog>
-//         </NestedDialog>,
-//       );
+  //       expect(screen.queryByTestId('outer')).toBeInTheDocument();
+  //       expect(screen.queryByTestId('inner')).toBeInTheDocument();
 
-//       expect(screen.queryByTestId('outer')).toBeInTheDocument();
-//       expect(screen.queryByTestId('inner')).toBeInTheDocument();
+  //       await userEvent.keyboard('{Escape}');
 
-//       await userEvent.keyboard('{Escape}');
+  //       expect(screen.queryByTestId('outer')).toBeInTheDocument();
+  //       expect(screen.queryByTestId('inner')).not.toBeInTheDocument();
 
-//       expect(screen.queryByTestId('outer')).toBeInTheDocument();
-//       expect(screen.queryByTestId('inner')).not.toBeInTheDocument();
-
-//       await userEvent.keyboard('{Escape}');
+  //       await userEvent.keyboard('{Escape}');
 
 //       expect(screen.queryByTestId('outer')).not.toBeInTheDocument();
 //       expect(screen.queryByTestId('inner')).not.toBeInTheDocument();
 //       cleanup();
 //     });
 //   });
-// });
+})
 
 describe('capture', () => {
   describe('prop resolution', () => {
