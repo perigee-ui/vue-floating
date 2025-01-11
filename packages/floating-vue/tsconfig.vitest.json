@@ -3,7 +3,7 @@
   "extends": "@perigee-ui/typescript-config/tsconfig.options.json",
   "include": [
     "env.d.ts",
-    "src/**/__tests__/*"
+    "tests/**/*"
   ],
   "references": [{"path": "./tsconfig.app.json"}],
   "compilerOptions": {

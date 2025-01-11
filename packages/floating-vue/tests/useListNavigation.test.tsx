@@ -5,10 +5,10 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
 
 import { describe, expect, it, vi } from 'vitest'
 import { computed, defineComponent, type PropType, shallowRef, watchSyncEffect } from 'vue'
-import { act } from '../core/__tests__/utils.ts'
-import { useInteractions } from '../hooks/useInteractions.ts'
-import { useClick, useDismiss, useFloating, useListNavigation, type UseListNavigationProps } from '../index.ts'
-import { type MutableRefObject, useRef } from '../vue/index.ts'
+import { act } from './utils.ts'
+import { useInteractions } from '../src/hooks/useInteractions.ts'
+import { useClick, useDismiss, useFloating, useListNavigation, type UseListNavigationProps } from '../src/index.ts'
+import { type MutableRefObject, useRef } from '../src/vue/index.ts'
 // import { useFloating } from '../hooks/useFloating.ts'
 
 const App = defineComponent({

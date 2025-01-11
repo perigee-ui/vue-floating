@@ -1,11 +1,11 @@
-import type { Coords } from '../core/index.ts'
+import type { Coords } from '../src/core/index.ts'
 import { userEvent } from '@vitest/browser/context'
 import { expect, it } from 'vitest'
 
 import { render, type RenderResult } from 'vitest-browser-vue'
 import { defineComponent, type PropType, shallowRef, watchEffect } from 'vue'
-import { useClientPoint, useFloating, useInteractions } from '../../src/index.ts'
-import { act } from '../core/__tests__/utils.ts'
+import { useClientPoint, useFloating, useInteractions } from '../src/index.ts'
+import { act } from './utils.ts'
 
 async function expectLocation(screen: RenderResult<any>, { x, y }: Coords, axis = 'both') {
   await expect.element(screen.getByTestId('x')).toHaveTextContent(`${x}`)

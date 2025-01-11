@@ -1,4 +1,4 @@
-import type { UseRoleProps } from '../../src/hooks/useRole.ts'
+import type { UseRoleProps } from '../src/hooks/useRole.ts'
 
 import { userEvent } from '@vitest/browser/context'
 import { describe, expect, it } from 'vitest'
@@ -10,7 +10,7 @@ import {
   useFloating,
   useInteractions,
   useRole,
-} from '../../src/index.ts'
+} from '../src/index.ts'
 
 const App = defineComponent({
   props: {

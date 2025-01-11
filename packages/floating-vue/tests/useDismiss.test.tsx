@@ -2,10 +2,10 @@ import { userEvent } from '@vitest/browser/context'
 import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-vue'
 import { defineComponent, shallowRef } from 'vue'
-import { normalizeProp, useDismiss } from '../hooks/useDismiss.ts'
-import { useFloating } from '../hooks/useFloating.ts'
-import { useFocus } from '../hooks/useFocus.ts'
-import { useInteractions } from '../hooks/useInteractions.ts'
+import { normalizeProp, useDismiss } from '../src/hooks/useDismiss.ts'
+import { useFloating } from '../src/hooks/useFloating.ts'
+import { useFocus } from '../src/hooks/useFocus.ts'
+import { useInteractions } from '../src/hooks/useInteractions.ts'
 
 const App = defineComponent({
   props: {

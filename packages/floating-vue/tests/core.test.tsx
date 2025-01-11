@@ -13,7 +13,7 @@ import {
   shift,
   size,
   useFloating,
-} from '../index.ts'
+} from '../src/core/index.ts'
 
 it('middleware is always fresh and does not cause an infinite loop', async () => {
   const InlineMiddleware = defineComponent({

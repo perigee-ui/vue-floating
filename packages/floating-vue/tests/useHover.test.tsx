@@ -2,7 +2,7 @@ import { userEvent } from '@vitest/browser/context'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-vue'
 import { defineComponent, type PropType, shallowRef } from 'vue'
-import { useFloating, useHover, type UseHoverProps, useInteractions } from '../index.ts'
+import { useFloating, useHover, type UseHoverProps, useInteractions } from '../src/index.ts'
 
 beforeEach(() => {
   vi.useFakeTimers()

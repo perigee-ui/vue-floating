@@ -1,13 +1,13 @@
-import type { UseTypeaheadProps } from '../../src/hooks/useTypeahead'
-import type { ElAttrs } from '../types.ts'
+import type { UseTypeaheadProps } from '../src/hooks/useTypeahead.ts'
+import type { ElAttrs } from '../src/types.ts'
 import userEvent from '@testing-library/user-event'
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
 import { expect, it, vi } from 'vitest'
 import { computed, defineComponent, type MaybeRef, type PropType, shallowRef, unref } from 'vue'
-import { act } from '../core/__tests__/utils.ts'
-import { useClick, useFloating, useInteractions, useTypeahead } from '../index.ts'
-import { type MutableRefObject, useRef } from '../vue/index.ts'
+import { useClick, useFloating, useInteractions, useTypeahead } from '../src/index.ts'
+import { type MutableRefObject, useRef } from '../src/vue/index.ts'
+import { act } from './utils.ts'
 // import { Main } from '../visual/components/Menu'
 
 vi.useFakeTimers({ shouldAdvanceTime: true })

@@ -2,7 +2,7 @@ import { isElement } from '@floating-ui/utils/dom'
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-vue'
 import { computed, defineComponent, onMounted, shallowRef } from 'vue'
-import { useFloating } from '../hooks/useFloating.ts'
+import { useFloating } from '../src/hooks/useFloating.ts'
 
 describe('positionReference', () => {
   it('sets separate refs', async () => {

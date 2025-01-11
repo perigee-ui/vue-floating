@@ -1,5 +1,5 @@
 import { afterEach, expect, it } from 'vitest'
-import { markOthers } from '../utils/markOthers.ts'
+import { markOthers } from '../src/utils/markOthers.ts'
 
 afterEach(() => {
   document.body.innerHTML = ''
