@@ -1,16 +1,16 @@
 import type { UseRoleProps } from '../../src/hooks/useRole.ts'
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
+import { userEvent } from '@vitest/browser/context'
 import { describe, expect, it } from 'vitest'
-import { defineComponent, type PropType, ref, useId } from 'vue'
 
+import { render } from 'vitest-browser-vue'
+import { defineComponent, type PropType, shallowRef, useId } from 'vue'
 import {
   useClick,
   useFloating,
   useInteractions,
   useRole,
 } from '../../src/index.ts'
-import { act } from '../core/__tests__/utils.ts'
 
 const App = defineComponent({
   props: {
@@ -24,7 +24,7 @@ const App = defineComponent({
     },
   },
   setup(props) {
-    const open = ref(props.initiallyOpen)
+    const open = shallowRef(props.initiallyOpen)
     const { refs, context } = useFloating({
       open,
       onOpenChange(value) {
@@ -39,19 +39,22 @@ const App = defineComponent({
       <>
 
         <button
-          ref={(el: any) => refs.setReference(el)}
           {...getReferenceProps({
+            ref: refs.setReference,
             onClick() {
               open.value = !open.value
             },
           })}
-        />
+        >
+          button
+        </button>
 
         {open.value && (
           <div
-            ref={(el: any) => refs.setFloating(el)}
-            {...getFloatingProps()}
-          />
+            {...getFloatingProps({ ref: refs.setFloating })}
+          >
+            Floating
+          </div>
         )}
       </>
     )
@@ -70,7 +73,7 @@ const AppWithExternalRef = defineComponent({
     },
   },
   setup(props) {
-    const open = ref(props.initiallyOpen)
+    const open = shallowRef(props.initiallyOpen)
     const nodeId = useId()
     const { refs, context } = useFloating({
       nodeId,
@@ -87,19 +90,24 @@ const AppWithExternalRef = defineComponent({
       <>
 
         <button
-          ref={(el: any) => refs.setReference(el)}
           {...getReferenceProps({
+            ref: refs.setReference,
             onClick() {
               open.value = !open.value
             },
           })}
-        />
+        >
+          button
+        </button>
 
         {open.value && (
           <div
-            ref={(el: any) => refs.setFloating(el)}
-            {...getFloatingProps()}
-          />
+            {...getFloatingProps({
+              ref: refs.setFloating,
+            })}
+          >
+            Floating
+          </div>
         )}
       </>
     )
@@ -108,7 +116,7 @@ const AppWithExternalRef = defineComponent({
 
 describe('tooltip', () => {
   it('has correct role', async () => {
-    render(App, {
+    const screen = render(App, {
       props: {
         initiallyOpen: true,
         roleProps: {
@@ -116,31 +124,29 @@ describe('tooltip', () => {
         },
       },
     })
-    await act()
-    expect(screen.queryByRole('tooltip')).toBeInTheDocument()
-    cleanup()
+
+    await expect.element(screen.getByRole('tooltip')).toBeInTheDocument()
   })
 
   it('sets correct aria attributes based on the open state', async () => {
-    render(App, {
+    const screen = render(App, {
       props: {
         roleProps: {
           role: 'tooltip',
         },
       },
     })
-    const button = screen.getByRole('button')
-    await fireEvent.click(button)
+    const button = screen.getByRole('button').query()! as HTMLButtonElement
+    await userEvent.click(button)
     expect(button.hasAttribute('aria-describedby')).toBe(true)
-    await fireEvent.click(button)
+    await userEvent.click(button)
     expect(button.hasAttribute('aria-describedby')).toBe(false)
-    cleanup()
   })
 })
 
 describe('label', () => {
   it('sets correct aria attributes based on the open state', async () => {
-    const { container } = render(App, {
+    const screen = render(App, {
       props: {
         initiallyOpen: true,
         roleProps: {
@@ -148,16 +154,15 @@ describe('label', () => {
         },
       },
     })
-    await act()
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
-    expect(container.querySelector('[aria-labelledby]')).toBeInTheDocument()
-    cleanup()
+    await Promise.resolve()
+    await expect.element(screen.getByRole('tooltip')).not.toBeInTheDocument()
+    expect(!!document.querySelector('[aria-labelledby]')).toBe(true)
   })
 })
 
 describe('dialog', () => {
   it('sets correct aria attributes based on the open state', async () => {
-    render(App, {
+    const screen = render(App, {
       props: {
         roleProps: {
           role: 'dialog',
@@ -165,32 +170,30 @@ describe('dialog', () => {
       },
     })
 
-    const button = screen.getByRole('button')
+    const button = screen.getByRole('button').query()! as HTMLButtonElement
 
     expect(button.getAttribute('aria-haspopup')).toBe('dialog')
     expect(button.getAttribute('aria-expanded')).toBe('false')
 
-    await fireEvent.click(button)
+    await userEvent.click(button)
 
-    expect(screen.queryByRole('dialog')).toBeInTheDocument()
+    await expect.element(screen.getByRole('dialog')).toBeInTheDocument()
     expect(button.getAttribute('aria-controls')).toBe(
-      screen.getByRole('dialog').getAttribute('id'),
+      screen.getByRole('dialog').query()!.getAttribute('id'),
     )
     expect(button.hasAttribute('aria-describedby')).toBe(false)
     expect(button.getAttribute('aria-expanded')).toBe('true')
 
-    await fireEvent.click(button)
+    await userEvent.click(button)
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await expect.element(screen.getByRole('dialog')).not.toBeInTheDocument()
     expect(button.hasAttribute('aria-controls')).toBe(false)
     expect(button.hasAttribute('aria-describedby')).toBe(false)
     expect(button.getAttribute('aria-expanded')).toBe('false')
-
-    cleanup()
   })
 
   it('sets correct aria attributes with external ref, multiple useRole calls', async () => {
-    render(AppWithExternalRef, {
+    const screen = render(AppWithExternalRef, {
       props: {
         roleProps: {
           role: 'dialog',
@@ -198,34 +201,32 @@ describe('dialog', () => {
       },
     })
 
-    const button = screen.getByRole('button')
+    const button = screen.getByRole('button').query()! as HTMLButtonElement
 
     expect(button.getAttribute('aria-haspopup')).toBe('dialog')
     expect(button.getAttribute('aria-expanded')).toBe('false')
 
-    await fireEvent.click(button)
+    await userEvent.click(button)
 
-    expect(screen.queryByRole('dialog')).toBeInTheDocument()
+    await expect.element(screen.getByRole('dialog')).toBeInTheDocument()
     expect(button.getAttribute('aria-controls')).toBe(
-      screen.getByRole('dialog').getAttribute('id'),
+      screen.getByRole('dialog').query()!.getAttribute('id'),
     )
     expect(button.hasAttribute('aria-describedby')).toBe(false)
     expect(button.getAttribute('aria-expanded')).toBe('true')
 
-    await fireEvent.click(button)
+    await userEvent.click(button)
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await expect.element(screen.getByRole('dialog')).not.toBeInTheDocument()
     expect(button.hasAttribute('aria-controls')).toBe(false)
     expect(button.hasAttribute('aria-describedby')).toBe(false)
     expect(button.getAttribute('aria-expanded')).toBe('false')
-
-    cleanup()
   })
 })
 
 describe('menu', () => {
   it('sets correct aria attributes based on the open state', async () => {
-    render(App, {
+    const screen = render(App, {
       props: {
         roleProps: {
           role: 'menu',
@@ -233,37 +234,35 @@ describe('menu', () => {
       },
     })
 
-    const button = screen.getByRole('button')
+    const button = screen.getByRole('button').query()! as HTMLButtonElement
 
     expect(button.getAttribute('aria-haspopup')).toBe('menu')
     expect(button.getAttribute('aria-expanded')).toBe('false')
 
-    await fireEvent.click(button)
+    await userEvent.click(button)
 
-    expect(screen.queryByRole('menu')).toBeInTheDocument()
+    await expect.element(screen.getByRole('menu')).toBeInTheDocument()
     expect(button.getAttribute('id')).toBe(
-      screen.getByRole('menu').getAttribute('aria-labelledby'),
+      screen.getByRole('menu').query()!.getAttribute('aria-labelledby'),
     )
     expect(button.getAttribute('aria-controls')).toBe(
-      screen.getByRole('menu').getAttribute('id'),
+      screen.getByRole('menu').query()!.getAttribute('id'),
     )
     expect(button.hasAttribute('aria-describedby')).toBe(false)
     expect(button.getAttribute('aria-expanded')).toBe('true')
 
-    await fireEvent.click(button)
+    await userEvent.click(button)
 
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    await expect.element(screen.getByRole('menu')).not.toBeInTheDocument()
     expect(button.hasAttribute('aria-controls')).toBe(false)
     expect(button.hasAttribute('aria-describedby')).toBe(false)
     expect(button.getAttribute('aria-expanded')).toBe('false')
-
-    cleanup()
   })
 })
 
 describe('listbox', () => {
   it('sets correct aria attributes based on the open state', async () => {
-    render(App, {
+    const screen = render(App, {
       props: {
         roleProps: {
           role: 'listbox',
@@ -271,28 +270,26 @@ describe('listbox', () => {
       },
     })
 
-    const button = screen.getByRole('combobox')
+    const button = screen.getByRole('combobox').query()! as HTMLButtonElement
 
     expect(button.getAttribute('aria-haspopup')).toBe('listbox')
     expect(button.getAttribute('aria-expanded')).toBe('false')
 
-    await fireEvent.click(button)
+    await userEvent.click(button)
 
-    expect(screen.queryByRole('listbox')).toBeInTheDocument()
+    await expect.element(screen.getByRole('listbox')).toBeInTheDocument()
     expect(button.getAttribute('aria-controls')).toBe(
-      screen.getByRole('listbox').getAttribute('id'),
+      screen.getByRole('listbox').query()!.getAttribute('id'),
     )
     expect(button.hasAttribute('aria-describedby')).toBe(false)
     expect(button.getAttribute('aria-expanded')).toBe('true')
 
-    await fireEvent.click(button)
+    await userEvent.click(button)
 
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    await expect.element(screen.getByRole('listbox')).not.toBeInTheDocument()
     expect(button.hasAttribute('aria-controls')).toBe(false)
     expect(button.hasAttribute('aria-describedby')).toBe(false)
     expect(button.getAttribute('aria-expanded')).toBe('false')
-
-    cleanup()
   })
 })
 
@@ -300,21 +297,20 @@ describe('select', () => {
   it('sets correct aria attributes based on the open state', async () => {
     const Select = defineComponent({
       setup() {
-        const isOpen = ref(false)
+        const isOpen = shallowRef(false)
         const { refs, context } = useFloating({
           open: isOpen,
           onOpenChange(value) {
             isOpen.value = value
           },
         })
-        const { getReferenceProps, getFloatingProps, getItemProps }
-        = useInteractions([
+        const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([
           useClick(context),
           useRole(context, { role: 'select' }),
         ])
         return () => (
           <>
-            <button ref={(el: any) => refs.setReference(el)} {...getReferenceProps()} />
+            <button ref={(el: any) => refs.setReference(el)} {...getReferenceProps()}>button</button>
             {isOpen.value && (
               <div ref={(el: any) => refs.setFloating(el)} {...getFloatingProps()}>
                 {[1, 2, 3].map(i => (
@@ -322,7 +318,9 @@ describe('select', () => {
                     key={i}
                     data-testid={`item-${i}`}
                     {...getItemProps({ active: i === 2, selected: i === 2 })}
-                  />
+                  >
+                    Item
+                  </div>
                 ))}
               </div>
             )}
@@ -331,37 +329,35 @@ describe('select', () => {
       },
     })
 
-    render(Select)
+    const screen = render(Select)
 
-    const button = screen.getByRole('combobox')
+    const button = screen.getByRole('combobox').query()! as HTMLButtonElement
 
     expect(button.getAttribute('aria-haspopup')).toBe('listbox')
     expect(button.getAttribute('aria-expanded')).toBe('false')
 
-    await fireEvent.click(button)
+    await userEvent.click(button)
 
-    expect(screen.queryByRole('listbox')).toBeInTheDocument()
+    await expect.element(screen.getByRole('listbox')).toBeInTheDocument()
     expect(button.getAttribute('aria-controls')).toBe(
-      screen.getByRole('listbox').getAttribute('id'),
+      screen.getByRole('listbox').query()!.getAttribute('id'),
     )
     expect(button.hasAttribute('aria-describedby')).toBe(false)
     expect(button.getAttribute('aria-expanded')).toBe('true')
     expect(button.getAttribute('aria-autocomplete')).toBe('none')
-    expect(screen.getByTestId('item-1').getAttribute('aria-selected')).toBe(
+    expect(screen.getByTestId('item-1').query()!.getAttribute('aria-selected')).toBe(
       'false',
     )
-    expect(screen.getByTestId('item-2').getAttribute('aria-selected')).toBe(
+    expect(screen.getByTestId('item-2').query()!.getAttribute('aria-selected')).toBe(
       'true',
     )
 
-    await fireEvent.click(button)
+    await userEvent.click(button)
 
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    await expect.element(screen.getByRole('listbox')).not.toBeInTheDocument()
     expect(button.hasAttribute('aria-controls')).toBe(false)
     expect(button.hasAttribute('aria-describedby')).toBe(false)
     expect(button.getAttribute('aria-expanded')).toBe('false')
-
-    cleanup()
   })
 })
 
@@ -369,7 +365,7 @@ describe('combobox', () => {
   it('sets correct aria attributes based on the open state', async () => {
     const Select = defineComponent({
       setup() {
-        const isOpen = ref(false)
+        const isOpen = shallowRef(false)
         const { refs, context } = useFloating({
           open: isOpen,
           onOpenChange(value) {
@@ -400,36 +396,34 @@ describe('combobox', () => {
       },
     })
 
-    render(Select)
+    const screen = render(Select)
 
-    const button = screen.getByRole('combobox')
+    const button = screen.getByRole('combobox').query()! as HTMLButtonElement
 
     expect(button.getAttribute('aria-haspopup')).toBe('listbox')
     expect(button.getAttribute('aria-expanded')).toBe('false')
 
-    await fireEvent.click(button)
+    await userEvent.click(button)
 
-    expect(screen.queryByRole('listbox')).toBeInTheDocument()
+    await expect.element(screen.getByRole('listbox')).toBeInTheDocument()
     expect(button.getAttribute('aria-controls')).toBe(
-      screen.getByRole('listbox').getAttribute('id'),
+      screen.getByRole('listbox').query()!.getAttribute('id'),
     )
     expect(button.hasAttribute('aria-describedby')).toBe(false)
     expect(button.getAttribute('aria-expanded')).toBe('true')
     expect(button.getAttribute('aria-autocomplete')).toBe('list')
-    expect(screen.getByTestId('item-1').getAttribute('aria-selected')).toBe(
+    expect(screen.getByTestId('item-1').query()!.getAttribute('aria-selected')).toBe(
       null,
     )
-    expect(screen.getByTestId('item-2').getAttribute('aria-selected')).toBe(
+    expect(screen.getByTestId('item-2').query()!.getAttribute('aria-selected')).toBe(
       'true',
     )
 
-    await fireEvent.click(button)
+    await userEvent.click(button)
 
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    await expect.element(screen.getByRole('listbox')).not.toBeInTheDocument()
     expect(button.hasAttribute('aria-controls')).toBe(false)
     expect(button.hasAttribute('aria-describedby')).toBe(false)
     expect(button.getAttribute('aria-expanded')).toBe('false')
-
-    cleanup()
   })
 })

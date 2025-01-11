@@ -24,6 +24,7 @@ export default mergeConfig(
         './src/__tests__/useHover.test.tsx',
         './src/__tests__/useDismiss.test.tsx',
         './src/__tests__/useFocus.test.tsx',
+        './src/__tests__/useRole.test.tsx',
 
         // './src/__tests__/useDismiss.test.tsx',
         // './src/__tests__/**/*.{test,spec}.?(c|m)[jt]s?(x)',
