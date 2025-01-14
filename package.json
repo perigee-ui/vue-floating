@@ -2,7 +2,7 @@
   "name": "@perigee-ui/monorepo",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@9.15.2",
+  "packageManager": "pnpm@9.15.4",
   "engines": {
     "node": ">=18"
   },
@@ -15,10 +15,10 @@
     "root-lint:fix": "eslint . --fix"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^3.12.1",
+    "@antfu/eslint-config": "^3.14.0",
     "@perigee-ui/typescript-config": "workspace:*",
-    "@types/node": "^22.10.5",
-    "eslint": "^9.17.0",
+    "@types/node": "^22.10.6",
+    "eslint": "^9.18.0",
     "prettier": "^3.4.2",
     "turbo": "latest",
     "typescript": "5.6.3"

@@ -39,9 +39,9 @@
     "vue": "^3.5.13"
   },
   "dependencies": {
-    "@floating-ui/core": "^1.6.8",
-    "@floating-ui/dom": "^1.6.12",
-    "@floating-ui/utils": "^0.2.8",
+    "@floating-ui/core": "^1.6.9",
+    "@floating-ui/dom": "^1.6.13",
+    "@floating-ui/utils": "^0.2.9",
     "tabbable": "^6.2.0"
   },
   "devDependencies": {
@@ -55,13 +55,13 @@
     "@vitejs/plugin-vue-jsx": "^4.1.1",
     "@vitest/browser": "^2.1.8",
     "@vue/tsconfig": "^0.7.0",
-    "@vueuse/core": "^12.3.0",
-    "jsdom": "^25.0.1",
+    "@vueuse/core": "^12.4.0",
+    "jsdom": "^26.0.0",
     "npm-run-all2": "^7.0.2",
     "playwright": "^1.49.1",
     "resize-observer-polyfill": "^1.5.1",
     "vite": "^6.0.7",
-    "vite-plugin-dts": "^4.4.0",
+    "vite-plugin-dts": "^4.5.0",
     "vite-plugin-externalize-deps": "^0.8.0",
     "vitest": "^2.1.8",
     "vitest-browser-vue": "^0.0.1",
