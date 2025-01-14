@@ -2,7 +2,8 @@
 import { useDismiss, useFloating, useInteractions, useListNavigation } from '@perigee-ui/floating-vue'
 import { offset } from '@perigee-ui/floating-vue/core'
 import { useRef } from '@perigee-ui/floating-vue/vue'
-import { computed, shallowRef } from 'vue'
+import { EMPTY_OBJ } from '@vue/shared'
+import { computed, getCurrentInstance, shallowRef } from 'vue'
 
 const isOpen = shallowRef(false)
 const inputValue = shallowRef('')
@@ -61,6 +62,19 @@ const allItems = ['a', 'ab', 'abc', 'abcd']
 const items = computed(() => {
   return allItems.filter(item => item.includes(inputValue.value))
 })
+
+const i = getCurrentInstance()!
+
+const iRefs = i.refs === EMPTY_OBJ ? (i.refs = {}) : i.refs
+Object.defineProperty(iRefs, 'list', {
+  enumerable: true,
+  get: () => {
+    return listRef.current
+  },
+  set: (val) => {
+    listRef.current = val
+  },
+})
 </script>
 
 <template>
@@ -69,11 +83,11 @@ const items = computed(() => {
       ActiveIndex: {{ activeIndex }}
     </div>
     <input
+      :ref="refs.setReference as any"
       class="input w-50"
       data-testid="reference"
       v-bind="getReferenceProps({
         onInput,
-        'ref': refs.setReference,
         'value': inputValue,
         'placeholder': 'Enter fruit',
         'aria-autocomplete': 'list',
@@ -82,33 +96,25 @@ const items = computed(() => {
 
     <div
       v-if="isOpen"
+      :ref="refs.setFloating as any"
       class="listbox"
       role="menu"
       :style="{
         ...floatingStyles,
         width: '200px',
       }"
-      v-bind="getFloatingProps({
-        ref: refs.setFloating,
-      })"
+      v-bind="getFloatingProps()"
     >
       <ul v-if="items.length > 0">
         <li
           v-for="(item, index) in items"
           :key="item"
+          ref="list"
           class="text-left flex py-1 px-2 outline-none rounded"
           :class="{
             'bg-blue-500 text-white': activeIndex === index,
           }"
           v-bind="getItemProps({
-            ref(node: HTMLLIElement) {
-              if (!node) {
-                listRef.current.splice(index, 1)
-              }
-              else {
-                listRef.current[index] = node;
-              }
-            },
             onClick() {
               onItemClick(item)
             },

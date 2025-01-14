@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Base from '@/components/UseListNavigation/Base.vue'
 import Autocomplite from '@/components/UseListNavigation/Autocomplite.vue'
+import Base from '@/components/UseListNavigation/Base.vue'
 </script>
 
 <template>
